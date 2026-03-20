@@ -17,8 +17,22 @@ services:
     container_name: backend_app
     ports:
       - "3000:3000"
+    volumes:
+      - ./backend:/app      # mirrors host code into container
+      - /app/node_modules   # prevents overwriting container node_modules
     depends_on:
       - db
+  
+  frontend:
+    build: ./frontend
+    container_name: frontend_app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
