@@ -24,35 +24,35 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
         <div className="p-8 font-sans min-h-screen">
             <div className="max-w-4xl mx-auto p-6">
                 <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold text-gray-700">
-                    Welcome {loggedInUser.name} ({loggedInUser.role})
-                </h2>
-                <button
-                    onClick={() => setLoggedInUser(null)}
-                    className="bg-gray-500 text-white px-4 py-2 rounded"
-                >
-                    Logout
-                </button>
+                    <h2 className="text-2xl font-semibold text-gray-700">
+                        Welcome {loggedInUser.name} ({loggedInUser.role})
+                    </h2>
+                    <button
+                        onClick={() => setLoggedInUser(null)}
+                        className="bg-gray-500 text-white px-4 py-2 rounded"
+                    >
+                        Logout
+                    </button>
                 </div>
 
                 {loggedInUser?.role === "Admin" && (
                 <div className="mt-4">
                     <h3 className="text-xl font-semibold mb-2 text-gray-700">All Users</h3>
                     {users.length === 0 ? (
-                    <p className="text-gray-500">No users found.</p>
+                        <p className="text-gray-500">No users found.</p>
                     ) : (
-                    <ul className="mb-6">
-                        {users.map((u) => (
-                        <li
-                            key={u.id}
-                            className="py-1"
-                        >
-                            <span>
-                            {u.name} ({u.email}) - {u.role}
-                            </span>
-                        </li>
-                        ))}
-                    </ul>
+                        <ul className="mb-6">
+                            {users.map((u) => (
+                                <li
+                                    key={u.id}
+                                    className="py-1"
+                                >
+                                    <span>
+                                    {u.name} ({u.email}) - {u.role}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
                     )}
 
                     <h3 className="text-xl font-semibold mb-2 text-gray-700">Create User</h3>
