@@ -15,7 +15,7 @@ function Login() {
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("Student");
     const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
+    //const [token, setToken] = useState<string | null>(null);
 
     // Fetch all users
     const fetchUsers = async () => {
@@ -40,7 +40,7 @@ function Login() {
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
             setLoggedInUser(data.user);
-            setToken(data.token);
+            //setToken(data.token);
             setName("");
             setEmail("");
             setPassword("");
