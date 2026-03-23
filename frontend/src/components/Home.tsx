@@ -103,6 +103,9 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
                     </button>
                 </div>
                 )}
+                <p className="font-medium text-gray-700">Enrolments</p>
+                <p className="font-medium text-gray-700">Students</p>
+                <p className="font-medium text-gray-700">Classes</p>
             </div>
         </div>
     );

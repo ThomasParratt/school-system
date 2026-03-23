@@ -52,7 +52,7 @@ function Login() {
 
     return (
         <div className="p-8 font-sans min-h-screen">
-            <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">School System</h1>
+            <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">School Management System</h1>
 
             {!loggedInUser && (
                 <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
