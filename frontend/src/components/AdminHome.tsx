@@ -35,7 +35,7 @@ function AdminHome( { loggedInUser, setLoggedInUser, users, name, setName, email
                     </li>
                 ))}
             </ul>
-            <h2>Sign Up</h2>
+            <h2>Create User</h2>
             <input
                 placeholder="Name"
                 value={name}
@@ -56,7 +56,7 @@ function AdminHome( { loggedInUser, setLoggedInUser, users, name, setName, email
                 <option value="Instructor">Instructor</option>
                 <option value="Student">Student</option>
             </select>
-            <button onClick={handleSignup}>Sign Up</button>
+            <button onClick={handleSignup}>Add</button>
         </div>
     );
 }
