@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AdminHome from "./AdminHome";
 
 type User = {
   id: number;
@@ -24,25 +25,6 @@ function Login() {
             setUsers(data);
         } catch (err) {
             console.error(err);
-        }
-    };
-
-    // Signup function
-    const handleSignup = async () => {
-        if (!name || !email || !password || !role) return alert("Fill all fields!");
-        try {
-            const res = await fetch("http://localhost:3000/users", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password, role }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            alert("User created successfully!");
-            setName("");
-            setEmail("");
-            setPassword("");
-            } catch (err) {
-            alert("Error: " + err);
         }
     };
 
@@ -74,61 +56,25 @@ function Login() {
 
         {!loggedInUser && (
             <div>
-            <h2>Sign Up</h2>
-            <input
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-            />
-            <input
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
-                <option value="Admin">Admin</option>
-                <option value="Instructor">Instructor</option>
-                <option value="Student">Student</option>
-            </select>
-            <button onClick={handleSignup}>Sign Up</button>
-
-            <h2>Login</h2>
-            <input
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <button onClick={handleLogin}>Login</button>
+                <h2>Login</h2>
+                <input
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                <button onClick={handleLogin}>Login</button>
             </div>
         )}
 
         {loggedInUser && (
             <div>
-                <h2>
-                    Welcome {loggedInUser.name} ({loggedInUser.role})
-                </h2>
-                    <button onClick={() => setLoggedInUser(null)}>Logout</button>
-
-                <h3>All Users</h3>
-                <ul>
-                    {users.map((u) => (
-                        <li key={u.id}>
-                            {u.name} ({u.email}) - {u.role}
-                        </li>
-                    ))}
-                </ul>
+                <AdminHome loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} users={users} name={name} setName={setName} email={email} setEmail={setEmail} password={password} setPassword={setPassword} role={role} setRole={setRole} />
             </div>
         )}
         </div>
