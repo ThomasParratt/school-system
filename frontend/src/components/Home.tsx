@@ -21,15 +21,15 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
     };
 
     return (
-        <div className="p-8 font-sans bg-gray-50 min-h-screen">
-            <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <div className="p-8 font-sans min-h-screen">
+            <div className="max-w-4xl mx-auto p-6">
                 <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-semibold text-gray-700">
                     Welcome {loggedInUser.name} ({loggedInUser.role})
                 </h2>
                 <button
                     onClick={() => setLoggedInUser(null)}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                    className="bg-gray-500 text-white px-4 py-2 rounded"
                 >
                     Logout
                 </button>
@@ -45,7 +45,7 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
                         {users.map((u) => (
                         <li
                             key={u.id}
-                            className="border-b border-gray-200 py-2 flex justify-between"
+                            className="py-1"
                         >
                             <span>
                             {u.name} ({u.email}) - {u.role}
@@ -62,7 +62,7 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
                             placeholder="Enter name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
                         />
                     </div>
                     <div className="flex items-center mb-4">
@@ -71,7 +71,7 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
                             placeholder="Enter email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
                         />
                     </div>
                     <div className="flex items-center mb-4">
@@ -81,7 +81,7 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
                             placeholder="Enter password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
                         />
                     </div>
                     <div className="flex items-center mb-4">
@@ -89,7 +89,7 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
                         <select
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
                         >
                             <option value="Instructor">Instructor</option>
                             <option value="Student">Student</option>
@@ -97,7 +97,7 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
                     </div>
                     <button
                     onClick={handleSignup}
-                    className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition-colors"
+                    className="bg-blue-500 text-white px-6 py-2 rounded"
                     >
                     Add
                     </button>
