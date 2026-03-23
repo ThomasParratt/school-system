@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AdminHome from "./AdminHome";
+import Home from "./Home";
 
 type User = {
   id: number;
@@ -74,7 +74,7 @@ function Login() {
 
         {loggedInUser && (
             <div>
-                <AdminHome loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} users={users} name={name} setName={setName} email={email} setEmail={setEmail} password={password} setPassword={setPassword} role={role} setRole={setRole} />
+                <Home loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} users={users} name={name} setName={setName} email={email} setEmail={setEmail} password={password} setPassword={setPassword} role={role} setRole={setRole} />
             </div>
         )}
         </div>
