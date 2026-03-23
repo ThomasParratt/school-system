@@ -21,46 +21,89 @@ function Home( { loggedInUser, setLoggedInUser, users, name, setName, email, set
     };
 
     return (
-        <div>
-            <h2>
-                Welcome {loggedInUser.name} ({loggedInUser.role})
-            </h2>
-                <button onClick={() => setLoggedInUser(null)}>Logout</button>
+        <div className="p-8 font-sans bg-gray-50 min-h-screen">
+            <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+                <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-semibold text-gray-700">
+                    Welcome {loggedInUser.name} ({loggedInUser.role})
+                </h2>
+                <button
+                    onClick={() => setLoggedInUser(null)}
+                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+                >
+                    Logout
+                </button>
+                </div>
 
-            {loggedInUser?.role === "Admin" && (
-                <div>
-                    <h3>All Users</h3>
-                    <ul>
+                {loggedInUser?.role === "Admin" && (
+                <div className="mt-4">
+                    <h3 className="text-xl font-semibold mb-2 text-gray-700">All Users</h3>
+                    {users.length === 0 ? (
+                    <p className="text-gray-500">No users found.</p>
+                    ) : (
+                    <ul className="mb-6">
                         {users.map((u) => (
-                            <li key={u.id}>
-                                {u.name} ({u.email}) - {u.role}
-                            </li>
+                        <li
+                            key={u.id}
+                            className="border-b border-gray-200 py-2 flex justify-between"
+                        >
+                            <span>
+                            {u.name} ({u.email}) - {u.role}
+                            </span>
+                        </li>
                         ))}
                     </ul>
-                    <h2>Create User</h2>
-                    <input
-                        placeholder="Name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <input
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <select value={role} onChange={(e) => setRole(e.target.value)}>
-                        <option value="Instructor">Instructor</option>
-                        <option value="Student">Student</option>
-                    </select>
-                    <button onClick={handleSignup}>Add</button>
+                    )}
+
+                    <h3 className="text-xl font-semibold mb-2 text-gray-700">Create User</h3>
+                    <div className="flex items-center mb-4">
+                        <p className="mr-2 font-medium text-gray-700">Name:</p>
+                        <input
+                            placeholder="Enter name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div className="flex items-center mb-4">
+                        <p className="mr-2 font-medium text-gray-700">Email:</p>
+                        <input
+                            placeholder="Enter email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div className="flex items-center mb-4">
+                        <p className="mr-2 font-medium text-gray-700">Password:</p>
+                        <input
+                            type="password"
+                            placeholder="Enter password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div className="flex items-center mb-4">
+                        <p className="mr-2 font-medium text-gray-700">Role:</p>
+                        <select
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="Instructor">Instructor</option>
+                            <option value="Student">Student</option>
+                        </select>
+                    </div>
+                    <button
+                    onClick={handleSignup}
+                    className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition-colors"
+                    >
+                    Add
+                    </button>
                 </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

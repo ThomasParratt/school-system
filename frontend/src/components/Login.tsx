@@ -51,32 +51,52 @@ function Login() {
     };
 
     return (
-        <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-        <h1>School System</h1>
+        <div className="p-8 font-sans bg-gray-50 min-h-screen">
+            <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">School System</h1>
 
-        {!loggedInUser && (
-            <div>
-                <h2>Login</h2>
+            {!loggedInUser && (
+                <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-700">Login</h2>
                 <input
+                    type="email"
                     placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <input
                     type="password"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <button onClick={handleLogin}>Login</button>
-            </div>
-        )}
+                <button
+                    onClick={handleLogin}
+                    className="w-full bg-blue-500 text-white font-semibold py-2 rounded hover:bg-blue-600 transition-colors"
+                >
+                    Login
+                </button>
+                </div>
+            )}
 
-        {loggedInUser && (
-            <div>
-                <Home loggedInUser={loggedInUser} setLoggedInUser={setLoggedInUser} users={users} name={name} setName={setName} email={email} setEmail={setEmail} password={password} setPassword={setPassword} role={role} setRole={setRole} />
-            </div>
-        )}
+            {loggedInUser && (
+                <div className="max-w-4xl mx-auto mt-6">
+                <Home
+                    loggedInUser={loggedInUser}
+                    setLoggedInUser={setLoggedInUser}
+                    users={users}
+                    name={name}
+                    setName={setName}
+                    email={email}
+                    setEmail={setEmail}
+                    password={password}
+                    setPassword={setPassword}
+                    role={role}
+                    setRole={setRole}
+                />
+                </div>
+            )}
         </div>
     );
 }
