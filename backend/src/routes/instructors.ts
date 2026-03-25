@@ -10,7 +10,7 @@ const JWT_SECRET = "supersecretkey"; // In prod, use env variable
 // GET all instructors
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query("SELECT id, name, first_name, last_name, email");
+    const result = await pool.query("SELECT id, name, first_name, second_name, email FROM instructors");
     res.json(result.rows);
   } catch (err) {
     console.error(err);

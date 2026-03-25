@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Home from "./Home";
+import { useEffect } from "react";
 
 type Admin = {
   id: number;
@@ -89,6 +90,8 @@ function Login() {
             setEmail("");
             setPassword("");
             fetchAdmin();
+            fetchInstructors();
+            fetchStudents();
         } catch (err) {
             alert("Login failed: " + err);
         }

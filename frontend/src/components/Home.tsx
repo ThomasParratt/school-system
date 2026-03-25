@@ -1,44 +1,30 @@
+import { useState } from "react";
 
 function Home( { loggedInAdmin, setLoggedInAdmin, loggedInStudent, setLoggedInStudent, loggedInInstructor, setLoggedInInstructor, admin, instructors, students, name, setName, firstName, setFirstName, secondName, setSecondName, email, setEmail, password, setPassword } ) {
-
-    // Signup functions
-    const handleInstructorSignup = async () => {
-        if (!name || !firstName || !secondName || !email || !password ) return alert("Fill all fields!");
+    const [selectedAddRole, setSelectedAddRole] = useState(null);
+    
+    const handleSignup = async () => {
+        if (!name || !firstName || !secondName || !email || !password)
+        return alert("Fill all fields!");
         try {
-            const res = await fetch("http://localhost:3000/instructors", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, firstName, secondName, email, password }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            alert("User created successfully!");
-            setName("");
-            setFirstName("");
-            setSecondName("");
-            setEmail("");
-            setPassword("");
+        const endpoint =
+            selectedAddRole === "Instructor"
+            ? "http://localhost:3000/instructors"
+            : "http://localhost:3000/students";
+        const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, firstName, secondName, email, password }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert(`${selectedAddRole} created successfully!`);
+        setName("");
+        setFirstName("");
+        setSecondName("");
+        setEmail("");
+        setPassword("");
         } catch (err) {
-            alert("Error: " + err);
-        }
-    };
-
-    const handleStudentSignup = async () => {
-        if (!name || !firstName || !secondName || !email || !password ) return alert("Fill all fields!");
-        try {
-            const res = await fetch("http://localhost:3000/students", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, firstName, secondName, email, password }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            alert("User created successfully!");
-            setName("");
-            setFirstName("");
-            setSecondName("");
-            setEmail("");
-            setPassword("");
-        } catch (err) {
-            alert("Error: " + err);
+        alert("Error: " + err);
         }
     };
 
@@ -74,7 +60,7 @@ function Home( { loggedInAdmin, setLoggedInAdmin, loggedInStudent, setLoggedInSt
                                     className="py-1"
                                 >
                                     <span>
-                                    {u.name} ({u.email}) - {u.role}
+                                    {u.name} {u.first_name} {u.last_name} {u.email}
                                     </span>
                                 </li>
                             ))}
@@ -91,128 +77,95 @@ function Home( { loggedInAdmin, setLoggedInAdmin, loggedInStudent, setLoggedInSt
                                     className="py-1"
                                 >
                                     <span>
-                                    {u.name} ({u.email}) - {u.role}
+                                    {u.name} {u.first_name} {u.last_name} {u.email}
                                     </span>
                                 </li>
                             ))}
                         </ul>
                     )}
 
-                    <h3 className="text-xl font-semibold mb-2 text-gray-700">Add Instructor</h3>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">Username:</p>
-                        <input
-                            placeholder="Enter username"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">First name:</p>
-                        <input
-                            placeholder="Enter first name"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">Second name:</p>
-                        <input
-                            placeholder="Enter second name"
-                            value={secondName}
-                            onChange={(e) => setSecondName(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">Email:</p>
-                        <input
-                            placeholder="Enter email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">Password:</p>
-                        <input
-                            type="password"
-                            placeholder="Enter password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <button
-                    onClick={handleInstructorSignup}
-                    className="bg-blue-500 text-white px-6 py-2 rounded"
-                    >
-                    Add
-                    </button>
-                    <h3 className="text-xl font-semibold mb-2 text-gray-700">Add Student</h3>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">Username:</p>
-                        <input
-                            placeholder="Enter username"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">First name:</p>
-                        <input
-                            placeholder="Enter first name"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">Second name:</p>
-                        <input
-                            placeholder="Enter second name"
-                            value={secondName}
-                            onChange={(e) => setSecondName(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">Email:</p>
-                        <input
-                            placeholder="Enter email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <div className="flex items-center mb-4">
-                        <p className="mr-2 font-medium text-gray-700">Password:</p>
-                        <input
-                            type="password"
-                            placeholder="Enter password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                        />
-                    </div>
-                    <button
-                    onClick={handleStudentSignup}
-                    className="bg-blue-500 text-white px-6 py-2 rounded"
-                    >
-                    Add
-                    </button>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-700">Add User</h3>
+
+            {/* Role selector */}
+            {!selectedAddRole ? (
+              <div className="flex gap-4 mb-4">
+                <button
+                  onClick={() => setSelectedAddRole("Instructor")}
+                  className="flex-1 bg-blue-500 text-white font-semibold py-2 rounded"
+                >
+                  Add Instructor
+                </button>
+                <button
+                  onClick={() => setSelectedAddRole("Student")}
+                  className="flex-1 bg-blue-500 text-white font-semibold py-2 rounded"
+                >
+                  Add Student
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Form for the selected role */}
+                <p className="mb-2 font-medium text-gray-700">
+                  {selectedAddRole} Details
+                </p>
+                <div className="flex flex-col gap-4 mb-4">
+                  <input
+                    placeholder="Username"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                  />
+                  <input
+                    placeholder="First name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                  />
+                  <input
+                    placeholder="Second name"
+                    value={secondName}
+                    onChange={(e) => setSecondName(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                  />
+                  <input
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                  />
                 </div>
-                )}
-                <p className="font-medium text-gray-700">Enrolments</p>
-                <p className="font-medium text-gray-700">Students</p>
-                <p className="font-medium text-gray-700">Classes</p>
-                <p className="font-medium text-gray-700">Calendar</p>
-            </div>
-        </div>
-    );
+                <div className="flex gap-4">
+                  <button
+                    onClick={handleSignup}
+                    className="flex-1 bg-blue-500 text-white py-2 rounded"
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => setSelectedAddRole(null)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-2 rounded"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        <p className="font-medium text-gray-700">Enrolments</p>
+        <p className="font-medium text-gray-700">Students</p>
+        <p className="font-medium text-gray-700">Classes</p>
+        <p className="font-medium text-gray-700">Calendar</p>
+      </div>
+    </div>
+  );
 }
 
 export default Home;
