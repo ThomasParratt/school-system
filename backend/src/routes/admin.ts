@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { pool } from "../db";
+import { pool } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -7,44 +7,44 @@ const router = Router();
 const SALT_ROUNDS = 10;
 const JWT_SECRET = "supersecretkey"; // In prod, use env variable
 
-// GET all users
+// GET all admin
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query("SELECT id, name, email, role FROM users");
+    const result = await pool.query("SELECT id, name, email FROM users");
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error fetching users");
+    res.status(500).send("Error fetching admin");
   }
 });
 
-// POST /users - create new user
+// POST /admin - create new admin
 router.post("/", async (req, res) => {
-  const { name, email, password, role } = req.body;
-  if (!name || !email || !password || !role) {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password ) {
     return res.status(400).send("Missing fields");
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const result = await pool.query(
-      "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role",
-      [name, email, hashedPassword, role]
+      "INSERT INTO admin (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email",
+      [name, email, hashedPassword]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error creating user");
+    res.status(500).send("Error creating admin");
   }
 });
 
-// POST /login - login user
+// POST /adminlogin - login admin
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).send("Missing fields");
 
   try {
-    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    const result = await pool.query("SELECT * FROM admin WHERE email = $1", [email]);
     const user = result.rows[0];
     if (!user) return res.status(401).send("Invalid credentials");
 
@@ -52,11 +52,11 @@ router.post("/login", async (req, res) => {
     if (!match) return res.status(401).send("Invalid credentials");
 
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error logging in");
