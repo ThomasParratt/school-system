@@ -47,7 +47,7 @@ function Home( { loggedInAdmin, setLoggedInAdmin, loggedInStudent, setLoggedInSt
             <div className="max-w-4xl mx-auto p-6">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-semibold text-gray-700">
-                        Welcome {loggedInAdmin?.name || loggedInInstructor?.name || loggedInStudent?.name || "Guest"}
+                        Welcome {loggedInAdmin?.name || loggedInInstructor?.first_name || loggedInStudent?.first_name || "Guest"}
                     </h2>
                     <button
                         onClick={() => {

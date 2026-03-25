@@ -36,6 +36,7 @@ function Login() {
     const [loggedInAdmin, setLoggedInAdmin] = useState<Admin | null>(null);
     const [loggedInInstructor, setLoggedInInstructor] = useState<Instructor | null>(null);
     const [loggedInStudent, setLoggedInStudent] = useState<Student | null>(null);
+    const [selectedRole, setSelectedRole] = useState(null);
     //const [token, setToken] = useState<string | null>(null);
 
     // Fetch all admin
@@ -142,74 +143,71 @@ function Login() {
     return (
         <div className="p-8 font-sans min-h-screen">
             <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">School Management System</h1>
+                {!loggedInAdmin && !loggedInInstructor && !loggedInStudent && (
+                    <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
+                        {!selectedRole ? (
+                            <div className="text-center">
+                            <h2 className="text-2xl font-semibold mb-4 text-gray-700">Select your role</h2>
+                            <div className="flex flex-col gap-4">
+                                <button
+                                onClick={() => setSelectedRole("Admin")}
+                                className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
+                                >
+                                Admin
+                                </button>
+                                <button
+                                onClick={() => setSelectedRole("Instructor")}
+                                className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
+                                >
+                                Instructor
+                                </button>
+                                <button
+                                onClick={() => setSelectedRole("Student")}
+                                className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
+                                >
+                                Student
+                                </button>
+                            </div>
+                            </div>
+                        ) : (
+                            <>
+                            {/* Show login form based on selected role */}
+                            <h2 className="text-2xl font-semibold mb-4 text-gray-700">{selectedRole} Login</h2>
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                            />
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                            />
+                            <button
+                                onClick={() => {
+                                if (selectedRole === "Admin") handleAdminLogin();
+                                else if (selectedRole === "Instructor") handleInstructorLogin();
+                                else handleStudentLogin();
+                                }}
+                                className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
+                            >
+                                Login
+                            </button>
 
-            {!loggedInAdmin && !loggedInInstructor && !loggedInStudent && (
-                <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-700">Admin Login</h2>
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                    <button
-                        onClick={handleAdminLogin}
-                        className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
-                    >
-                        Login
-                    </button>
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-700">Instructor Login</h2>
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                    <button
-                        onClick={handleInstructorLogin}
-                        className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
-                    >
-                        Login
-                    </button>
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-700">Student Login</h2>
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                    />
-                    <button
-                        onClick={handleStudentLogin}
-                        className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
-                    >
-                        Login
-                    </button>
-                </div>
-            )}
+                            <button
+                                onClick={() => setSelectedRole(null)}
+                                className="mt-4 w-full text-gray-500 underline"
+                            >
+                                Change Role
+                            </button>
+                            </>
+                        )}
+                    </div>
+                )}
 
             {(loggedInAdmin || loggedInInstructor || loggedInStudent) && (
                 <div className="max-w-4xl mx-auto mt-6">
