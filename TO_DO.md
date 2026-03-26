@@ -1,6 +1,6 @@
 ### To do next
 
-- Add JWT authentication
+- Add authentication and authorization
 - Login without role selection?
 - PUT student/instructor
 - DELETE student/instructor
