@@ -4,8 +4,14 @@
 
 A system for managing courses and schuduling at a language school.
 The application has three user types (Administrator, Instructor, Student). 
-- Administrators can add, edit and delete instructor, student, enrolment and course information.
-- Instructors can edit class information
+- Administrators can view, add, edit and delete instructor, student, enrolment and class data.
+- Instructors can view their students data, view and edit class data, request to move or cancel classes or change availability.
+- Students can view class data and request to move or cancel classes.
+  
+Possible extras:
+- Email notifications
+- Links to class materials
+- Make use of Google maps API when scheduling classes to ensure there is time to travel from one class to another.
 
 ## Features so far
 
