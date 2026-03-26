@@ -1,6 +1,7 @@
 ### To do next
 
 - Add JWT authentication
+- Login without role selection?
 - PUT student/instructor
 - DELETE student/instructor
 - Login when enter pressed
