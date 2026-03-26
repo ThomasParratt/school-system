@@ -65,8 +65,8 @@ ft_transcendence/
    ```
 
 3. Access the application:
-   - Frontend: https://localhost:5173
-   - Backend API: https://localhost:3000
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000
 
 ### Database
 
