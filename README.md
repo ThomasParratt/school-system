@@ -1,6 +1,11 @@
 # School Management System
 
+## Overview
+
 A system for managing courses and schuduling at a language school.
+The application has three user types (Administrator, Instructor, Student). 
+- Administrators can add, edit and delete instructor, student, enrolment and course information.
+- Instructors can edit class information
 
 ## Features so far
 
