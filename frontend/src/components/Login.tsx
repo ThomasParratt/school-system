@@ -37,7 +37,7 @@ function Login() {
     const [loggedInAdmin, setLoggedInAdmin] = useState<Admin | null>(null);
     const [loggedInInstructor, setLoggedInInstructor] = useState<Instructor | null>(null);
     const [loggedInStudent, setLoggedInStudent] = useState<Student | null>(null);
-    const [selectedRole, setSelectedRole] = useState(null);
+    const [selectedRole, setSelectedRole] = useState("");
     //const [token, setToken] = useState<string | null>(null);
 
     // Fetch all admin
