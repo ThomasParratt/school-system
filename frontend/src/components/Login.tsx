@@ -29,9 +29,6 @@ function Login() {
     const [admin, setAdmin] = useState<Admin[]>([]);
     const [instructors, setInstructors] = useState<Instructor[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
-    const [name, setName] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [secondName, setSecondName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loggedInAdmin, setLoggedInAdmin] = useState<Admin | null>(null);
@@ -86,7 +83,6 @@ function Login() {
             const data = await res.json();
             setLoggedInAdmin(data.user);
             //setToken(data.token);
-            setName("");
             setEmail("");
             setPassword("");
             fetchAdmin();
@@ -109,9 +105,6 @@ function Login() {
             const data = await res.json();
             setLoggedInInstructor(data.user);
             //setToken(data.token);
-            setName("");
-            setFirstName("");
-            setSecondName("");
             setEmail("");
             setPassword("");
             fetchInstructors();
@@ -132,9 +125,6 @@ function Login() {
             const data = await res.json();
             setLoggedInStudent(data.user);
             //setToken(data.token);
-            setName("");
-            setFirstName("");
-            setSecondName("");
             setEmail("");
             setPassword("");
             fetchStudents();
@@ -224,12 +214,6 @@ function Login() {
                     admin={admin}
                     instructors={instructors}
                     students={students}
-                    name={name}
-                    setName={setName}
-                    firstName={firstName}
-                    setFirstName={setFirstName}
-                    secondName={secondName}
-                    setSecondName={setSecondName}
                     email={email}
                     setEmail={setEmail}
                     password={password}

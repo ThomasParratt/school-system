@@ -1,11 +1,14 @@
 import { useState } from "react";
 
-function Home( { loggedInAdmin, setLoggedInAdmin, loggedInStudent, setLoggedInStudent, loggedInInstructor, setLoggedInInstructor, admin, instructors, students, name, setName, firstName, setFirstName, secondName, setSecondName, email, setEmail, password, setPassword } ) {
+function Home( { loggedInAdmin, setLoggedInAdmin, loggedInStudent, setLoggedInStudent, loggedInInstructor, setLoggedInInstructor, admin, instructors, students, email, setEmail, password, setPassword } ) {
+    const [name, setName] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [secondName, setSecondName] = useState("");
     const [selectedAddRole, setSelectedAddRole] = useState(null);
     
     const handleSignup = async () => {
         if (!name || !firstName || !secondName || !email || !password)
-        return alert("Fill all fields!");
+          return alert("Fill all fields!");
         try {
         const endpoint =
             selectedAddRole === "Instructor"
