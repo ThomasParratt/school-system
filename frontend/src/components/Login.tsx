@@ -34,8 +34,30 @@ function Login() {
     const [loggedInAdmin, setLoggedInAdmin] = useState<Admin | null>(null);
     const [loggedInInstructor, setLoggedInInstructor] = useState<Instructor | null>(null);
     const [loggedInStudent, setLoggedInStudent] = useState<Student | null>(null);
-    const [selectedRole, setSelectedRole] = useState("");
+    const [selectedRole, setSelectedRole] = useState<string | null>(null);
     //const [token, setToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        const storedRole = localStorage.getItem("role");
+
+        if (storedUser && storedRole) {
+            const user = JSON.parse(storedUser);
+
+            if (storedRole === "admin") {
+                setLoggedInAdmin(user);
+                fetchAdmin();
+                fetchInstructors();
+                fetchStudents();
+            } else if (storedRole === "instructor") {
+                setLoggedInInstructor(user);
+                fetchInstructors();
+            } else if (storedRole === "student") {
+                setLoggedInStudent(user);
+                fetchStudents();
+            }
+        }
+    }, []);
 
     // Fetch all admin
     const fetchAdmin = async () => {
@@ -82,12 +104,11 @@ function Login() {
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
             setLoggedInAdmin(data.user);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            localStorage.setItem("role", "admin");
             //setToken(data.token);
             setEmail("");
             setPassword("");
-            fetchAdmin();
-            fetchInstructors();
-            fetchStudents();
         } catch (err) {
             alert("Login failed: " + err);
         }
@@ -104,10 +125,11 @@ function Login() {
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
             setLoggedInInstructor(data.user);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            localStorage.setItem("role", "student");
             //setToken(data.token);
             setEmail("");
             setPassword("");
-            fetchInstructors();
         } catch (err) {
             alert("Login failed: " + err);
         }
@@ -127,7 +149,6 @@ function Login() {
             //setToken(data.token);
             setEmail("");
             setPassword("");
-            fetchStudents();
         } catch (err) {
             alert("Login failed: " + err);
         }

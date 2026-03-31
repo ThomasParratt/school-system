@@ -43,6 +43,8 @@ function Home( { loggedInAdmin, setLoggedInAdmin, loggedInStudent, setLoggedInSt
                             setLoggedInAdmin(null);
                             setLoggedInInstructor(null);
                             setLoggedInStudent(null);
+                            localStorage.removeItem("user");
+                            localStorage.removeItem("role");
                         }}
                         className="bg-gray-500 text-white px-4 py-2 rounded"
                     >
