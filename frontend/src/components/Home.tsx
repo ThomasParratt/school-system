@@ -73,12 +73,6 @@ function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPas
             {!selectedAddRole ? (
               <div className="flex gap-4 mb-4">
                 <button
-                  onClick={() => setSelectedAddRole("Instructor")}
-                  className="flex-1 bg-blue-500 text-white font-semibold py-2 rounded"
-                >
-                  Add Instructor
-                </button>
-                <button
                   onClick={() => setSelectedAddRole("Student")}
                   className="flex-1 bg-blue-500 text-white font-semibold py-2 rounded"
                 >

@@ -7,6 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  instructor
+  student
+}
+
 model User {
   id         Int      @id @default(autoincrement())
   name       String
@@ -14,7 +19,7 @@ model User {
   secondName String   @map("second_name")
   email      String   @unique
   password   String
-  role       String   @default("instructor")
+  role       Role     @default(student)
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("users")
