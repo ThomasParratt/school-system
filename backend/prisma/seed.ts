@@ -15,7 +15,7 @@ async function main() {
       secondName: "User",
       email: "demo.user@school.local",
       password: hashedPassword,
-      role: "student"
+      role: "instructor"
     }
   });
 
