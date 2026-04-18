@@ -104,12 +104,7 @@ function Login() {
                 <div className="max-w-4xl mx-auto mt-6">
                 <Home
                     loggedIn={loggedIn}
-                    setLoggedIn={setLoggedIn}
                     users={users}
-                    email={email}
-                    setEmail={setEmail}
-                    password={password}
-                    setPassword={setPassword}
                 />
                 </div>
             )}

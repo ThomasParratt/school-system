@@ -1,11 +1,15 @@
 import { useState } from "react";
 
-function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPassword } ) {
+// users only stored when page is refreshed
+function Home( { loggedIn, users } ) {
     const [name, setName] = useState("");
     const [firstName, setFirstName] = useState("");
     const [secondName, setSecondName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [selectedAddRole, setSelectedAddRole] = useState(null);
     
+    //can't create user
     const handleSignup = async () => {
         if (!name || !firstName || !secondName || !email || !password)
           return alert("Fill all fields!");
@@ -67,9 +71,7 @@ function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPas
                         </ul>
                     )}
 
-                    <h3 className="text-xl font-semibold mb-2 text-gray-700">Add User</h3>
 
-            {/* Role selector */}
             {!selectedAddRole ? (
               <div className="flex gap-4 mb-4">
                 <button
@@ -136,10 +138,6 @@ function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPas
             )}
           </div>
         )}
-        <p className="font-medium text-gray-700">Enrolments</p>
-        <p className="font-medium text-gray-700">Students</p>
-        <p className="font-medium text-gray-700">Classes</p>
-        <p className="font-medium text-gray-700">Calendar</p>
       </div>
     </div>
   );
