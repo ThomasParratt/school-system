@@ -7,44 +7,44 @@ const router = Router();
 const SALT_ROUNDS = 10;
 const JWT_SECRET = "supersecretkey"; // In prod, use env variable
 
-// GET all admin
+// GET all users
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query("SELECT id, name, email FROM admin");
+    const result = await pool.query("SELECT id, name, first_name, second_name, email FROM users");
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error fetching admin");
+    res.status(500).send("Error fetching users");
   }
 });
 
-// POST /admin - create new admin
+// POST /users - create new user
 router.post("/", async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password ) {
+  const { name, firstName, secondName, email, password } = req.body;
+  if (!name || !firstName || !secondName || !email || !password ) {
     return res.status(400).send("Missing fields");
   }
 
   try {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const result = await pool.query(
-      "INSERT INTO admin (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email",
-      [name, email, hashedPassword]
+      "INSERT INTO users (name, first_name, second_name, email, password) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, first_name, second_name, email",
+      [name, firstName, secondName, email, hashedPassword]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error creating admin");
+    res.status(500).send("Error creating user");
   }
 });
 
-// POST /adminlogin - login admin
+// POST /login
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).send("Missing fields");
 
   try {
-    const result = await pool.query("SELECT * FROM admin WHERE email = $1", [email]);
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
     const user = result.rows[0];
     if (!user) return res.status(401).send("Invalid credentials");
 
@@ -52,11 +52,11 @@ router.post("/login", async (req, res) => {
     if (!match) return res.status(401).send("Invalid credentials");
 
     const token = jwt.sign(
-      { id: user.id },
+      { id: user.id, role: user.role },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ token, user: { id: user.id, name: user.name, first_name: user.first_name, second_name: user.second_name, email: user.email } });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error logging in");
