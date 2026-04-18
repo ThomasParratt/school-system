@@ -2,150 +2,57 @@ import { useState } from "react";
 import Home from "./Home";
 import { useEffect } from "react";
 
-type Admin = {
-  id: number;
-  name: string;
-  email: string;
-};
-
-type Instructor = {
+type User = {
   id: number;
   name: string;
   firstName: string;
   secondName: string;
   email: string;
 };
-
-type Student = {
-  id: number;
-  name: string;
-  firstName: string;
-  secondName: string;
-  email: string;
-};
-
 
 function Login() {
-    const [admin, setAdmin] = useState<Admin[]>([]);
-    const [instructors, setInstructors] = useState<Instructor[]>([]);
-    const [students, setStudents] = useState<Student[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loggedInAdmin, setLoggedInAdmin] = useState<Admin | null>(null);
-    const [loggedInInstructor, setLoggedInInstructor] = useState<Instructor | null>(null);
-    const [loggedInStudent, setLoggedInStudent] = useState<Student | null>(null);
-    const [selectedRole, setSelectedRole] = useState<string | null>(null);
+    const [loggedIn, setLoggedIn] = useState<User | null>(null);
     //const [token, setToken] = useState<string | null>(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
-        const storedRole = localStorage.getItem("role");
+        //const storedRole = localStorage.getItem("role");
 
-        if (storedUser && storedRole) {
+        if (storedUser) {
             const user = JSON.parse(storedUser);
-
-            if (storedRole === "admin") {
-                setLoggedInAdmin(user);
-                fetchAdmin();
-                fetchInstructors();
-                fetchStudents();
-            } else if (storedRole === "instructor") {
-                setLoggedInInstructor(user);
-                fetchInstructors();
-            } else if (storedRole === "student") {
-                setLoggedInStudent(user);
-                fetchStudents();
-            }
+            setLoggedIn(user);
+            fetchUsers();
         }
     }, []);
 
-    // Fetch all admin
-    const fetchAdmin = async () => {
+    // Fetch all users
+    const fetchUsers = async () => {
         try {
-            const res = await fetch("http://localhost:3000/admin");
+            const res = await fetch("http://localhost:3000/users");
             const data = await res.json();
-            setAdmin(data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    // Fetch all instructors
-    const fetchInstructors = async () => {
-        try {
-            const res = await fetch("http://localhost:3000/instructors");
-            const data = await res.json();
-            setInstructors(data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
-    // Fetch all students
-    const fetchStudents = async () => {
-        try {
-            const res = await fetch("http://localhost:3000/students");
-            const data = await res.json();
-            setStudents(data);
+            setUsers(data);
         } catch (err) {
             console.error(err);
         }
     };
 
     // Login functions
-    const handleAdminLogin = async () => {
+    const handleLogin = async () => {
         if (!email || !password) return alert("Fill email and password!");
         try {
-            const res = await fetch("http://localhost:3000/admin/login", {
+            const res = await fetch("http://localhost:3000/users/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
-            setLoggedInAdmin(data.user);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            localStorage.setItem("role", "admin");
-            //setToken(data.token);
-            setEmail("");
-            setPassword("");
-        } catch (err) {
-            alert("Login failed: " + err);
-        }
-    };
-
-    const handleInstructorLogin = async () => {
-        if (!email || !password) return alert("Fill email and password!");
-        try {
-            const res = await fetch("http://localhost:3000/instructors/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            const data = await res.json();
-            setLoggedInInstructor(data.user);
+            setLoggedIn(data.user);
             localStorage.setItem("user", JSON.stringify(data.user));
             localStorage.setItem("role", "student");
-            //setToken(data.token);
-            setEmail("");
-            setPassword("");
-        } catch (err) {
-            alert("Login failed: " + err);
-        }
-    };
-
-    const handleStudentLogin = async () => {
-        if (!email || !password) return alert("Fill email and password!");
-        try {
-            const res = await fetch("http://localhost:3000/students/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            const data = await res.json();
-            setLoggedInStudent(data.user);
             //setToken(data.token);
             setEmail("");
             setPassword("");
@@ -157,36 +64,11 @@ function Login() {
     return (
         <div className="p-8 font-sans min-h-screen">
             <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">School Management System</h1>
-                {!loggedInAdmin && !loggedInInstructor && !loggedInStudent && (
+                {!loggedIn && (
                     <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
-                        {!selectedRole ? (
-                            <div className="text-center">
-                            <h2 className="text-2xl font-semibold mb-4 text-gray-700">Select your role</h2>
-                            <div className="flex flex-col gap-4">
-                                <button
-                                onClick={() => setSelectedRole("Admin")}
-                                className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
-                                >
-                                Admin
-                                </button>
-                                <button
-                                onClick={() => setSelectedRole("Instructor")}
-                                className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
-                                >
-                                Instructor
-                                </button>
-                                <button
-                                onClick={() => setSelectedRole("Student")}
-                                className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
-                                >
-                                Student
-                                </button>
-                            </div>
-                            </div>
-                        ) : (
                             <>
                             {/* Show login form based on selected role */}
-                            <h2 className="text-2xl font-semibold mb-4 text-gray-700">{selectedRole} Login</h2>
+                            <h2 className="text-2xl font-semibold mb-4 text-gray-700">Login</h2>
                             <input
                                 type="email"
                                 placeholder="Email"
@@ -203,38 +85,22 @@ function Login() {
                             />
                             <button
                                 onClick={() => {
-                                if (selectedRole === "Admin") handleAdminLogin();
-                                else if (selectedRole === "Instructor") handleInstructorLogin();
-                                else handleStudentLogin();
+                                    handleLogin();
                                 }}
                                 className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
                             >
                                 Login
                             </button>
-
-                            <button
-                                onClick={() => setSelectedRole(null)}
-                                className="mt-4 w-full text-gray-500 underline"
-                            >
-                                Change Role
-                            </button>
                             </>
-                        )}
                     </div>
                 )}
 
-            {(loggedInAdmin || loggedInInstructor || loggedInStudent) && (
+            {(loggedIn) && (
                 <div className="max-w-4xl mx-auto mt-6">
                 <Home
-                    loggedInAdmin={loggedInAdmin}
-                    setLoggedInAdmin={setLoggedInAdmin}
-                    loggedInInstructor={loggedInInstructor}
-                    setLoggedInInstructor={setLoggedInInstructor}
-                    loggedInStudent={loggedInStudent}
-                    setLoggedInStudent={setLoggedInStudent}
-                    admin={admin}
-                    instructors={instructors}
-                    students={students}
+                    loggedIn={loggedIn}
+                    setLoggedIn={setLoggedIn}
+                    users={users}
                     email={email}
                     setEmail={setEmail}
                     password={password}

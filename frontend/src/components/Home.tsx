@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function Home( { loggedInAdmin, setLoggedInAdmin, loggedInStudent, setLoggedInStudent, loggedInInstructor, setLoggedInInstructor, admin, instructors, students, email, setEmail, password, setPassword } ) {
+function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPassword } ) {
     const [name, setName] = useState("");
     const [firstName, setFirstName] = useState("");
     const [secondName, setSecondName] = useState("");
