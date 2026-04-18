@@ -14,7 +14,7 @@ model User {
   secondName String   @map("second_name")
   email      String   @unique
   password   String
-  role       String   @default("student")
+  role       String   @default("instructor")
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("users")
