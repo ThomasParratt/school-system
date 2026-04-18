@@ -1,17 +1,34 @@
 import { Router } from "express";
-import { pool } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { prisma } from "../lib/prisma.js";
 
 const router = Router();
 const SALT_ROUNDS = 10;
-const JWT_SECRET = "supersecretkey"; // In prod, use env variable
+const JWT_SECRET = process.env.JWT_SECRET ?? "supersecretkey";
 
 // GET all users
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query("SELECT id, name, first_name, second_name, email FROM users");
-    res.json(result.rows);
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        firstName: true,
+        secondName: true,
+        email: true
+      }
+    });
+
+    res.json(
+      users.map((user) => ({
+        id: user.id,
+        name: user.name,
+        first_name: user.firstName,
+        second_name: user.secondName,
+        email: user.email
+      }))
+    );
   } catch (err) {
     console.error(err);
     res.status(500).send("Error fetching users");
@@ -27,11 +44,30 @@ router.post("/", async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const result = await pool.query(
-      "INSERT INTO users (name, first_name, second_name, email, password) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, first_name, second_name, email",
-      [name, firstName, secondName, email, hashedPassword]
-    );
-    res.status(201).json(result.rows[0]);
+    const user = await prisma.user.create({
+      data: {
+        name,
+        firstName,
+        secondName,
+        email,
+        password: hashedPassword
+      },
+      select: {
+        id: true,
+        name: true,
+        firstName: true,
+        secondName: true,
+        email: true
+      }
+    });
+
+    res.status(201).json({
+      id: user.id,
+      name: user.name,
+      first_name: user.firstName,
+      second_name: user.secondName,
+      email: user.email
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error creating user");
@@ -44,8 +80,7 @@ router.post("/login", async (req, res) => {
   if (!email || !password) return res.status(400).send("Missing fields");
 
   try {
-    const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-    const user = result.rows[0];
+    const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(401).send("Invalid credentials");
 
     const match = await bcrypt.compare(password, user.password);
@@ -56,7 +91,16 @@ router.post("/login", async (req, res) => {
       JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.json({ token, user: { id: user.id, name: user.name, first_name: user.first_name, second_name: user.second_name, email: user.email } });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        first_name: user.firstName,
+        second_name: user.secondName,
+        email: user.email
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error logging in");

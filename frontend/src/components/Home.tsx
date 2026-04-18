@@ -10,10 +10,7 @@ function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPas
         if (!name || !firstName || !secondName || !email || !password)
           return alert("Fill all fields!");
         try {
-        const endpoint =
-            selectedAddRole === "Instructor"
-            ? "http://localhost:3000/instructors"
-            : "http://localhost:3000/students";
+        const endpoint = "http://localhost:3000/users";
         const res = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -27,7 +24,7 @@ function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPas
         setEmail("");
         setPassword("");
         } catch (err) {
-        alert("Error: " + err);
+          alert("Error: " + err);
         }
     };
 
@@ -36,13 +33,11 @@ function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPas
             <div className="max-w-4xl mx-auto p-6">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-semibold text-gray-700">
-                        Welcome {loggedInAdmin?.name || loggedInInstructor?.first_name || loggedInStudent?.first_name || "Guest"}
+                        Welcome {loggedIn.first_name}
                     </h2>
                     <button
                         onClick={() => {
-                            setLoggedInAdmin(null);
-                            setLoggedInInstructor(null);
-                            setLoggedInStudent(null);
+                            setLoggedIn(null);
                             localStorage.removeItem("user");
                             localStorage.removeItem("role");
                         }}
@@ -52,31 +47,14 @@ function Home( { loggedIn, setLoggedIn, users, email, setEmail, password, setPas
                     </button>
                 </div>
 
-                {loggedInAdmin && (
+                {loggedIn && (
                 <div className="mt-4">
-                    <h3 className="text-xl font-semibold mb-2 text-gray-700">All Instructors</h3>
-                    {instructors.length === 0 ? (
-                        <p className="text-gray-500">No instructors found.</p>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-700">All Users</h3>
+                    {users.length === 0 ? (
+                        <p className="text-gray-500">No users found.</p>
                     ) : (
                         <ul className="mb-6">
-                            {instructors.map((u) => (
-                                <li
-                                    key={u.id}
-                                    className="py-1"
-                                >
-                                    <span>
-                                    {u.name} {u.first_name} {u.last_name} {u.email}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    <h3 className="text-xl font-semibold mb-2 text-gray-700">All Students</h3>
-                    {students.length === 0 ? (
-                        <p className="text-gray-500">No students found.</p>
-                    ) : (
-                        <ul className="mb-6">
-                            {students.map((u) => (
+                            {users.map((u) => (
                                 <li
                                     key={u.id}
                                     className="py-1"
