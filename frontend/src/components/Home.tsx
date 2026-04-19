@@ -1,17 +1,17 @@
 import { useState } from "react";
 
 type User = {
-  id: number;
-  name: string;
-  first_name: string;
-  second_name: string;
-  email: string;
+    id: number;
+    name: string;
+    first_name: string;
+    second_name: string;
+    email: string;
 };
 
 type HomeProps = {
-  loggedIn: User;
-  users: User[];
-  onLogout: () => void;
+    loggedIn: User;
+    users: User[];
+    onLogout: () => void;
 };
 
 function Home({ loggedIn, users, onLogout }: HomeProps) {
