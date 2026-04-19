@@ -19,7 +19,7 @@ async function main() {
     }
   });
 
-  console.log("Seed complete: demo.user@school.local created or already exists");
+  console.log("Seed complete");
 }
 
 main()
