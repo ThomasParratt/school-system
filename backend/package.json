@@ -9,7 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
-    "dev:docker": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed && npm run dev"
+    "dev:docker": "npm run prisma:generate && prisma db push && npm run prisma:seed && npm run dev"
   },
   "keywords": [],
   "author": "",

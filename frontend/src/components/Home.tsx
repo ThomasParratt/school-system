@@ -1,13 +1,27 @@
 import { useState } from "react";
 
 // users only stored when page is refreshed
-function Home( { loggedIn, users } ) {
+type User = {
+  id: number;
+  name: string;
+  first_name: string;
+  second_name: string;
+  email: string;
+};
+
+type HomeProps = {
+  loggedIn: User;
+  users: User[];
+  onLogout: () => void;
+};
+
+function Home({ loggedIn, users, onLogout }: HomeProps) {
     const [name, setName] = useState("");
     const [firstName, setFirstName] = useState("");
     const [secondName, setSecondName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [selectedAddRole, setSelectedAddRole] = useState(null);
+    const [selectedAddRole, setSelectedAddRole] = useState<string | null>(null);
     
     //can't create user
     const handleSignup = async () => {
@@ -40,11 +54,7 @@ function Home( { loggedIn, users } ) {
                         Welcome {loggedIn.first_name}
                     </h2>
                     <button
-                        onClick={() => {
-                            setLoggedIn(null);
-                            localStorage.removeItem("user");
-                            localStorage.removeItem("role");
-                        }}
+                    onClick={onLogout}
                         className="bg-gray-500 text-white px-4 py-2 rounded"
                     >
                         Logout
@@ -64,7 +74,7 @@ function Home( { loggedIn, users } ) {
                                     className="py-1"
                                 >
                                     <span>
-                                    {u.name} {u.first_name} {u.last_name} {u.email}
+                                  {u.name} {u.first_name} {u.second_name} {u.email}
                                     </span>
                                 </li>
                             ))}

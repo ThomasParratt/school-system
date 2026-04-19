@@ -5,8 +5,8 @@ import { useEffect } from "react";
 type User = {
   id: number;
   name: string;
-  firstName: string;
-  secondName: string;
+    first_name: string;
+    second_name: string;
   email: string;
 };
 
@@ -18,14 +18,9 @@ function Login() {
     //const [token, setToken] = useState<string | null>(null);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        //const storedRole = localStorage.getItem("role");
-
-        if (storedUser) {
-            const user = JSON.parse(storedUser);
-            setLoggedIn(user);
-            fetchUsers();
-        }
+        // Always start logged out in development.
+        localStorage.removeItem("user");
+        localStorage.removeItem("role");
     }, []);
 
     // Fetch all users
@@ -53,6 +48,7 @@ function Login() {
             setLoggedIn(data.user);
             localStorage.setItem("user", JSON.stringify(data.user));
             localStorage.setItem("role", "student");
+            await fetchUsers();
             //setToken(data.token);
             setEmail("");
             setPassword("");
@@ -105,6 +101,11 @@ function Login() {
                 <Home
                     loggedIn={loggedIn}
                     users={users}
+                    onLogout={() => {
+                        setLoggedIn(null);
+                        localStorage.removeItem("user");
+                        localStorage.removeItem("role");
+                    }}
                 />
                 </div>
             )}
