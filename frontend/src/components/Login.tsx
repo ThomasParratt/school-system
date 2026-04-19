@@ -1,27 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Home from "./Home";
-import { useEffect } from "react";
 
 type User = {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
     first_name: string;
     second_name: string;
-  email: string;
+    email: string;
 };
+
+const USER_STORAGE_KEY = "user";
+
+function readStoredUser() {
+    if (typeof window === "undefined") {
+        return null;
+    }
+
+    const storedUser = window.localStorage.getItem(USER_STORAGE_KEY);
+    if (!storedUser) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(storedUser) as User;
+    } catch {
+        window.localStorage.removeItem(USER_STORAGE_KEY);
+        return null;
+    }
+}
 
 function Login() {
     const [users, setUsers] = useState<User[]>([]);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loggedIn, setLoggedIn] = useState<User | null>(null);
-    //const [token, setToken] = useState<string | null>(null);
-
-    useEffect(() => {
-        // Always start logged out in development.
-        localStorage.removeItem("user");
-        localStorage.removeItem("role");
-    }, []);
+    const [loggedIn, setLoggedIn] = useState<User | null>(() => readStoredUser());
 
     // Fetch all users
     const fetchUsers = async () => {
@@ -46,10 +58,8 @@ function Login() {
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
             setLoggedIn(data.user);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            localStorage.setItem("role", "student");
+            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
             await fetchUsers();
-            //setToken(data.token);
             setEmail("");
             setPassword("");
         } catch (err) {
@@ -57,13 +67,18 @@ function Login() {
         }
     };
 
+    useEffect(() => {
+        if (loggedIn) {
+            void fetchUsers();
+        }
+    }, [loggedIn]);
+
     return (
         <div className="p-8 font-sans min-h-screen">
             <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">School Management System</h1>
                 {!loggedIn && (
                     <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
                             <>
-                            {/* Show login form based on selected role */}
                             <h2 className="text-2xl font-semibold mb-4 text-gray-700">Login</h2>
                             <form
                                 onSubmit={(e) => {
@@ -103,8 +118,7 @@ function Login() {
                     users={users}
                     onLogout={() => {
                         setLoggedIn(null);
-                        localStorage.removeItem("user");
-                        localStorage.removeItem("role");
+                        localStorage.removeItem(USER_STORAGE_KEY);
                     }}
                 />
                 </div>
