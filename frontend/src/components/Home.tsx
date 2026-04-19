@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-// users only stored when page is refreshed
 type User = {
   id: number;
   name: string;
@@ -23,24 +22,24 @@ function Home({ loggedIn, users, onLogout }: HomeProps) {
     const [password, setPassword] = useState("");
     const [selectedAddRole, setSelectedAddRole] = useState<string | null>(null);
     
-    //can't create user
+
     const handleSignup = async () => {
         if (!name || !firstName || !secondName || !email || !password)
           return alert("Fill all fields!");
         try {
-        const endpoint = "http://localhost:3000/users";
-        const res = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, firstName, secondName, email, password }),
-        });
-        if (!res.ok) throw new Error(await res.text());
-        alert(`${selectedAddRole} created successfully!`);
-        setName("");
-        setFirstName("");
-        setSecondName("");
-        setEmail("");
-        setPassword("");
+          const endpoint = "http://localhost:3000/users";
+          const res = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, firstName, secondName, email, password }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          alert(`${selectedAddRole} created successfully!`);
+          setName("");
+          setFirstName("");
+          setSecondName("");
+          setEmail("");
+          setPassword("");
         } catch (err) {
           alert("Error: " + err);
         }
