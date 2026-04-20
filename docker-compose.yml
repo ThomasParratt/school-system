@@ -25,7 +25,6 @@ services:
     environment:
       DATABASE_URL: postgresql://user:password@db:5432/myapp?schema=public
       JWT_SECRET: supersecretkey
-    command: npm run dev:docker
     volumes:
       - ./backend:/app      # mirrors host code into container
       - /app/node_modules   # prevents overwriting container node_modules
