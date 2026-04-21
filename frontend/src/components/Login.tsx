@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Home from "./Home";
+import Home from "./Home.tsx";
 
 type User = {
     id: number;
@@ -119,6 +119,11 @@ function Login() {
                     onLogout={() => {
                         setLoggedIn(null);
                         localStorage.removeItem(USER_STORAGE_KEY);
+                    }}
+                    onUserDeleted={(id: number) => {
+                        setUsers((currentUsers) =>
+                            currentUsers.filter((user) => user.id !== id)
+                        );
                     }}
                 />
                 </div>
