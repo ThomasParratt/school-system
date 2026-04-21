@@ -121,12 +121,6 @@ router.delete("/:id", async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
     console.error(err);
-
-    // Prisma throws if user doesn't exist
-    if (err.code === "P2025") {
-      return res.status(404).send("User not found");
-    }
-
     res.status(500).send("Error deleting user");
   }
 });
