@@ -3,7 +3,6 @@ import Home from "./Home";
 
 type User = {
     id: number;
-    name: string;
     first_name: string;
     second_name: string;
     email: string;

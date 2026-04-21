@@ -13,7 +13,6 @@ router.get("/", async (req, res) => {
     const users = await prisma.user.findMany({
       select: {
         id: true,
-        name: true,
         firstName: true,
         secondName: true,
         email: true,
@@ -24,7 +23,6 @@ router.get("/", async (req, res) => {
     res.json(
       users.map((user) => ({
         id: user.id,
-        name: user.name,
         first_name: user.firstName,
         second_name: user.secondName,
         email: user.email,
@@ -39,8 +37,8 @@ router.get("/", async (req, res) => {
 
 // POST /users - create new user
 router.post("/", async (req, res) => {
-  const { name, firstName, secondName, email, password } = req.body;
-  if (!name || !firstName || !secondName || !email || !password ) {
+  const { firstName, secondName, email, password } = req.body;
+  if (!firstName || !secondName || !email || !password ) {
     return res.status(400).send("Missing fields");
   }
 
@@ -48,7 +46,6 @@ router.post("/", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await prisma.user.create({
       data: {
-        name,
         firstName,
         secondName,
         email,
@@ -56,7 +53,6 @@ router.post("/", async (req, res) => {
       },
       select: {
         id: true,
-        name: true,
         firstName: true,
         secondName: true,
         email: true
@@ -65,7 +61,6 @@ router.post("/", async (req, res) => {
 
     res.status(201).json({
       id: user.id,
-      name: user.name,
       first_name: user.firstName,
       second_name: user.secondName,
       email: user.email
@@ -97,7 +92,6 @@ router.post("/login", async (req, res) => {
       token,
       user: {
         id: user.id,
-        name: user.name,
         first_name: user.firstName,
         second_name: user.secondName,
         email: user.email

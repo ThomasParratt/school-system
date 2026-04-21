@@ -2,7 +2,6 @@ import { useState } from "react";
 
 type User = {
     id: number;
-    name: string;
     first_name: string;
     second_name: string;
     email: string;
@@ -16,7 +15,6 @@ type HomeProps = {
 };
 
 function Home({ loggedIn, users, onLogout }: HomeProps) {
-    const [name, setName] = useState("");
     const [firstName, setFirstName] = useState("");
     const [secondName, setSecondName] = useState("");
     const [email, setEmail] = useState("");
@@ -33,11 +31,10 @@ function Home({ loggedIn, users, onLogout }: HomeProps) {
           const res = await fetch(endpoint, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ name, firstName, secondName, email, password }),
+              body: JSON.stringify({ firstName, secondName, email, password }),
           });
           if (!res.ok) throw new Error(await res.text());
           alert(`${selectedAddRole} created successfully!`);
-          setName("");
           setFirstName("");
           setSecondName("");
           setEmail("");
@@ -99,12 +96,6 @@ function Home({ loggedIn, users, onLogout }: HomeProps) {
                   {selectedAddRole} Details
                 </p>
                 <div className="flex flex-col gap-4 mb-4">
-                  <input
-                    placeholder="Username"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                  />
                   <input
                     placeholder="First name"
                     value={firstName}

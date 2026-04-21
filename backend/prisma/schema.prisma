@@ -14,7 +14,6 @@ enum Role {
 
 model User {
   id         Int      @id @default(autoincrement())
-  name       String
   firstName  String   @map("first_name")
   secondName String   @map("second_name")
   email      String   @unique
