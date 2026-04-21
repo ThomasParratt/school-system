@@ -8,9 +8,11 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "instructor@school.local" },
-    update: {},
+    update: {
+      firstName: "Thomas",
+      secondName: "Parratt",
+    },
     create: {
-      name: "Instructor",
       firstName: "Demo",
       secondName: "User",
       email: "instructor@school.local",
