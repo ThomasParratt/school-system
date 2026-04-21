@@ -16,7 +16,8 @@ router.get("/", async (req, res) => {
         name: true,
         firstName: true,
         secondName: true,
-        email: true
+        email: true,
+        role: true
       }
     });
 
@@ -26,7 +27,8 @@ router.get("/", async (req, res) => {
         name: user.name,
         first_name: user.firstName,
         second_name: user.secondName,
-        email: user.email
+        email: user.email,
+        role: user.role
       }))
     );
   } catch (err) {
