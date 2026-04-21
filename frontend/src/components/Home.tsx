@@ -24,7 +24,7 @@ function Home({ loggedIn, users, onLogout }: HomeProps) {
     
 
     const handleSignup = async () => {
-        if (!name || !firstName || !secondName || !email || !password)
+        if (!firstName || !secondName || !email || !password)
           return alert("Fill all fields!");
         try {
           const endpoint = "http://localhost:3000/users";
