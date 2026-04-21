@@ -78,33 +78,11 @@ function Home({ loggedIn, users, onLogout, onUserDeleted }: HomeProps) {
 
                 <div className="mt-4">
                     <h3 className="text-xl font-semibold mb-2 text-gray-700">Students</h3>
-                    {students.length === 0 ? (
-                        <p className="text-gray-500">No students found.</p>
-                    ) : (
-                        <ul className="mb-6">
-                            {students.map((user) => (
-                                <li key={user.id} className="py-1">
-                                    <div className="flex items-center gap-2">
-                                        <span>
-                                            {user.first_name} {user.second_name}
-                                        </span>
-                                        <button
-                                            onClick={() => deleteUser(user.id)}
-                                            className="bg-red-500 text-white px-2 rounded"
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-
                     {!selectedAddRole ? (
                         <div className="flex gap-4 mb-4">
                             <button
                                 onClick={() => setSelectedAddRole("Student")}
-                                className="flex-1 bg-blue-500 text-white font-semibold py-2 rounded"
+                                className="bg-blue-500 text-white px-4 py-1 rounded"
                             >
                                 Add Student
                             </button>
@@ -156,6 +134,27 @@ function Home({ loggedIn, users, onLogout, onUserDeleted }: HomeProps) {
                                 </button>
                             </div>
                         </>
+                    )}
+                    {students.length === 0 ? (
+                        <p className="text-gray-500">No students found.</p>
+                    ) : (
+                        <ul className="mb-6">
+                            {students.map((user) => (
+                                <li key={user.id} className="py-1">
+                                    <div className="flex items-center gap-2">
+                                        <span>
+                                            {user.first_name} {user.second_name}
+                                        </span>
+                                        <button
+                                            onClick={() => deleteUser(user.id)}
+                                            className="bg-red-500 text-white px-2 rounded"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
                     )}
                 </div>
             </div>
