@@ -6,6 +6,7 @@ type User = {
     first_name: string;
     second_name: string;
     email: string;
+    role: string;
 };
 
 type HomeProps = {
@@ -21,6 +22,7 @@ function Home({ loggedIn, users, onLogout }: HomeProps) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [selectedAddRole, setSelectedAddRole] = useState<string | null>(null);
+    const students = users.filter(u => u.role === "student");
     
 
     const handleSignup = async () => {
@@ -62,19 +64,19 @@ function Home({ loggedIn, users, onLogout }: HomeProps) {
 
                 {loggedIn && (
                 <div className="mt-4">
-                    <h3 className="text-xl font-semibold mb-2 text-gray-700">All Users</h3>
-                    {users.length === 0 ? (
-                        <p className="text-gray-500">No users found.</p>
+                    <h3 className="text-xl font-semibold mb-2 text-gray-700">Students</h3>
+                    {students.length === 0 ? (
+                        <p className="text-gray-500">No students found.</p>
                     ) : (
                         <ul className="mb-6">
-                            {users.map((u) => (
+                            {students.map((u) => (
                                 <li
                                     key={u.id}
                                     className="py-1"
                                 >
-                                    <span>
-                                  {u.name} {u.first_name} {u.second_name} {u.email}
-                                    </span>
+                                  <span>
+                                    {u.first_name} {u.second_name}
+                                  </span>
                                 </li>
                             ))}
                         </ul>

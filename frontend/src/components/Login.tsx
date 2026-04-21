@@ -7,6 +7,7 @@ type User = {
     first_name: string;
     second_name: string;
     email: string;
+    role: string;
 };
 
 const USER_STORAGE_KEY = "user";
