@@ -102,7 +102,7 @@ function Login() {
             <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">School Management System</h1>
                 {!loggedIn && (
                     <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
-                            <>
+                        <>
                             <h2 className="text-2xl font-semibold mb-4 text-gray-700">Login</h2>
                             <form
                                 onSubmit={(e) => {
@@ -131,7 +131,7 @@ function Login() {
                                     Login
                                 </button>
                             </form>
-                            </>
+                        </>
                     </div>
                 )}
 
