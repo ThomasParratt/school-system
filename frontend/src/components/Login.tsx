@@ -3,8 +3,8 @@ import Home from "./Home.tsx";
 
 type User = {
     id: number;
-    first_name: string;
-    second_name: string;
+    firstName: string;
+    secondName: string;
     email: string;
     role: string;
 };

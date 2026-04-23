@@ -2,8 +2,8 @@ import { useState } from "react";
 
 type User = {
     id: number;
-    first_name: string;
-    second_name: string;
+    firstName: string;
+    secondName: string;
     email: string;
     role: string;
 };
@@ -82,7 +82,7 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
             <div className="max-w-4xl mx-auto p-6">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-semibold text-gray-700">
-                        Welcome {loggedIn.first_name}
+                        Welcome {loggedIn.firstName}
                     </h2>
                     <button
                         onClick={onLogout}
@@ -161,7 +161,7 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
                                 <li key={user.id} className="py-1">
                                     <div className="flex items-center gap-2">
                                         <span>
-                                            {user.first_name} {user.second_name}
+                                            {user.firstName} {user.secondName}
                                         </span>
                                         {canManageUsers && (
                                             <button

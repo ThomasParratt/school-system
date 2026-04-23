@@ -20,15 +20,7 @@ router.get("/", requireAuth, async (req, res) => {
       }
     });
 
-    res.json(
-      users.map((user) => ({
-        id: user.id,
-        first_name: user.firstName,
-        second_name: user.secondName,
-        email: user.email,
-        role: user.role
-      }))
-    );
+    res.json(users);
   } catch (err) {
     console.error(err);
     res.status(500).send("Error fetching users");
@@ -63,8 +55,8 @@ router.post("/", requireAuth, requireRole("instructor"), async (req, res) => {
 
     res.status(201).json({
       id: user.id,
-      first_name: user.firstName,
-      second_name: user.secondName,
+      firstName: user.firstName,
+      secondName: user.secondName,
       email: user.email,
       role: user.role
     });
@@ -91,8 +83,8 @@ router.post("/login", async (req, res) => {
       token,
       user: {
         id: user.id,
-        first_name: user.firstName,
-        second_name: user.secondName,
+        firstName: user.firstName,
+        secondName: user.secondName,
         email: user.email,
         role: user.role
       }
