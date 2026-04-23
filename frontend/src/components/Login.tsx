@@ -9,22 +9,27 @@ type User = {
     role: string;
 };
 
-const USER_STORAGE_KEY = "user";
+type AuthState = {
+    token: string;
+    user: User;
+};
 
-function readStoredUser() {
+const AUTH_STORAGE_KEY = "auth";
+
+function readStoredAuth() {
     if (typeof window === "undefined") {
         return null;
     }
 
-    const storedUser = window.localStorage.getItem(USER_STORAGE_KEY);
-    if (!storedUser) {
+    const storedAuth = window.localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!storedAuth) {
         return null;
     }
 
     try {
-        return JSON.parse(storedUser) as User;
+        return JSON.parse(storedAuth) as AuthState;
     } catch {
-        window.localStorage.removeItem(USER_STORAGE_KEY);
+        window.localStorage.removeItem(AUTH_STORAGE_KEY);
         return null;
     }
 }
@@ -33,12 +38,26 @@ function Login() {
     const [users, setUsers] = useState<User[]>([]);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loggedIn, setLoggedIn] = useState<User | null>(() => readStoredUser());
+    const [auth, setAuth] = useState<AuthState | null>(() => readStoredAuth());
+    const loggedIn = auth?.user ?? null;
 
     // Fetch all users
     const fetchUsers = async () => {
         try {
-            const res = await fetch("http://localhost:3000/users");
+            if (!auth?.token) {
+                return;
+            }
+
+            const res = await fetch("http://localhost:3000/users", {
+                headers: {
+                    Authorization: `Bearer ${auth.token}`,
+                },
+            });
+
+            if (!res.ok) {
+                throw new Error(await res.text());
+            }
+
             const data = await res.json();
             setUsers(data);
         } catch (err) {
@@ -57,8 +76,13 @@ function Login() {
             });
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
-            setLoggedIn(data.user);
-            localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+            const nextAuth = {
+                token: data.token,
+                user: data.user,
+            };
+
+            setAuth(nextAuth);
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
             await fetchUsers();
             setEmail("");
             setPassword("");
@@ -68,10 +92,10 @@ function Login() {
     };
 
     useEffect(() => {
-        if (loggedIn) {
+        if (auth?.token) {
             void fetchUsers();
         }
-    }, [loggedIn]);
+    }, [auth]);
 
     return (
         <div className="p-8 font-sans min-h-screen">
@@ -116,9 +140,11 @@ function Login() {
                 <Home
                     loggedIn={loggedIn}
                     users={users}
+                    token={auth?.token ?? ""}
+                    canManageUsers={loggedIn.role === "instructor"}
                     onLogout={() => {
-                        setLoggedIn(null);
-                        localStorage.removeItem(USER_STORAGE_KEY);
+                        setAuth(null);
+                        localStorage.removeItem(AUTH_STORAGE_KEY);
                     }}
                     onUserDeleted={(id: number) => {
                         setUsers((currentUsers) =>

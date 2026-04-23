@@ -15,6 +15,8 @@ Planned MVP scope is documented in [MVP.md](MVP.md).
 - `User` model with roles (`instructor`, `student`)
 - Password hashing with bcrypt
 - JWT token generation on login
+- JWT authentication middleware on protected user routes
+- Instructor-only authorization for user creation and deletion
 - Seed script that creates one instructor account
 
 ### Frontend
@@ -39,8 +41,9 @@ Created by [backend/prisma/seed.ts](backend/prisma/seed.ts).
 Base URL: `http://localhost:3000`
 
 - `GET /users` - list users
-- `POST /users` - create user
+- `POST /users` - create user, instructor only
 - `POST /users/login` - login and receive JWT
+- `DELETE /users/:id` - delete user, instructor only
 
 ## Known Gaps vs MVP
 

@@ -11,11 +11,13 @@ type User = {
 type HomeProps = {
     loggedIn: User;
     users: User[];
+    token: string;
+    canManageUsers: boolean;
     onLogout: () => void;
     onUserDeleted: (id: number) => void;
 };
 
-function Home({ loggedIn, users, onLogout, onUserDeleted }: HomeProps) {
+function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted }: HomeProps) {
     const [firstName, setFirstName] = useState("");
     const [secondName, setSecondName] = useState("");
     const [email, setEmail] = useState("");
@@ -29,9 +31,16 @@ function Home({ loggedIn, users, onLogout, onUserDeleted }: HomeProps) {
         }
 
         try {
+            if (!canManageUsers) {
+                return;
+            }
+
             const res = await fetch("http://localhost:3000/users", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify({ firstName, secondName, email, password }),
             });
 
@@ -50,8 +59,15 @@ function Home({ loggedIn, users, onLogout, onUserDeleted }: HomeProps) {
     };
 
     const deleteUser = async (id: number) => {
+        if (!canManageUsers) {
+            return;
+        }
+
         const res = await fetch(`http://localhost:3000/users/${id}`, {
             method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         });
 
         if (!res.ok) {
@@ -78,63 +94,65 @@ function Home({ loggedIn, users, onLogout, onUserDeleted }: HomeProps) {
 
                 <div className="mt-4">
                     <h3 className="text-xl font-semibold mb-2 text-gray-700">Students</h3>
-                    {!selectedAddRole ? (
-                        <div className="flex gap-4 mb-4">
-                            <button
-                                onClick={() => setSelectedAddRole("Student")}
-                                className="bg-blue-500 text-white px-4 py-1 rounded"
-                            >
-                                Add Student
-                            </button>
-                        </div>
-                    ) : (
-                        <>
-                            <p className="mb-2 font-medium text-gray-700">
-                                {selectedAddRole} Details
-                            </p>
-                            <div className="flex flex-col gap-4 mb-4">
-                                <input
-                                    placeholder="First name"
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                                />
-                                <input
-                                    placeholder="Second name"
-                                    value={secondName}
-                                    onChange={(e) => setSecondName(e.target.value)}
-                                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                                />
-                                <input
-                                    placeholder="Email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                                />
-                                <input
-                                    type="password"
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                                />
-                            </div>
-                            <div className="flex gap-4">
+                    {canManageUsers ? (
+                        selectedAddRole ? (
+                            <>
+                                <p className="mb-2 font-medium text-gray-700">
+                                    {selectedAddRole} Details
+                                </p>
+                                <div className="flex flex-col gap-4 mb-4">
+                                    <input
+                                        placeholder="First name"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                        className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                                    />
+                                    <input
+                                        placeholder="Second name"
+                                        value={secondName}
+                                        onChange={(e) => setSecondName(e.target.value)}
+                                        className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                                    />
+                                    <input
+                                        placeholder="Email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                                    />
+                                </div>
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={handleSignup}
+                                        className="flex-1 bg-blue-500 text-white py-2 rounded"
+                                    >
+                                        Add
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedAddRole(null)}
+                                        className="flex-1 bg-gray-300 text-gray-700 py-2 rounded"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex gap-4 mb-4">
                                 <button
-                                    onClick={handleSignup}
-                                    className="flex-1 bg-blue-500 text-white py-2 rounded"
+                                    onClick={() => setSelectedAddRole("Student")}
+                                    className="bg-blue-500 text-white px-4 py-1 rounded"
                                 >
-                                    Add
-                                </button>
-                                <button
-                                    onClick={() => setSelectedAddRole(null)}
-                                    className="flex-1 bg-gray-300 text-gray-700 py-2 rounded"
-                                >
-                                    Cancel
+                                    Add Student
                                 </button>
                             </div>
-                        </>
-                    )}
+                        )
+                    ) : null}
                     {students.length === 0 ? (
                         <p className="text-gray-500">No students found.</p>
                     ) : (
@@ -145,16 +163,23 @@ function Home({ loggedIn, users, onLogout, onUserDeleted }: HomeProps) {
                                         <span>
                                             {user.first_name} {user.second_name}
                                         </span>
-                                        <button
-                                            onClick={() => deleteUser(user.id)}
-                                            className="bg-red-500 text-white px-2 rounded"
-                                        >
-                                            Delete
-                                        </button>
+                                        {canManageUsers && (
+                                            <button
+                                                onClick={() => deleteUser(user.id)}
+                                                className="bg-red-500 text-white px-2 rounded"
+                                            >
+                                                Delete
+                                            </button>
+                                        )}
                                     </div>
                                 </li>
                             ))}
                         </ul>
+                    )}
+                    {!canManageUsers && (
+                        <p className="text-sm text-gray-500">
+                            You are signed in as a student. User creation and deletion are instructor-only.
+                        </p>
                     )}
                 </div>
             </div>

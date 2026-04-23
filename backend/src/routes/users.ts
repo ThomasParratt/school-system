@@ -1,14 +1,14 @@
 import { Router } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
+import { signAuthToken } from "../lib/auth.js";
 
 const router = Router();
 const SALT_ROUNDS = 10;
-const JWT_SECRET = process.env.JWT_SECRET ?? "supersecretkey";
 
 // GET all users
-router.get("/", async (req, res) => {
+router.get("/", requireAuth, async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -36,7 +36,7 @@ router.get("/", async (req, res) => {
 });
 
 // POST /users - create new user
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, requireRole("instructor"), async (req, res) => {
   const { firstName, secondName, email, password } = req.body;
   if (!firstName || !secondName || !email || !password ) {
     return res.status(400).send("Missing fields");
@@ -49,13 +49,15 @@ router.post("/", async (req, res) => {
         firstName,
         secondName,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        role: "student"
       },
       select: {
         id: true,
         firstName: true,
         secondName: true,
-        email: true
+        email: true,
+        role: true
       }
     });
 
@@ -63,7 +65,8 @@ router.post("/", async (req, res) => {
       id: user.id,
       first_name: user.firstName,
       second_name: user.secondName,
-      email: user.email
+      email: user.email,
+      role: user.role
     });
   } catch (err) {
     console.error(err);
@@ -83,18 +86,15 @@ router.post("/login", async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).send("Invalid credentials");
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const token = signAuthToken({ id: user.id, role: user.role });
     res.json({
       token,
       user: {
         id: user.id,
         first_name: user.firstName,
         second_name: user.secondName,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (err) {
@@ -104,10 +104,10 @@ router.post("/login", async (req, res) => {
 });
 
 // DELETE /users/:id - delete a user
-router.delete("/:id", async (req, res) => {
-  const userId = parseInt(req.params.id);
+router.delete("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
+  const userId = Number(req.params.id);
 
-  if (!userId) {
+  if (!Number.isInteger(userId) || userId <= 0) {
     return res.status(400).send("Invalid user ID");
   }
 
