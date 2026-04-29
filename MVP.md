@@ -39,7 +39,7 @@ Student capabilities:
 
 - Calendar
 
-## Suggested MVP API Surface
+## MVP API Surface
 
 ### Instructor
 
@@ -57,7 +57,7 @@ Student capabilities:
 - `GET /me`
 - `GET /me/classes`
 
-## Acceptance Criteria
+## Criteria
 
 - Seeded instructor can log in.
 - Instructor can complete full CRUD for students.
