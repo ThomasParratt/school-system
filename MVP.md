@@ -64,3 +64,58 @@ Student capabilities:
 - Instructor can complete full CRUD for classes.
 - Student login only exposes their own profile and class schedule.
 - Instructor and student see different dashboard views.
+
+## MVP Schema
+
+This is a minimal Prisma shape that fits the MVP scope:
+
+```prisma
+enum Role {
+	instructor
+	student
+}
+
+model User {
+	id           Int          @id @default(autoincrement())
+	firstName    String       @map("first_name")
+	secondName   String       @map("second_name")
+	email        String       @unique
+	password     String
+	role         Role         @default(student)
+	createdAt    DateTime     @default(now()) @map("created_at")
+	updatedAt    DateTime     @updatedAt @map("updated_at")
+
+	taughtClasses Class[]     @relation("InstructorClasses")
+	enrollments   Enrollment[]
+
+	@@map("users")
+}
+
+model Class {
+	id           Int          @id @default(autoincrement())
+	title        String
+	description  String?
+	room         String?
+	instructorId Int          @map("instructor_id")
+	createdAt    DateTime     @default(now()) @map("created_at")
+	updatedAt    DateTime     @updatedAt @map("updated_at")
+
+	instructor   User         @relation("InstructorClasses", fields: [instructorId], references: [id], onDelete: Cascade)
+	enrollments  Enrollment[]
+
+	@@map("classes")
+}
+
+model Enrollment {
+	id        Int      @id @default(autoincrement())
+	userId    Int      @map("user_id")
+	classId   Int      @map("class_id")
+	createdAt DateTime @default(now()) @map("created_at")
+
+	user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+	class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+	@@unique([userId, classId])
+	@@map("enrollments")
+}
+```
