@@ -142,13 +142,13 @@ model Enrollment {
 
 ## How The Schema Works
 
-The schema uses one shared `User` table for both instructors and students. The `role` field is what tells the app how to treat each account. In other words, the difference between instructor and student is mostly business logic, not a different database table.
+The schema uses one shared `User` table for both instructors and students. The `role` field is what tells the app how to treat each account.
 
 `Course` stores the overall class offering that instructors manage. Each course belongs to exactly one instructor through `instructorId`, which points back to `User.id`. The `taughtCourses` relation on `User` lets Prisma load all courses owned by that instructor.
 
 `ClassSession` stores the individual lessons on the calendar. Each session belongs to one course through `courseId`, so a course can have many sessions while each session belongs to only one course.
 
-`Enrollment` is the link table between students and courses. It stores one row for each student-course pair, using `userId` and `courseId`. That makes the relationship many-to-many: one student can join many courses, and one course can contain many students. The `@@unique([userId, courseId])` rule prevents duplicate enrollments.
+`Enrollment` is the link table between students and courses. It stores one row for each student-course pair, using `userId` and `courseId`. One student can join many courses, and one course can contain many students. The `@@unique([userId, courseId])` rule prevents duplicate enrollments.
 
 In practice, the app uses these relations like this:
 
