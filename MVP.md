@@ -67,7 +67,7 @@ Student capabilities:
 
 ## MVP Schema
 
-This is a minimal Prisma shape that fits the MVP scope:
+Prisma shape that fits the MVP scope:
 
 ```prisma
 enum Role {
