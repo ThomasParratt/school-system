@@ -2,7 +2,7 @@
 
 ## Goal
 
-Deliver a usable first version of the school system centered on one instructor and student/class management.
+Deliver a usable first version of the school system centered on one instructor and student/course management.
 
 ## Roles
 
@@ -16,28 +16,29 @@ Instructor capabilities:
 - Add students
 - Update student information
 - Delete students
-- View all students' classes
-- Add classes
-- Update class information
-- Delete classes
+- View all students' courses and sessions
+- Add courses
+- Update course information
+- Delete courses
+- Add, update, and delete course sessions
 
 ### Student
 
 Student capabilities:
 
 - View their own information
-- View their own classes
+- View their own courses and sessions
 
 ## Dashboards
 
 ### Instructor Dashboard
 
 - Student list
-- Calendar
+- Course session calendar
 
 ### Student Dashboard
 
-- Calendar
+- Course session calendar
 
 ## MVP API Surface
 
@@ -47,22 +48,27 @@ Student capabilities:
 - `POST /students`
 - `PATCH /students/:id`
 - `DELETE /students/:id`
-- `GET /classes`
-- `POST /classes`
-- `PATCH /classes/:id`
-- `DELETE /classes/:id`
+- `GET /courses`
+- `POST /courses`
+- `PATCH /courses/:id`
+- `DELETE /courses/:id`
+- `GET /sessions`
+- `POST /sessions`
+- `PATCH /sessions/:id`
+- `DELETE /sessions/:id`
 
 ### Student
 
 - `GET /me`
-- `GET /me/classes`
+- `GET /me/courses`
+- `GET /me/sessions`
 
 ## Criteria
 
 - Seeded instructor can log in.
 - Instructor can complete full CRUD for students.
-- Instructor can complete full CRUD for classes.
-- Student login only exposes their own profile and class schedule.
+- Instructor can complete full CRUD for courses and sessions.
+- Student login only exposes their own profile and course session schedule.
 - Instructor and student see different dashboard views.
 
 ## MVP Schema
@@ -85,37 +91,71 @@ model User {
 	createdAt    DateTime     @default(now()) @map("created_at")
 	updatedAt    DateTime     @updatedAt @map("updated_at")
 
-	taughtClasses Class[]     @relation("InstructorClasses")
+	taughtCourses Course[]     @relation("InstructorCourses")
 	enrollments   Enrollment[]
 
 	@@map("users")
 }
 
-model Class {
-	id           Int          @id @default(autoincrement())
+model Course {
+	id           Int            @id @default(autoincrement())
 	title        String
 	description  String?
 	room         String?
-	instructorId Int          @map("instructor_id")
-	createdAt    DateTime     @default(now()) @map("created_at")
-	updatedAt    DateTime     @updatedAt @map("updated_at")
+	instructorId Int            @map("instructor_id")
+	createdAt    DateTime       @default(now()) @map("created_at")
+	updatedAt    DateTime       @updatedAt @map("updated_at")
 
-	instructor   User         @relation("InstructorClasses", fields: [instructorId], references: [id], onDelete: Cascade)
+	instructor   User           @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+	sessions     ClassSession[]
 	enrollments  Enrollment[]
 
-	@@map("classes")
+	@@map("courses")
+}
+
+model ClassSession {
+	id        Int      @id @default(autoincrement())
+	courseId  Int      @map("course_id")
+	startsAt  DateTime @map("starts_at")
+	endsAt    DateTime? @map("ends_at")
+	notes     String?
+	createdAt DateTime @default(now()) @map("created_at")
+
+	course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+	@@map("class_sessions")
 }
 
 model Enrollment {
 	id        Int      @id @default(autoincrement())
 	userId    Int      @map("user_id")
-	classId   Int      @map("class_id")
+	courseId  Int      @map("course_id")
 	createdAt DateTime @default(now()) @map("created_at")
 
-	user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-	class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+	user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+	course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-	@@unique([userId, classId])
+	@@unique([userId, courseId])
 	@@map("enrollments")
 }
 ```
+
+## How The Schema Works
+
+The schema uses one shared `User` table for both instructors and students. The `role` field is what tells the app how to treat each account. In other words, the difference between instructor and student is mostly business logic, not a different database table.
+
+`Course` stores the overall class offering that instructors manage. Each course belongs to exactly one instructor through `instructorId`, which points back to `User.id`. The `taughtCourses` relation on `User` lets Prisma load all courses owned by that instructor.
+
+`ClassSession` stores the individual lessons on the calendar. Each session belongs to one course through `courseId`, so a course can have many sessions while each session belongs to only one course.
+
+`Enrollment` is the link table between students and courses. It stores one row for each student-course pair, using `userId` and `courseId`. That makes the relationship many-to-many: one student can join many courses, and one course can contain many students. The `@@unique([userId, courseId])` rule prevents duplicate enrollments.
+
+In practice, the app uses these relations like this:
+
+- Instructor CRUD works through `User` and `Course`.
+- `GET /courses` can return courses with their instructor attached.
+- `GET /me/courses` can find the current student’s enrollments and return their courses.
+- `GET /me/sessions` can return the current student’s scheduled sessions.
+- `GET /me` can read the logged-in user from `User` and show their profile.
+
+Prisma handles the foreign keys, but the API should still enforce that only instructors create courses and sessions, and only students are enrolled in courses.
