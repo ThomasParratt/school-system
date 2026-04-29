@@ -85,10 +85,10 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
                     </button>
                 </div>
 
+                {canManageUsers ? (
                 <div className="mt-4">
                     <h3 className="text-xl font-semibold mb-2 text-gray-700">Students</h3>
-                    {canManageUsers ? (
-                        selectedAddRole ? (
+                        {selectedAddRole ? (
                             <>
                                 <p className="mb-2 font-medium text-gray-700">
                                     {selectedAddRole} Details
@@ -144,8 +144,7 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
                                     Add Student
                                 </button>
                             </div>
-                        )
-                    ) : null}
+                        )}
                     {students.length === 0 ? (
                         <p className="text-gray-500">No students found.</p>
                     ) : (
@@ -168,6 +167,7 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
                         </ul>
                     )}
                 </div>
+                ) : null}
             </div>
         </div>
     );
