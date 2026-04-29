@@ -88,6 +88,8 @@ model User {
 	email        String       @unique
 	password     String
 	role         Role         @default(student)
+    level        String?
+    comments     String?
 	createdAt    DateTime     @default(now()) @map("created_at")
 	updatedAt    DateTime     @updatedAt @map("updated_at")
 
@@ -100,7 +102,9 @@ model User {
 model Course {
 	id           Int            @id @default(autoincrement())
 	title        String
-	description  String?
+	language     String
+    level        String
+    material     String
 	room         String?
 	instructorId Int            @map("instructor_id")
 	createdAt    DateTime       @default(now()) @map("created_at")
@@ -118,7 +122,8 @@ model ClassSession {
 	courseId  Int      @map("course_id")
 	startsAt  DateTime @map("starts_at")
 	endsAt    DateTime? @map("ends_at")
-	notes     String?
+	content   String?
+    homework  String?
 	createdAt DateTime @default(now()) @map("created_at")
 
 	course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
