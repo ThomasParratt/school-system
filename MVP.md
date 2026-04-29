@@ -157,5 +157,3 @@ In practice, the app uses these relations like this:
 - `GET /me/courses` can find the current student’s enrollments and return their courses.
 - `GET /me/sessions` can return the current student’s scheduled sessions.
 - `GET /me` can read the logged-in user from `User` and show their profile.
-
-Prisma handles the foreign keys, but the API should still enforce that only instructors create courses and sessions, and only students are enrolled in courses.
