@@ -1,12 +1,5 @@
 import { useState } from "react";
-
-type User = {
-    id: number;
-    firstName: string;
-    secondName: string;
-    email: string;
-    role: string;
-};
+import type { User } from "./Login"
 
 type HomeProps = {
     loggedIn: User;
@@ -160,9 +153,7 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
                             {students.map((user) => (
                                 <li key={user.id} className="py-1">
                                     <div className="flex items-center gap-2">
-                                        <span>
-                                            {user.firstName} {user.secondName}
-                                        </span>
+                                        <span> {user.firstName} {user.secondName} </span>
                                         {canManageUsers && (
                                             <button
                                                 onClick={() => deleteUser(user.id)}
@@ -175,11 +166,6 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
                                 </li>
                             ))}
                         </ul>
-                    )}
-                    {!canManageUsers && (
-                        <p className="text-sm text-gray-500">
-                            You are signed in as a student. User creation and deletion are instructor-only.
-                        </p>
                     )}
                 </div>
             </div>

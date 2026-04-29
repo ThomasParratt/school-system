@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Home from "./Home.tsx";
 
-type User = {
+export type User = {
     id: number;
     firstName: string;
     secondName: string;
@@ -100,58 +100,56 @@ function Login() {
     return (
         <div className="p-8 font-sans min-h-screen">
             <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">School Management System</h1>
-                {!loggedIn && (
-                    <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
-                        <>
-                            <h2 className="text-2xl font-semibold mb-4 text-gray-700">Login</h2>
-                            <form
-                                onSubmit={(e) => {
-                                    e.preventDefault(); // prevent page reload
-                                    handleLogin();
-                                }}
-                            >
-                                <input
-                                    type="email"
-                                    placeholder="Email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                                />
-                                <input
-                                    type="password"
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
-                                />
-                                <button
-                                    type="submit"
-                                    className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
-                                >
-                                    Login
-                                </button>
-                            </form>
-                        </>
-                    </div>
-                )}
+            {!loggedIn && (
+                <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
+                    <h2 className="text-2xl font-semibold mb-4 text-gray-700">Login</h2>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault(); // prevent page reload
+                            handleLogin();
+                        }}
+                    >
+                        <input
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                        />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none"
+                        />
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
+                        >
+                            Login
+                        </button>
+                    </form>
+                </div>
+            )}
 
             {(loggedIn) && (
                 <div className="max-w-4xl mx-auto mt-6">
-                <Home
-                    loggedIn={loggedIn}
-                    users={users}
-                    token={auth?.token ?? ""}
-                    canManageUsers={loggedIn.role === "instructor"}
-                    onLogout={() => {
-                        setAuth(null);
-                        localStorage.removeItem(AUTH_STORAGE_KEY);
-                    }}
-                    onUserDeleted={(id: number) => {
-                        setUsers((currentUsers) =>
-                            currentUsers.filter((user) => user.id !== id)
-                        );
-                    }}
-                />
+                    <Home
+                        loggedIn={loggedIn}
+                        users={users}
+                        token={auth?.token ?? ""}
+                        canManageUsers={loggedIn.role === "instructor"}
+                        onLogout={() => {
+                            setAuth(null);
+                            localStorage.removeItem(AUTH_STORAGE_KEY);
+                        }}
+                        onUserDeleted={(id: number) => {
+                            setUsers((currentUsers) =>
+                                currentUsers.filter((user) => user.id !== id)
+                            );
+                        }}
+                    />
                 </div>
             )}
         </div>
