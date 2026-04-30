@@ -16,5 +16,5 @@ COPY . .
 # Expose port
 EXPOSE 3000
 
-# Generate Prisma client, then run the app
-CMD ["sh", "-c", "npm run prisma:generate && npm run prisma:seed && npm run dev"]
+# Run the app
+CMD ["npm", "run", "dev"]
