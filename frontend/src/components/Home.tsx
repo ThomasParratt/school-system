@@ -2,7 +2,10 @@ import { useState } from "react";
 import type { User } from "./Login"
 
 type ApiErrorResponse = {
-    message?: string;
+    error?: {
+        message?: string;
+        code?: string;
+    };
 };
 
 type HomeProps = {
@@ -44,7 +47,7 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
             if (!res.ok) {
                 const contentType = res.headers.get("content-type") ?? "";
                 const errorMessage = contentType.includes("application/json")
-                    ? ((await res.json()) as ApiErrorResponse).message ?? "Request failed"
+                    ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
                     : await res.text();
                 throw new Error(errorMessage);
             }
@@ -74,7 +77,7 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
         if (!res.ok) {
             const contentType = res.headers.get("content-type") ?? "";
             const errorMessage = contentType.includes("application/json")
-                ? ((await res.json()) as ApiErrorResponse).message ?? "Request failed"
+                ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
                 : await res.text();
             throw new Error(errorMessage);
         }

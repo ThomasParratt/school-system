@@ -15,7 +15,10 @@ type AuthState = {
 };
 
 type ApiErrorResponse = {
-    message?: string;
+    error?: {
+        message?: string;
+        code?: string;
+    };
 };
 
 const AUTH_STORAGE_KEY = "auth";
@@ -61,7 +64,7 @@ function Login() {
             if (!res.ok) {
                 const contentType = res.headers.get("content-type") ?? "";
                 const errorMessage = contentType.includes("application/json")
-                    ? ((await res.json()) as ApiErrorResponse).message ?? "Request failed"
+                    ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
                     : await res.text();
                 throw new Error(errorMessage);
             }
@@ -77,7 +80,7 @@ function Login() {
     const handleLogin = async () => {
         if (!email || !password) return alert("Fill email and password!");
         try {
-            const res = await fetch("http://localhost:3000/users/login", {
+            const res = await fetch("http://localhost:3000/users/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -85,7 +88,7 @@ function Login() {
             if (!res.ok) {
                 const contentType = res.headers.get("content-type") ?? "";
                 const errorMessage = contentType.includes("application/json")
-                    ? ((await res.json()) as ApiErrorResponse).message ?? "Request failed"
+                    ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
                     : await res.text();
                 throw new Error(errorMessage);
             }
