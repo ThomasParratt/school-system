@@ -6,19 +6,14 @@ const prisma = new PrismaClient();
 async function main() {
   const hashedPassword = await bcrypt.hash("password123", 10);
 
-  await prisma.user.upsert({
-    where: { email: "instructor@school.local" },
-    update: {
+  await prisma.user.create({
+    data: {
       firstName: "Thomas",
       secondName: "Parratt",
-    },
-    create: {
-      firstName: "Demo",
-      secondName: "User",
       email: "instructor@school.local",
       password: hashedPassword,
-      role: "instructor"
-    }
+      role: "instructor",
+    },
   });
 
   console.log("Seed complete");
