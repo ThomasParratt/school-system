@@ -80,7 +80,7 @@ function Login() {
     const handleLogin = async () => {
         if (!email || !password) return alert("Fill email and password!");
         try {
-            const res = await fetch("http://localhost:3000/users/auth/login", {
+            const res = await fetch("http://localhost:3000/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
