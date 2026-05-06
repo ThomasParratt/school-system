@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { User } from "./Login"
 
+type ApiErrorResponse = {
+    message?: string;
+};
+
 type HomeProps = {
     loggedIn: User;
     users: User[];
@@ -38,7 +42,11 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
             });
 
             if (!res.ok) {
-                throw new Error(await res.text());
+                const contentType = res.headers.get("content-type") ?? "";
+                const errorMessage = contentType.includes("application/json")
+                    ? ((await res.json()) as ApiErrorResponse).message ?? "Request failed"
+                    : await res.text();
+                throw new Error(errorMessage);
             }
 
             alert(`${selectedAddRole} created successfully!`);
@@ -64,7 +72,11 @@ function Home({ loggedIn, users, token, canManageUsers, onLogout, onUserDeleted 
         });
 
         if (!res.ok) {
-            throw new Error(await res.text());
+            const contentType = res.headers.get("content-type") ?? "";
+            const errorMessage = contentType.includes("application/json")
+                ? ((await res.json()) as ApiErrorResponse).message ?? "Request failed"
+                : await res.text();
+            throw new Error(errorMessage);
         }
 
         onUserDeleted(id);

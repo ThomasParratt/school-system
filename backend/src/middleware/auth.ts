@@ -5,7 +5,7 @@ import { JWT_SECRET, type AuthTokenPayload } from "../lib/auth.js";
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
 	const authorizationHeader = req.header("authorization");
 	if (!authorizationHeader?.startsWith("Bearer ")) {
-		return res.status(401).send("Missing or invalid authorization token");
+		return res.status(401).json({ message: "Missing or invalid authorization token" });
 	}
 
 	const token = authorizationHeader.slice(7);
@@ -15,18 +15,18 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 		req.user = payload;
 		next();
 	} catch {
-		return res.status(401).send("Invalid or expired token");
+		return res.status(401).json({ message: "Invalid or expired token" });
 	}
 }
 
 export function requireRole(allowedRole: AuthTokenPayload["role"]) {
 	return (req: Request, res: Response, next: NextFunction) => {
 		if (!req.user) {
-			return res.status(401).send("Unauthorized");
+			return res.status(401).json({ message: "Unauthorized" });
 		}
 
 		if (req.user.role !== allowedRole) {
-			return res.status(403).send("Forbidden");
+			return res.status(403).json({ message: "Forbidden" });
 		}
 
 		next();

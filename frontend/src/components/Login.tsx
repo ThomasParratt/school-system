@@ -14,6 +14,10 @@ type AuthState = {
     user: User;
 };
 
+type ApiErrorResponse = {
+    message?: string;
+};
+
 const AUTH_STORAGE_KEY = "auth";
 
 function readStoredAuth() {
@@ -55,10 +59,14 @@ function Login() {
             });
 
             if (!res.ok) {
-                throw new Error(await res.text());
+                const contentType = res.headers.get("content-type") ?? "";
+                const errorMessage = contentType.includes("application/json")
+                    ? ((await res.json()) as ApiErrorResponse).message ?? "Request failed"
+                    : await res.text();
+                throw new Error(errorMessage);
             }
 
-            const data = await res.json();
+            const { data } = await res.json();
             setUsers(data);
         } catch (err) {
             console.error(err);
@@ -74,12 +82,15 @@ function Login() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
-            if (!res.ok) throw new Error(await res.text());
-            const data = await res.json();
-            const nextAuth = {
-                token: data.token,
-                user: data.user,
-            };
+            if (!res.ok) {
+                const contentType = res.headers.get("content-type") ?? "";
+                const errorMessage = contentType.includes("application/json")
+                    ? ((await res.json()) as ApiErrorResponse).message ?? "Request failed"
+                    : await res.text();
+                throw new Error(errorMessage);
+            }
+            const { data: { token, user } } = await res.json();
+            const nextAuth = { token, user };
 
             setAuth(nextAuth);
             localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
