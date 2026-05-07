@@ -13,13 +13,64 @@ enum Role {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  firstName  String   @map("first_name")
-  secondName String   @map("second_name")
-  email      String   @unique
-  password   String
-  role       Role     @default(student)
-  createdAt  DateTime @default(now()) @map("created_at")
+	id           Int          @id @default(autoincrement())
+	firstName    String       @map("first_name")
+	secondName   String       @map("second_name")
+	email        String       @unique
+	password     String
+	role         Role         @default(student)
+    level        String?
+    comments     String?
+	createdAt    DateTime     @default(now()) @map("created_at")
+	updatedAt    DateTime?    @updatedAt @map("updated_at")
 
-  @@map("users")
+	taughtCourses Course[]     @relation("InstructorCourses")
+	enrollments   Enrollment[]
+
+	@@map("users")
+}
+
+model Course {
+	id           Int            @id @default(autoincrement())
+	title        String
+	language     String
+  level        String
+  material     String
+	room         String?
+	instructorId Int            @map("instructor_id")
+	createdAt    DateTime       @default(now()) @map("created_at")
+	updatedAt    DateTime       @updatedAt @map("updated_at")
+
+	instructor   User           @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+	sessions     ClassSession[]
+	enrollments  Enrollment[]
+
+	@@map("courses")
+}
+
+model ClassSession {
+	id        Int      @id @default(autoincrement())
+	courseId  Int      @map("course_id")
+	startsAt  DateTime @map("starts_at")
+	endsAt    DateTime? @map("ends_at")
+	content   String?
+    homework  String?
+	createdAt DateTime @default(now()) @map("created_at")
+
+	course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+	@@map("class_sessions")
+}
+
+model Enrollment {
+	id        Int      @id @default(autoincrement())
+	userId    Int      @map("user_id")
+	courseId  Int      @map("course_id")
+	createdAt DateTime @default(now()) @map("created_at")
+
+	user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+	course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+	@@unique([userId, courseId])
+	@@map("enrollments")
 }
