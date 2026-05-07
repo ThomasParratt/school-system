@@ -164,6 +164,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+        
+        "401":
+          decription: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "403":
           description: Forbidden
@@ -289,6 +296,13 @@ paths:
 
         "400":
           description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        
+        "401":
+          decription: Unauthorized
           content:
             application/json:
               schema:
