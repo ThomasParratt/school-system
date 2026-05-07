@@ -97,6 +97,82 @@ router.post(
   }
 );
 
+// PATCH /users/:id
+router.patch(
+  "/:id",
+  requireAuth,
+  requireRole("instructor"),
+  async (req, res) => {
+    try {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid user ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+      
+      const { firstName, secondName, email, level, comments } = req.body;
+
+      const updateData: {
+        firstName?: string;
+        secondName?: string;
+        email?: string;
+        level?: string;
+        comments?: string;
+      } = {};
+
+      if (firstName !== undefined) updateData.firstName = firstName;
+      if (secondName !== undefined) updateData.secondName = secondName;
+      if (email !== undefined) updateData.email = email;
+      if (level !== undefined) updateData.level = level;
+      if (comments !== undefined) updateData.comments = comments;
+    
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({
+          error: {
+            message: "No valid fields provided",
+            code: "EMPTY_UPDATE",
+          },
+        });
+      }
+
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: {
+          id: true,
+          firstName: true,
+          secondName: true,
+          email: true,
+          role: true,
+          level: true,
+          comments: true,
+        },
+      });
+
+      return res.status(200).json({
+        data: updatedUser,
+      });
+  } catch (err: unknown) {
+      console.error(err);
+
+      return res.status(500).json({
+        error: {
+          message:
+            err instanceof Error
+              ? err.message
+              : "Unexpected server error",
+          code: "SERVER_ERROR",
+        },
+      });
+    }
+  }
+)
+
 
 // DELETE /users/:id
 router.delete(

@@ -3,7 +3,6 @@ openapi: 3.1.0
 info:
   title: School Management System API
   version: 1.0.0
-  description: Simple user management and authentication API
 
 servers:
   - url: http://localhost:3000
@@ -34,6 +33,10 @@ components:
         role:
           type: string
           enum: [student, instructor]
+        level:
+          type: string
+        comments:
+          type: string
 
     Error:
       type: object
@@ -139,6 +142,10 @@ paths:
                   type: string
                 password:
                   type: string
+                level:
+                  type: string
+                comments:
+                  type: string
 
       responses:
         "201":
@@ -180,6 +187,81 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /users/{id}:
+    patch:
+      summary: Update user information (instructor only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                secondName:
+                  type: string
+                email:
+                  type: string
+                level:
+                  type: string
+                comments:
+                  type: string
+      
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+        
+        "400":
+          decription: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        
+        "401":
+          decription: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+       
+
     delete:
       summary: Delete user
       security:
