@@ -34,8 +34,8 @@ model Course {
 	id           Int            @id @default(autoincrement())
 	title        String
 	language     String
-  level        String
-  material     String
+  	level        String
+  	material     String
 	room         String?
 	instructorId Int            @map("instructor_id")
 	createdAt    DateTime       @default(now()) @map("created_at")
