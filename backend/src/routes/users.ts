@@ -16,6 +16,10 @@ router.get("/", requireAuth, async (req, res) => {
         secondName: true,
         email: true,
         role: true,
+        level: true,
+        comments: true,
+        taughtCourses: true,
+        enrollements: true
       },
     });
 
@@ -40,10 +44,10 @@ router.post(
   requireRole("instructor"),
   async (req, res) => {
     try {
-      const { firstName, secondName, email, password } = req.body;
+      const { firstName, secondName, email, password, level, comments } = req.body;
 
       // Validation
-      if (!firstName || !secondName || !email || !password) {
+      if (!firstName || !secondName || !email || !password || !level || !comments ) {
         return res.status(400).json({
           error: {
             message: "Missing required fields",
@@ -61,6 +65,8 @@ router.post(
           email,
           password: hashedPassword,
           role: "student",
+          level,
+          comments
         },
         select: {
           id: true,
@@ -68,6 +74,8 @@ router.post(
           secondName: true,
           email: true,
           role: true,
+          level: true,
+          comments: true
         },
       });
 
