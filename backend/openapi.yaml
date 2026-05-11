@@ -451,7 +451,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [title, language, level, material, enrollments]
+              required: [title, language, level, material]
               properties:
                 title:
                   type: string
@@ -463,11 +463,6 @@ paths:
                   type: string
                 room:
                   type: string
-                enrollments:
-                  type: array
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/Enrollment"
 
       responses:
         "201":
@@ -536,11 +531,6 @@ paths:
                   type: string
                 room:
                   type: string
-                enrollments:
-                  type: array
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/Enrollment"
       
       responses:
         "200":
@@ -840,6 +830,150 @@ paths:
         
         "401":
           decription: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  
+  /enrollments:
+    get:
+      summary: Get all enrollments (instructor only)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of enrollments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Enrollment"
+        
+        "401":
+          description: Unauthorized
+
+        "403":
+          description: Forbidden
+
+        "500":
+          description: Server error
+    
+    post:
+      summary: Create enrollment (instructor only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, courseId]
+              properties:
+                userId:
+                  type: integer
+                courseId:
+                  type: integer
+
+      responses:
+        "201":
+          description: Enrollment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Enrollment"
+
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "409":
+          description: Student already enrolled in this course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /enrollments/{id}:
+    delete:
+      summary: Delete enrollment (instructor only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        "200":
+          description: Enrollment deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
