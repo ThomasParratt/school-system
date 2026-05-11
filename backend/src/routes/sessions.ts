@@ -16,6 +16,19 @@ router.get("/", requireAuth, async (req, res) => {
         content: true,
         homework: true,
         createdAt: true,
+        course: {
+          select: {
+            id: true,
+            title: true,
+            language: true,
+            level: true,
+            material: true,
+            room: true,
+            instructorId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
@@ -66,6 +79,19 @@ router.post(
           content: true,
           homework: true,
           createdAt: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+              language: true,
+              level: true,
+              material: true,
+              room: true,
+              instructorId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
         },
       });
 
@@ -137,6 +163,19 @@ router.patch(
           content: true,
           homework: true,
           createdAt: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+              language: true,
+              level: true,
+              material: true,
+              room: true,
+              instructorId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
         },
       });
 

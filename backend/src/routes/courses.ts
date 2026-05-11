@@ -14,7 +14,40 @@ router.get("/", requireAuth, async (req, res) => {
         language: true,
         level: true,
         material: true,
-        room: true
+        room: true,
+        instructorId: true,
+        createdAt: true,
+        updatedAt: true,
+        instructor: {
+          select: {
+            id: true,
+            firstName: true,
+            secondName: true,
+            email: true,
+            role: true,
+            level: true,
+            comments: true,
+          },
+        },
+        sessions: {
+          select: {
+            id: true,
+            courseId: true,
+            startsAt: true,
+            endsAt: true,
+            content: true,
+            homework: true,
+            createdAt: true,
+          },
+        },
+        enrollments: {
+          select: {
+            id: true,
+            userId: true,
+            courseId: true,
+            createdAt: true,
+          },
+        },
       },
     });
 
@@ -39,10 +72,10 @@ router.post(
   requireRole("instructor"),
   async (req, res) => {
     try {
-      const { title, language, level, material, enrollments } = req.body;
+      const { title, language, level, material } = req.body;
 
       // Validation
-      if (!title || !language || !level || !material || !enrollments) {
+      if (!title || !language || !level || !material) {
         return res.status(400).json({
           error: {
             message: "Missing required fields",
@@ -57,14 +90,52 @@ router.post(
           language,
           level,
           material,
-          enrollments
+          instructor: {
+            connect: {
+              id: req.user!.id,
+            },
+          },
         },
         select: {
+          id: true,
           title: true,
           language: true,
           level: true,
           material: true,
-          enrollments: true
+          room: true,
+          instructorId: true,
+          createdAt: true,
+          updatedAt: true,
+          instructor: {
+            select: {
+              id: true,
+              firstName: true,
+              secondName: true,
+              email: true,
+              role: true,
+              level: true,
+              comments: true,
+            },
+          },
+          sessions: {
+            select: {
+              id: true,
+              courseId: true,
+              startsAt: true,
+              endsAt: true,
+              content: true,
+              homework: true,
+              createdAt: true,
+            },
+          },
+          enrollments: {
+            select: {
+              id: true,
+              userId: true,
+              courseId: true,
+              createdAt: true,
+            },
+          },
         },
       });
 
@@ -133,7 +204,41 @@ router.patch(
           title: true,
           language: true,
           level: true,
-          material: true
+          material: true,
+          room: true,
+          instructorId: true,
+          createdAt: true,
+          updatedAt: true,
+          instructor: {
+            select: {
+              id: true,
+              firstName: true,
+              secondName: true,
+              email: true,
+              role: true,
+              level: true,
+              comments: true,
+            },
+          },
+          sessions: {
+            select: {
+              id: true,
+              courseId: true,
+              startsAt: true,
+              endsAt: true,
+              content: true,
+              homework: true,
+              createdAt: true,
+            },
+          },
+          enrollments: {
+            select: {
+              id: true,
+              userId: true,
+              courseId: true,
+              createdAt: true,
+            },
+          },
         },
       });
 

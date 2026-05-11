@@ -13,6 +13,30 @@ router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
         userId: true,
         courseId: true,
         createdAt: true,
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            secondName: true,
+            email: true,
+            role: true,
+            level: true,
+            comments: true,
+          },
+        },
+        course: {
+          select: {
+            id: true,
+            title: true,
+            language: true,
+            level: true,
+            material: true,
+            room: true,
+            instructorId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
@@ -59,6 +83,30 @@ router.post(
           userId: true,
           courseId: true,
           createdAt: true,
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              secondName: true,
+              email: true,
+              role: true,
+              level: true,
+              comments: true,
+            },
+          },
+          course: {
+            select: {
+              id: true,
+              title: true,
+              language: true,
+              level: true,
+              material: true,
+              room: true,
+              instructorId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
         },
       });
 

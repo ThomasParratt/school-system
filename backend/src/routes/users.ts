@@ -18,8 +18,29 @@ router.get("/", requireAuth, async (req, res) => {
         role: true,
         level: true,
         comments: true,
-        taughtCourses: true,
-        enrollements: true
+        createdAt: true,
+        updatedAt: true,
+        taughtCourses: {
+          select: {
+            id: true,
+            title: true,
+            language: true,
+            level: true,
+            material: true,
+            room: true,
+            instructorId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        enrollments: {
+          select: {
+            id: true,
+            userId: true,
+            courseId: true,
+            createdAt: true,
+          },
+        },
       },
     });
 
@@ -159,6 +180,29 @@ router.patch(
           role: true,
           level: true,
           comments: true,
+          createdAt: true,
+          updatedAt: true,
+          taughtCourses: {
+            select: {
+              id: true,
+              title: true,
+              language: true,
+              level: true,
+              material: true,
+              room: true,
+              instructorId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+          enrollments: {
+            select: {
+              id: true,
+              userId: true,
+              courseId: true,
+              createdAt: true,
+            },
+          },
         },
       });
 
