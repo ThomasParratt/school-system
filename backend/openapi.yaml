@@ -813,7 +813,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /session/{id}:
+  /sessions/{id}:
     patch:
       summary: Update session information (instructor only)
       security:
