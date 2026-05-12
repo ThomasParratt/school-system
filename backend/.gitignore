@@ -4,6 +4,8 @@ node_modules/
 # Build output
 dist/
 
+bruno/
+
 # Logs
 logs/
 *.log
