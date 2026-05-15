@@ -68,7 +68,7 @@ router.post(
       const { firstName, secondName, email, password, level, comments } = req.body;
 
       // Validation
-      if (!firstName || !secondName || !email || !password || !level || !comments ) {
+      if (!firstName || !secondName || !email || !password ) {
         return res.status(400).json({
           error: {
             message: "Missing required fields",
