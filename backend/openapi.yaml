@@ -47,9 +47,6 @@ components:
         role:
           type: string
           enum: [student, instructor]
-        level:
-          type: string
-          nullable: true
         comments:
           type: string
           nullable: true
@@ -77,13 +74,12 @@ components:
           type: string
         language:
           type: string
+          enum: [English, Finnish, Swedish, Russian, German, French]
         level:
           type: string
+          enum: [A1, A2, B1, B2, C1, C2]
         material:
           type: string
-        room:
-          type: string
-          nullable: true
         instructorId:
           type: integer
         createdAt:
@@ -117,9 +113,6 @@ components:
         role:
           type: string
           enum: [student, instructor]
-        level:
-          type: string
-          nullable: true
         comments:
           type: string
           nullable: true
@@ -133,13 +126,12 @@ components:
           type: string
         language:
           type: string
+          enum: [English, Finnish, Swedish, Russian, German, French]
         level:
           type: string
+          enum: [A1, A2, B1, B2, C1, C2]
         material:
           type: string
-        room:
-          type: string
-          nullable: true
         instructorId:
           type: integer
         createdAt:
@@ -156,6 +148,8 @@ components:
           type: integer
         courseId:
           type: integer
+        location:
+          type: string
         startsAt:
           type: string
           format: date-time
@@ -182,6 +176,8 @@ components:
           type: integer
         courseId:
           type: integer
+        location:
+          type: string
         startsAt:
           type: string
           format: date-time
@@ -333,8 +329,6 @@ paths:
                   type: string
                 password:
                   type: string
-                level:
-                  type: string
                 comments:
                   type: string
 
@@ -407,8 +401,6 @@ paths:
                 secondName:
                   type: string
                 email:
-                  type: string
-                level:
                   type: string
                 comments:
                   type: string
@@ -557,8 +549,6 @@ paths:
                   type: string
                 material:
                   type: string
-                room:
-                  type: string
 
       responses:
         "201":
@@ -624,8 +614,6 @@ paths:
                 level:
                   type: string
                 material:
-                  type: string
-                room:
                   type: string
       
       responses:
@@ -766,6 +754,8 @@ paths:
               properties:
                 courseId:
                   type: integer
+                location:
+                  type: string
                 startsAt:
                   type: string
                   format: date-time
@@ -831,6 +821,8 @@ paths:
             schema:
               type: object
               properties:
+                location:
+                  type: string
                 startsAt:
                   type: string
                   format: date-time
