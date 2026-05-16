@@ -16,7 +16,6 @@ router.get("/", requireAuth, async (req, res) => {
         secondName: true,
         email: true,
         role: true,
-        level: true,
         comments: true,
         createdAt: true,
         updatedAt: true,
@@ -85,7 +84,6 @@ router.post(
           email,
           password: hashedPassword,
           role: "student",
-          level,
           comments
         },
         select: {
@@ -94,7 +92,6 @@ router.post(
           secondName: true,
           email: true,
           role: true,
-          level: true,
           comments: true
         },
       });
@@ -143,20 +140,18 @@ router.patch(
         });
       }
       
-      const { firstName, secondName, email, level, comments } = req.body;
+      const { firstName, secondName, email, comments } = req.body;
 
       const updateData: {
         firstName?: string;
         secondName?: string;
         email?: string;
-        level?: string;
         comments?: string;
       } = {};
 
       if (firstName !== undefined) updateData.firstName = firstName;
       if (secondName !== undefined) updateData.secondName = secondName;
       if (email !== undefined) updateData.email = email;
-      if (level !== undefined) updateData.level = level;
       if (comments !== undefined) updateData.comments = comments;
     
       if (Object.keys(updateData).length === 0) {
@@ -177,7 +172,6 @@ router.patch(
           secondName: true,
           email: true,
           role: true,
-          level: true,
           comments: true,
           createdAt: true,
           updatedAt: true,
@@ -186,7 +180,6 @@ router.patch(
               id: true,
               title: true,
               language: true,
-              level: true,
               material: true,
               instructorId: true,
               createdAt: true,
