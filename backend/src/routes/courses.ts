@@ -31,6 +31,7 @@ router.get("/", requireAuth, async (req, res) => {
           select: {
             id: true,
             courseId: true,
+            location: true,
             startsAt: true,
             endsAt: true,
             content: true,
@@ -290,6 +291,137 @@ router.delete(
         error: {
           message: "Failed to delete course",
           code: "DELETE_COURSE_ERROR",
+        },
+      });
+    }
+  }
+);
+
+// GET /courses/:id/sessions
+router.get("/:id/sessions", requireAuth, async (req, res) => {
+  try {
+    const courseId = Number(req.params.id);
+
+      if (!Number.isInteger(courseId) || courseId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid course ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+      
+    const sessions = await prisma.classSession.findMany({
+      where: { courseId },
+      select: {
+        id: true,
+        courseId: true,
+        location: true,
+        startsAt: true,
+        endsAt: true,
+        content: true,
+        homework: true,
+        createdAt: true,
+        course: {
+          select: {
+            id: true,
+            title: true,
+            language: true,
+            level: true,
+            material: true,
+            instructorId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      data: sessions,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch sessions",
+        code: "FETCH_SESSIONS_ERROR",
+      },
+    });
+  }
+});
+
+// POST /courses/:id/sessions
+router.post(
+  "/:id/sessions",
+  requireAuth,
+  requireRole("instructor"),
+  async (req, res) => {
+    try {
+      const courseId = Number(req.params.id);
+
+      if (!Number.isInteger(courseId) || courseId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid course ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+      const { location, startsAt, endsAt } = req.body;
+
+      // Validation
+      if (!location || !startsAt) {
+        return res.status(400).json({
+          error: {
+            message: "Missing required fields",
+            code: "VALIDATION_ERROR",
+          },
+        });
+      }
+
+      const session = await prisma.classSession.create({
+        data: {
+          courseId,
+          location,
+          startsAt,
+          endsAt: endsAt || null,
+        },
+        select: {
+          id: true,
+          courseId: true,
+          location: true,
+          startsAt: true,
+          endsAt: true,
+          content: true,
+          homework: true,
+          createdAt: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+              language: true,
+              level: true,
+              material: true,
+              instructorId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
+      });
+
+      return res.status(201).json({
+        data: session,
+      });
+    } catch (err: unknown) {
+      console.error(err);
+
+      return res.status(500).json({
+        error: {
+          message: "Failed to create session",
+          code: "CREATE_SESSION_ERROR",
         },
       });
     }
