@@ -7,7 +7,7 @@ const router = Router();
 const SALT_ROUNDS = 10;
 
 // GET /users
-router.get("/", requireAuth, async (req, res) => {
+router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
