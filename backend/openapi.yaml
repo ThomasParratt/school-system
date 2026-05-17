@@ -378,7 +378,53 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /users/{id}:
+  /users/me:
+    get:
+      summary: Get logged-in user info
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logged-in user info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
+        
+        "401":
+          description: Unauthorized
+
+        "500":
+          description: Server error
+  
+  /users/me/courses:
+    get:
+      summary: Get logged-in user courses
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logged-in user courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Course"
+        
+        "401":
+          description: Unauthorized
+
+        "500":
+          description: Server error
+
+  /users/:id:
     patch:
       summary: Update user information (instructor only)
       security:
@@ -813,6 +859,73 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  
+  /courses/{id}/enroll:
+    post:
+      summary: Create enrollment (instructor only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: integer
+      responses:
+        "201":
+          description: Enrollment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Enrollment"
+
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "409":
+          description: Student already enrolled in this course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /sessions/{id}:
     patch:
@@ -974,69 +1087,6 @@ paths:
 
         "500":
           description: Server error
-    
-    post:
-      summary: Create enrollment (instructor only)
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [userId, courseId]
-              properties:
-                userId:
-                  type: integer
-                courseId:
-                  type: integer
-
-      responses:
-        "201":
-          description: Enrollment created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Enrollment"
-
-        "400":
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "409":
-          description: Student already enrolled in this course
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
 
   /enrollments/{id}:
     delete:

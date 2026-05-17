@@ -122,6 +122,68 @@ router.post(
   }
 );
 
+// GET /users/me
+router.get("/me", requireAuth, async (req, res) => {
+  try {
+    const userId = Number(req.user.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid user ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        firstName: true,
+        secondName: true,
+        email: true,
+        role: true,
+        comments: true,
+        createdAt: true,
+        updatedAt: true,
+        taughtCourses: {
+          select: {
+            id: true,
+            title: true,
+            language: true,
+            level: true,
+            material: true,
+            instructorId: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        enrollments: {
+          select: {
+            id: true,
+            userId: true,
+            courseId: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      data: user,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch users",
+        code: "FETCH_USERS_ERROR",
+      },
+    });
+  }
+});
+
 // PATCH /users/:id
 router.patch(
   "/:id",

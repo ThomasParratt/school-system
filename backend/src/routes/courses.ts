@@ -5,7 +5,7 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 const router = Router();
 
 // GET /courses
-router.get("/", requireAuth, async (req, res) => {
+router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
   try {
     const courses = await prisma.course.findMany({
       select: {
@@ -422,6 +422,74 @@ router.post(
         error: {
           message: "Failed to create session",
           code: "CREATE_SESSION_ERROR",
+        },
+      });
+    }
+  }
+);
+
+// POST /courses/:id/enroll
+router.post(
+  "/:id/enroll",
+  requireAuth,
+  requireRole("instructor"),
+  async (req, res) => {
+    try {
+      const courseId = Number(req.params.id);
+
+      if (!Number.isInteger(courseId) || courseId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid course ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+      const { userId } = req.body;
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid user ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+      const enrollment = await prisma.enrollment.create({
+        data: {
+          userId,
+          courseId,
+        },
+        select: {
+          id: true,
+          userId: true,
+          courseId: true,
+          createdAt: true,
+        },
+      });
+
+      return res.status(201).json({
+        data: enrollment,
+      });
+    } catch (err: unknown) {
+      console.error(err);
+
+      // Handle unique constraint violation (duplicate enrollment)
+      if (err && typeof err === "object" && "code" in err && err.code === "P2002") {
+        return res.status(409).json({
+          error: {
+            message: "Student is already enrolled in this course",
+            code: "ENROLLMENT_EXISTS",
+          },
+        });
+      }
+
+      return res.status(500).json({
+        error: {
+          message: "Failed to create enrollment",
+          code: "CREATE_ENROLLMENT_ERROR",
         },
       });
     }
