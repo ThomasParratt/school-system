@@ -11,6 +11,7 @@ router.get("/", requireAuth, async (req, res) => {
       select: {
         id: true,
         courseId: true,
+        location: true,
         startsAt: true,
         endsAt: true,
         content: true,
@@ -52,7 +53,7 @@ router.post(
   requireRole("instructor"),
   async (req, res) => {
     try {
-      const { courseId, startsAt, endsAt } = req.body;
+      const { courseId, location, startsAt, endsAt } = req.body;
 
       // Validation
       if (!courseId || !startsAt) {
@@ -67,12 +68,14 @@ router.post(
       const session = await prisma.classSession.create({
         data: {
           courseId,
+          location,
           startsAt,
           endsAt: endsAt || null,
         },
         select: {
           id: true,
           courseId: true,
+          location: true,
           startsAt: true,
           endsAt: true,
           content: true,
@@ -127,15 +130,17 @@ router.patch(
         });
       }
 
-      const { startsAt, endsAt, content, homework } = req.body;
+      const { location, startsAt, endsAt, content, homework } = req.body;
 
       const updateData: {
+        location?: string;
         startsAt?: string;
         endsAt?: string | null;
         content?: string;
         homework?: string;
       } = {};
 
+      if (location !== undefined) updateData.location = location;
       if (startsAt !== undefined) updateData.startsAt = startsAt;
       if (endsAt !== undefined) updateData.endsAt = endsAt;
       if (content !== undefined) updateData.content = content;
@@ -156,6 +161,7 @@ router.patch(
         select: {
           id: true,
           courseId: true,
+          location: true,
           startsAt: true,
           endsAt: true,
           content: true,

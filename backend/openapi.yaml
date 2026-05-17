@@ -750,7 +750,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [courseId, startsAt]
+              required: [courseId, location, startsAt]
               properties:
                 courseId:
                   type: integer
