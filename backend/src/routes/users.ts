@@ -158,16 +158,33 @@ router.get("/me/courses", requireAuth, async (req, res) => {
         });
       }
 
-    const courses = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         enrollments: {
           select: {
-            course: true
+            course: {
+              select: {
+                id: true,
+                title: true,
+                language: true,
+                level: true,
+                material: true,
+                instructor: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    secondName: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
     });
+
+    const courses = user?.enrollments.map(e => e.course) ?? [];
 
     return res.status(200).json({
       data: courses,
@@ -197,20 +214,32 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
         });
       }
 
-    const sessions = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         enrollments: {
           select: {
             course: {
               select: {
-                sessions: true
-              }
-            }
+                sessions: {
+                  select: {
+                    id: true,
+                    courseId: true,
+                    location: true,
+                    startsAt: true,
+                    endsAt: true,
+                    content: true,
+                    homework: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
     });
+
+    const sessions = user?.enrollments.flatMap(e => e.course.sessions) ?? [];
 
     return res.status(200).json({
       data: sessions,
