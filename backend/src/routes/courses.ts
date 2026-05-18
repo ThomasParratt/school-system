@@ -94,7 +94,7 @@ router.post(
 );
 
 // GET /courses/:id
-router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
   try {
     const courseId = Number(req.params.id);
 

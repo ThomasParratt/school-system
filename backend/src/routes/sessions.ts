@@ -5,7 +5,7 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 const router = Router();
 
 // GET /sessions/:id
-router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
   try {
     const sessionId = Number(req.params.id);
 

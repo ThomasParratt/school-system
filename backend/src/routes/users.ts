@@ -176,15 +176,58 @@ router.get("/me/courses", requireAuth, async (req, res) => {
     console.error(err);
     return res.status(500).json({
       error: {
-        message: "Failed to fetch users",
-        code: "FETCH_USERS_ERROR",
+        message: "Failed to fetch courses",
+        code: "FETCH_COURSES_ERROR",
+      },
+    });
+  }
+});
+
+// GET /users/me/sessions
+router.get("/me/sessions", requireAuth, async (req, res) => {
+  try {
+    const userId = Number(req.user.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid user ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+    const sessions = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        enrollments: {
+          select: {
+            course: {
+              select: {
+                sessions: true
+              }
+            }
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      data: sessions,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch sessions",
+        code: "FETCH_SESSIONS_ERROR",
       },
     });
   }
 });
 
 // GET /users/:id
-router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
   try {
     const userId = Number(req.params.id);
 

@@ -330,7 +330,7 @@ paths:
 
   /users/{id}:
     get:
-      summary: Get user
+      summary: Get user by Id
       security:
         - bearerAuth: []
       parameters:
