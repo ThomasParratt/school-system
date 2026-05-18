@@ -62,31 +62,6 @@ Student capabilities:
 - `PATCH /sessions/:id` * (Instructor only)
 - `DELETE /sessions/:id` * (Instructor only)
 
-- `GET /enrollments` * (Instructor only)
-- `DELETE /enrollments/:id` * (Instructor only)
-
-
-### Instructor (old for reference)
-
-- `GET /students` *
-- `POST /students` *
-- `PATCH /students/:id` *
-- `DELETE /students/:id` *
-- `GET /courses` *
-- `POST /courses` *
-- `PATCH /courses/:id` *
-- `DELETE /courses/:id` *
-- `GET /sessions` *
-- `POST /sessions` *
-- `PATCH /sessions/:id` *
-- `DELETE /sessions/:id` *
-
-### Student (old for reference)
-
-- `GET /me` *
-- `GET /me/courses` *
-- `GET /me/sessions` *
-
 ## Criteria
 
 - Seeded instructor can log in.
