@@ -40,7 +40,7 @@ Student capabilities:
 
 - Course session calendar
 
-## MVP API Surface
+### MVP API Surface
 
 - `POST /auth/login`
 
