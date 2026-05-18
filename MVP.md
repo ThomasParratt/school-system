@@ -44,23 +44,26 @@ Student capabilities:
 
 - `POST /auth/login`
 
-- `GET /users` * (Instructor only)
-- `POST /users` * (Instructor only)
-- `GET /users/me` * (Student)
-- `GET /users/me/courses` * (Student)
-- `PATCH /users/:id` * (Instructor only)
-- `DELETE /users/:id` * (Instructor only)
+- `GET /users` (Instructor only)
+- `POST /users` (Instructor only)
+- `GET /users/me` (Student)
+- `GET /users/me/courses` (Student)
+- `GET /users/me/sessions` (Student)
+- `PATCH /users/:id` (Instructor only)
+- `DELETE /users/:id` (Instructor only)
 
-- `GET /courses` *' (Instructor only)
-- `POST /courses` * (Instructor only)
-- `PATCH /courses/:id` * (Instructor only)
-- `DELETE /courses/:id` * (Instructor only)
-- `GET /courses/:id/sessions` * (Student)
-- `POST /courses/:id/sessions` * (Instructor only)
-- `POST /courses/:id/enroll` * (Instructor only) --
+- `GET /courses` (Instructor only)
+- `POST /courses` (Instructor only)
+- `GET /courses/:id` (Instructor only)
+- `PATCH /courses/:id` (Instructor only)
+- `DELETE /courses/:id` (Instructor only)
+- `GET /courses/:id/sessions` (Student)
+- `POST /courses/:id/sessions` (Instructor only)
+- `POST /courses/:id/enroll` (Instructor only) --
 
-- `PATCH /sessions/:id` * (Instructor only)
-- `DELETE /sessions/:id` * (Instructor only)
+- `GET /sessions/:id` (Instructor only)
+- `PATCH /sessions/:id` (Instructor only)
+- `DELETE /sessions/:id` (Instructor only)
 
 ## Criteria
 
