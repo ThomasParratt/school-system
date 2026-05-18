@@ -184,6 +184,45 @@ router.get("/me", requireAuth, async (req, res) => {
   }
 });
 
+// GET /users/me/courses
+router.get("/me/courses", requireAuth, async (req, res) => {
+  try {
+    const userId = Number(req.user.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid user ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+    const courses = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        enrollments: {
+          select: {
+            course: true
+          },
+        },
+      },
+    });
+
+    return res.status(200).json({
+      data: courses,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch users",
+        code: "FETCH_USERS_ERROR",
+      },
+    });
+  }
+});
+
 // PATCH /users/:id
 router.patch(
   "/:id",
