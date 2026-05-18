@@ -458,6 +458,7 @@ paths:
           in: path
           required: true
           schema:
+            type: integer
       responses:
         "200":
           description: User
@@ -695,6 +696,7 @@ paths:
           in: path
           required: true
           schema:
+            type: integer
       responses:
         "200":
           description: Course
@@ -1014,6 +1016,7 @@ paths:
           in: path
           required: true
           schema:
+            type: integer
       responses:
         "200":
           description: Session
