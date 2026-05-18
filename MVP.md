@@ -49,19 +49,20 @@ Student capabilities:
 - `GET /users/me` (Student)
 - `GET /users/me/courses` (Student)
 - `GET /users/me/sessions` (Student)
+- `GET /users/:id` (Instructor only) (Students can only access themselves)
 - `PATCH /users/:id` (Instructor only)
 - `DELETE /users/:id` (Instructor only)
 
 - `GET /courses` (Instructor only)
 - `POST /courses` (Instructor only)
-- `GET /courses/:id` (Instructor only)
+- `GET /courses/:id` (Instructor only) (Students can only access themselves)
 - `PATCH /courses/:id` (Instructor only)
 - `DELETE /courses/:id` (Instructor only)
 - `GET /courses/:id/sessions` (Student)
 - `POST /courses/:id/sessions` (Instructor only)
 - `POST /courses/:id/enroll` (Instructor only) --
 
-- `GET /sessions/:id` (Instructor only)
+- `GET /sessions/:id` (Instructor only) (Students can only access themselves)
 - `PATCH /sessions/:id` (Instructor only)
 - `DELETE /sessions/:id` (Instructor only)
 

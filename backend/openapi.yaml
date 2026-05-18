@@ -636,6 +636,9 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /courses/{id}:
+    get:
+      
+
     patch:
       summary: Update course information (instructor only)
       security:
