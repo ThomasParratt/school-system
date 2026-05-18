@@ -93,6 +93,47 @@ router.post(
   }
 );
 
+// GET /courses/:id
+router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+  try {
+    const courseId = Number(req.params.id);
+
+      if (!Number.isInteger(courseId) || courseId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid course ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+    
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: {
+        id: true,
+        title: true,
+        language: true,
+        level: true,
+        instructorId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      data: course,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch user",
+        code: "FETCH_USER_ERROR",
+      },
+    });
+  }
+});
+
 // PATCH /courses/:id
 router.patch(
   "/:id",

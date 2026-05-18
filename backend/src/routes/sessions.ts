@@ -4,7 +4,49 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
-// PATCH /session/:id
+// GET /sessions/:id
+router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+  try {
+    const sessionId = Number(req.params.id);
+
+      if (!Number.isInteger(sessionId) || sessionId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid session ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+    
+    const session = await prisma.classSession.findUnique({
+      where: { id: sessionId },
+      select: {
+        id: true,
+        courseId: true,
+        location: true,
+        startsAt: true,
+        endsAt: true,
+        content: true,
+        homework: true,
+        createdAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      data: session,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch session",
+        code: "FETCH_SESSION_ERROR",
+      },
+    });
+  }
+});
+
+// PATCH /sessions/:id
 router.patch(
   "/:id",
   requireAuth,
@@ -81,7 +123,7 @@ router.patch(
   }
 );
 
-// DELETE /session/:id
+// DELETE /sessions/:id
 router.delete(
   "/:id",
   requireAuth,
