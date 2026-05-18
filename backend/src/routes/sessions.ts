@@ -59,18 +59,6 @@ router.patch(
           content: true,
           homework: true,
           createdAt: true,
-          course: {
-            select: {
-              id: true,
-              title: true,
-              language: true,
-              level: true,
-              material: true,
-              instructorId: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
         },
       });
 

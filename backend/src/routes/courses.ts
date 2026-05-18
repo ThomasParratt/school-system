@@ -17,36 +17,6 @@ router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
         instructorId: true,
         createdAt: true,
         updatedAt: true,
-        instructor: {
-          select: {
-            id: true,
-            firstName: true,
-            secondName: true,
-            email: true,
-            role: true,
-            comments: true,
-          },
-        },
-        sessions: {
-          select: {
-            id: true,
-            courseId: true,
-            location: true,
-            startsAt: true,
-            endsAt: true,
-            content: true,
-            homework: true,
-            createdAt: true,
-          },
-        },
-        enrollments: {
-          select: {
-            id: true,
-            userId: true,
-            courseId: true,
-            createdAt: true,
-          },
-        },
       },
     });
 
@@ -104,35 +74,6 @@ router.post(
           instructorId: true,
           createdAt: true,
           updatedAt: true,
-          instructor: {
-            select: {
-              id: true,
-              firstName: true,
-              secondName: true,
-              email: true,
-              role: true,
-              comments: true,
-            },
-          },
-          sessions: {
-            select: {
-              id: true,
-              courseId: true,
-              startsAt: true,
-              endsAt: true,
-              content: true,
-              homework: true,
-              createdAt: true,
-            },
-          },
-          enrollments: {
-            select: {
-              id: true,
-              userId: true,
-              courseId: true,
-              createdAt: true,
-            },
-          },
         },
       });
 
@@ -205,35 +146,6 @@ router.patch(
           instructorId: true,
           createdAt: true,
           updatedAt: true,
-          instructor: {
-            select: {
-              id: true,
-              firstName: true,
-              secondName: true,
-              email: true,
-              role: true,
-              comments: true,
-            },
-          },
-          sessions: {
-            select: {
-              id: true,
-              courseId: true,
-              startsAt: true,
-              endsAt: true,
-              content: true,
-              homework: true,
-              createdAt: true,
-            },
-          },
-          enrollments: {
-            select: {
-              id: true,
-              userId: true,
-              courseId: true,
-              createdAt: true,
-            },
-          },
         },
       });
 
@@ -322,18 +234,6 @@ router.get("/:id/sessions", requireAuth, async (req, res) => {
         content: true,
         homework: true,
         createdAt: true,
-        course: {
-          select: {
-            id: true,
-            title: true,
-            language: true,
-            level: true,
-            material: true,
-            instructorId: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
       },
     });
 
@@ -397,18 +297,6 @@ router.post(
           content: true,
           homework: true,
           createdAt: true,
-          course: {
-            select: {
-              id: true,
-              title: true,
-              language: true,
-              level: true,
-              material: true,
-              instructorId: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
         },
       });
 

@@ -18,21 +18,6 @@ components:
       bearerFormat: JWT
 
   schemas:
-    AuthUser:
-      type: object
-      properties:
-        id:
-          type: integer
-        firstName:
-          type: string
-        secondName:
-          type: string
-        email:
-          type: string
-        role:
-          type: string
-          enum: [student, instructor]
-
     User:
       type: object
       properties:
@@ -56,68 +41,8 @@ components:
         updatedAt:
           type: string
           format: date-time
-        taughtCourses:
-          type: array
-          items:
-            $ref: "#/components/schemas/CourseSummary"
-        enrollments:
-          type: array
-          items:
-            $ref: "#/components/schemas/EnrollmentSummary"
 
     Course:
-      type: object
-      properties:
-        id:
-          type: integer
-        title:
-          type: string
-        language:
-          type: string
-          enum: [English, Finnish, Swedish, Russian, German, French]
-        level:
-          type: string
-          enum: [A1, A2, B1, B2, C1, C2]
-        material:
-          type: string
-        instructorId:
-          type: integer
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        instructor:
-          $ref: "#/components/schemas/PublicUser"
-        sessions:
-          type: array
-          items:
-            $ref: "#/components/schemas/ClassSessionSummary"
-        enrollments:
-          type: array
-          items:
-            $ref: "#/components/schemas/EnrollmentSummary"
-
-    PublicUser:
-      type: object
-      properties:
-        id:
-          type: integer
-        firstName:
-          type: string
-        secondName:
-          type: string
-        email:
-          type: string
-        role:
-          type: string
-          enum: [student, instructor]
-        comments:
-          type: string
-          nullable: true
-
-    CourseSummary:
       type: object
       properties:
         id:
@@ -166,53 +91,8 @@ components:
         createdAt:
           type: string
           format: date-time
-        course:
-          $ref: "#/components/schemas/CourseSummary"
-
-    ClassSessionSummary:
-      type: object
-      properties:
-        id:
-          type: integer
-        courseId:
-          type: integer
-        location:
-          type: string
-        startsAt:
-          type: string
-          format: date-time
-        endsAt:
-          type: string
-          format: date-time
-          nullable: true
-        content:
-          type: string
-          nullable: true
-        homework:
-          type: string
-          nullable: true
-        createdAt:
-          type: string
-          format: date-time
-
+    
     Enrollment:
-      type: object
-      properties:
-        id:
-          type: integer
-        userId:
-          type: integer
-        courseId:
-          type: integer
-        createdAt:
-          type: string
-          format: date-time
-        user:
-          $ref: "#/components/schemas/PublicUser"
-        course:
-          $ref: "#/components/schemas/CourseSummary"
-
-    EnrollmentSummary:
       type: object
       properties:
         id:
@@ -267,7 +147,7 @@ paths:
                     type: object
                     properties:
                       user:
-                        $ref: "#/components/schemas/AuthUser"
+                        $ref: "#/components/schemas/User"
                       token:
                         type: string
 
