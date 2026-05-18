@@ -42,26 +42,50 @@ Student capabilities:
 
 ## MVP API Surface
 
-### Instructor
+- `POST /auth/login`
 
-- `GET /students`
-- `POST /students`
-- `PATCH /students/:id`
-- `DELETE /students/:id`
-- `GET /courses`
-- `POST /courses`
-- `PATCH /courses/:id`
-- `DELETE /courses/:id`
-- `GET /sessions`
-- `POST /sessions`
-- `PATCH /sessions/:id`
-- `DELETE /sessions/:id`
+- `GET /users` * (Instructor only)
+- `POST /users` * (Instructor only)
+- `GET /users/me` * (Student)
+- `GET /users/me/courses` * (Student)
+- `PATCH /users/:id` * (Instructor only)
+- `DELETE /users/:id` * (Instructor only)
 
-### Student
+- `GET /courses` *' (Instructor only)
+- `POST /courses` * (Instructor only)
+- `PATCH /courses/:id` * (Instructor only)
+- `DELETE /courses/:id` * (Instructor only)
+- `GET /courses/:id/sessions` * (Student)
+- `POST /courses/:id/sessions` * (Instructor only)
+- `POST /courses/:id/enroll` * (Instructor only) --
 
-- `GET /me`
-- `GET /me/courses`
-- `GET /me/sessions`
+- `PATCH /sessions/:id` * (Instructor only)
+- `DELETE /sessions/:id` * (Instructor only)
+
+- `GET /enrollments` * (Instructor only)
+- `DELETE /enrollments/:id` * (Instructor only)
+
+
+### Instructor (old for reference)
+
+- `GET /students` *
+- `POST /students` *
+- `PATCH /students/:id` *
+- `DELETE /students/:id` *
+- `GET /courses` *
+- `POST /courses` *
+- `PATCH /courses/:id` *
+- `DELETE /courses/:id` *
+- `GET /sessions` *
+- `POST /sessions` *
+- `PATCH /sessions/:id` *
+- `DELETE /sessions/:id` *
+
+### Student (old for reference)
+
+- `GET /me` *
+- `GET /me/courses` *
+- `GET /me/sessions` *
 
 ## Criteria
 
@@ -77,8 +101,26 @@ Prisma shape that fits the MVP scope:
 
 ```prisma
 enum Role {
-	instructor
-	student
+  	instructor
+  	student
+}
+
+enum Language {
+	English
+	Finnish
+	Swedish
+	Russian
+	German
+	French
+}
+
+enum Level {
+	A1
+	A2
+	B1
+	B2
+	C1
+	C2
 }
 
 model User {
@@ -88,10 +130,9 @@ model User {
 	email        String       @unique
 	password     String
 	role         Role         @default(student)
-    level        String?
     comments     String?
 	createdAt    DateTime     @default(now()) @map("created_at")
-	updatedAt    DateTime     @updatedAt @map("updated_at")
+	updatedAt    DateTime?    @updatedAt @map("updated_at")
 
 	taughtCourses Course[]     @relation("InstructorCourses")
 	enrollments   Enrollment[]
@@ -102,10 +143,9 @@ model User {
 model Course {
 	id           Int            @id @default(autoincrement())
 	title        String
-	language     String
-    level        String
-    material     String
-	room         String?
+	language     Language
+  	level        Level
+  	material     String
 	instructorId Int            @map("instructor_id")
 	createdAt    DateTime       @default(now()) @map("created_at")
 	updatedAt    DateTime       @updatedAt @map("updated_at")
@@ -120,6 +160,7 @@ model Course {
 model ClassSession {
 	id        Int      @id @default(autoincrement())
 	courseId  Int      @map("course_id")
+	location  String
 	startsAt  DateTime @map("starts_at")
 	endsAt    DateTime? @map("ends_at")
 	content   String?
@@ -143,6 +184,7 @@ model Enrollment {
 	@@unique([userId, courseId])
 	@@map("enrollments")
 }
+
 ```
 
 ## How The Schema Works
