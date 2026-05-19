@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/users.js";
 import courseRouter from "./routes/courses.js";
@@ -8,6 +10,9 @@ import sessionRouter from "./routes/sessions.js";
 
 const app = express();
 const PORT = 3000;
+
+const swaggerDocument = YAML.load('./openapi.yaml');
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(cors());
 app.use(express.json());
