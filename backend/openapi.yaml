@@ -394,14 +394,14 @@ paths:
                     $ref: "#/components/schemas/User"
         
         "400":
-          decription: Invalid input
+          description: Invalid input
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
         
         "401":
-          decription: Unauthorized
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -462,7 +462,7 @@ paths:
                 $ref: "#/components/schemas/Error"
         
         "401":
-          decription: Unauthorized
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -546,7 +546,7 @@ paths:
                 $ref: "#/components/schemas/Error"
         
         "401":
-          decription: Unauthorized
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -633,14 +633,14 @@ paths:
                     $ref: "#/components/schemas/Course"
         
         "400":
-          decription: Invalid input
+          description: Invalid input
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
         
         "401":
-          decription: Unauthorized
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -701,7 +701,7 @@ paths:
                 $ref: "#/components/schemas/Error"
         
         "401":
-          decription: Unauthorized
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -799,7 +799,7 @@ paths:
                 $ref: "#/components/schemas/Error"
         
         "401":
-          decription: Unauthorized
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -959,14 +959,14 @@ paths:
                     $ref: "#/components/schemas/ClassSession"
         
         "400":
-          decription: Invalid input
+          description: Invalid input
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
         
         "401":
-          decription: Unauthorized
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -1027,7 +1027,7 @@ paths:
                 $ref: "#/components/schemas/Error"
         
         "401":
-          decription: Unauthorized
+          description: Unauthorized
           content:
             application/json:
               schema:
