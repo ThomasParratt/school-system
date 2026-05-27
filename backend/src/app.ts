@@ -1,7 +1,8 @@
 import express from "express";
 import cors from "cors";
 import swaggerUi from 'swagger-ui-express';
-import YAML from 'yamljs';
+import fs from "fs";
+import YAML from 'yaml';
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/users.js";
 import courseRouter from "./routes/courses.js";
@@ -11,7 +12,8 @@ const app = express();
 
 app.use(express.json());
 
-const swaggerDocument = YAML.load('./openapi.yaml');
+const file = fs.readFileSync("./openapi.yaml", "utf8");
+const swaggerDocument = YAML.parse(file);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(cors());

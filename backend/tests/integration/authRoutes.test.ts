@@ -38,6 +38,7 @@ describe("POST /auth/login", () => {
     
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveProperty('token');
+    expect(response).toSatisfyApiSpec();
     token = response.body.data.token;
   });
 
@@ -47,5 +48,6 @@ describe("POST /auth/login", () => {
       .send({ email: 'wrong@example.com', password: 'wrong' });
     
     expect(response.status).toBe(401);
+    expect(response).toSatisfyApiSpec();
   });
 });
