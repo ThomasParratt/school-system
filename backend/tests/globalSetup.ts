@@ -8,7 +8,7 @@ const backendDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".
 const composeFile = path.resolve(backendDir, "../docker-compose.yml");
 
 async function waitForDatabase(connectionString: string) {
-  for (let attempt = 0; attempt < 30; attempt += 1) {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
     const client = new Client({ connectionString });
 
     try {
@@ -18,11 +18,11 @@ async function waitForDatabase(connectionString: string) {
     } catch {
       await client.end().catch(() => {});
 
-      if (attempt === 29) {
+      if (attempt === 59) {
         throw new Error("Test database did not become ready in time");
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 }
