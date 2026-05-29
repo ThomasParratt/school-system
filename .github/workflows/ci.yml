@@ -42,11 +42,12 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          # Temporarily disable npm cache to avoid CI cache mismatch issues
+          # cache: npm
+          # cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
-        run: npm install
+        run: npm ci --verbose
 
       - name: Generate Prisma client
         run: npm run prisma:generate
