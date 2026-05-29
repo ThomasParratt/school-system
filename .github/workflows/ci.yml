@@ -46,7 +46,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
-        run: npm ci
+        run: npm install
 
       - name: Generate Prisma client
         run: npm run prisma:generate
