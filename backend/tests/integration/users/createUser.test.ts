@@ -83,7 +83,7 @@ describe("POST /users", () => {
     });
 
     it('should reject duplicate email', async () => {
-        const token = await loginAsStudent();
+        const token = await loginAsInstructor();
         await createUser({email: 'test@test.com'});
         const response = await request(app)
         .post('/users')
@@ -95,7 +95,7 @@ describe("POST /users", () => {
                 password: 'johnsmith' 
             });
         
-        expect(response.status).toBe(403);
+        expect(response.status).toBe(409);
         expect(response).toSatisfyApiSpec();
     });
 });
