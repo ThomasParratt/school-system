@@ -43,7 +43,7 @@ router.post(
   requireRole("instructor"),
   async (req, res) => {
     try {
-      const { firstName, secondName, email, password, level, comments } = req.body;
+      const { firstName, secondName, email, password, comments } = req.body;
 
       // Validation
       if (!firstName || !secondName || !email || !password ) {
