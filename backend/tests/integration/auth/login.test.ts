@@ -1,7 +1,7 @@
 import request from "supertest";
-import app from "../../src/app.js";
+import app from "../../../src/app.js";
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { prisma } from '../../src/lib/prisma.js';
+import { prisma } from '../../../src/lib/prisma.js';
 import bcrypt from "bcrypt";
 
 describe("POST /auth/login", () => {
