@@ -19,10 +19,6 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(cors());
 app.use(express.json());
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/courses", courseRouter);

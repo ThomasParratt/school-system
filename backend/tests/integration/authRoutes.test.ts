@@ -1,14 +1,12 @@
 import request from "supertest";
 import app from "../../src/app.js";
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { prisma } from '../../src/lib/prisma.js';
 import bcrypt from "bcrypt";
 
 describe("POST /auth/login", () => {
-  let token: string;
 
   beforeAll(async () => {
-    // Run migrations & seed
     const hashedPassword = await bcrypt.hash("password", 10);
     await prisma.user.deleteMany({
       where: { email: "test@example.com" },
@@ -24,7 +22,7 @@ describe("POST /auth/login", () => {
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     // Clean up test data
     await prisma.user.deleteMany({
       where: { email: "test@example.com" },
@@ -39,7 +37,9 @@ describe("POST /auth/login", () => {
     expect(response.status).toBe(200);
     expect(response.body.data).toHaveProperty('token');
     expect(response).toSatisfyApiSpec();
-    token = response.body.data.token;
+    const token = response.body.data.token;
+    expect(typeof token).toBe('string');
+    expect(token.split('.').length).toBe(3);
   });
 
   it('should reject invalid credentials', async () => {
