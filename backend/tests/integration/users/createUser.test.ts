@@ -39,14 +39,14 @@ describe("POST /users", () => {
     it('should reject unauthorized role', async () => {
         const token = await loginAsStudent();
         const response = await request(app)
-        .post('/users')
-        .set("Authorization", `Bearer ${token}`)
-        .send({ 
-                firstName: 'John',
-                secondName: 'Smith',
-                email: 'john.smith@test.com',
-                password: 'johnsmith' 
-            });
+            .post('/users')
+            .set("Authorization", `Bearer ${token}`)
+            .send({ 
+                    firstName: 'John',
+                    secondName: 'Smith',
+                    email: 'john.smith@test.com',
+                    password: 'johnsmith' 
+                });
         
         expect(response.status).toBe(403);
         expect(response).toSatisfyApiSpec();
@@ -55,13 +55,13 @@ describe("POST /users", () => {
     it('should reject missing email', async () => {
         const token = await loginAsInstructor();
         const response = await request(app)
-        .post('/users')
-        .set("Authorization", `Bearer ${token}`)
-        .send({ 
-                firstName: 'John',
-                secondName: 'Smith',
-                password: 'johnsmith' 
-            });
+            .post('/users')
+            .set("Authorization", `Bearer ${token}`)
+            .send({ 
+                    firstName: 'John',
+                    secondName: 'Smith',
+                    password: 'johnsmith' 
+                });
         
         expect(response.status).toBe(400);
         expect(response).toSatisfyApiSpec();
@@ -70,13 +70,13 @@ describe("POST /users", () => {
     it('should reject missing password', async () => {
         const token = await loginAsInstructor();
         const response = await request(app)
-        .post('/users')
-        .set("Authorization", `Bearer ${token}`)
-        .send({ 
-                firstName: 'John',
-                secondName: 'Smith',
-                email: 'john.smith@test.com' 
-            });
+            .post('/users')
+            .set("Authorization", `Bearer ${token}`)
+            .send({ 
+                    firstName: 'John',
+                    secondName: 'Smith',
+                    email: 'john.smith@test.com' 
+                });
         
         expect(response.status).toBe(400);
         expect(response).toSatisfyApiSpec();

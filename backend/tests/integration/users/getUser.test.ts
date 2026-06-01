@@ -4,16 +4,13 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { prisma } from '../../../src/lib/prisma.js';
 import { loginAsInstructor, loginAsStudent } from "../helpers/auth.js";
 import { createUser } from "../factories/userFactory.js";
-import { User } from "@prisma/client";
 
 describe("GET /users/:id", () => {
-    let users: User[];
+    let userId: number;
 
     beforeEach(async () => {
-        users = await Promise.all([
-            createUser(),
-            createUser(),
-        ]);
+        const user = await createUser();
+        userId = user.id;
     });
 
     afterEach(async () => {
@@ -24,8 +21,8 @@ describe("GET /users/:id", () => {
     it('should return requested user', async () => {
         const token = await loginAsInstructor();
         const response = await request(app)
-        .get(`/users/${users[0].id}`)
-        .set("Authorization", `Bearer ${token}`);
+            .get(`/users/${userId}`)
+            .set("Authorization", `Bearer ${token}`);
         
         expect(response.status).toBe(200);
         expect(response).toSatisfyApiSpec();
@@ -33,7 +30,7 @@ describe("GET /users/:id", () => {
 
     it('should reject unauthenticated request', async () => {
         const response = await request(app)
-        .get(`/users/${users[0].id}`)
+            .get(`/users/${userId}`)
         
         expect(response.status).toBe(401);
         expect(response).toSatisfyApiSpec();
