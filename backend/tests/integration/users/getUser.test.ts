@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../../src/app.js";
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { prisma } from '../../../src/lib/prisma.js';
 import { loginAsInstructor, loginAsStudent } from "../helpers/auth.js";
 import { createUser } from "../factories/userFactory.js";
@@ -9,14 +9,14 @@ import { User } from "@prisma/client";
 describe("GET /users/:id", () => {
     let users: User[];
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         users = await Promise.all([
             createUser(),
             createUser(),
         ]);
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
         // Clean up test data
         await prisma.user.deleteMany();
     });
