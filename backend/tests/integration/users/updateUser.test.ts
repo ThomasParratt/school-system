@@ -1,31 +1,33 @@
 import request from "supertest";
 import app from "../../../src/app.js";
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { prisma } from '../../../src/lib/prisma.js';
 import { loginAsInstructor, loginAsStudent } from "../helpers/auth.js";
 import { createUser } from "../factories/userFactory.js";
 import { User } from "@prisma/client";
+import { randomUUID } from "crypto";
 
-describe("GET /users/:id", () => {
+describe("PATCH /users/:id", () => {
     let users: User[];
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         users = await Promise.all([
             createUser(),
             createUser(),
         ]);
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
         // Clean up test data
         await prisma.user.deleteMany();
     });
 
-    it('should return requested user', async () => {
+    it('should update user name', async () => {
         const token = await loginAsInstructor();
         const response = await request(app)
-        .get(`/users/${users[0].id}`)
-        .set("Authorization", `Bearer ${token}`);
+        .patch(`/users/${users[0].id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({firstName: "John", secondName: "Smith"});
         
         expect(response.status).toBe(200);
         expect(response).toSatisfyApiSpec();
@@ -33,9 +35,20 @@ describe("GET /users/:id", () => {
 
     it('should reject unauthenticated request', async () => {
         const response = await request(app)
-        .get(`/users/${users[0].id}`)
+        .patch(`/users/${users[0].id}`)
         
         expect(response.status).toBe(401);
+        expect(response).toSatisfyApiSpec();
+    });
+
+    it('should reject unauthorized role', async () => {
+        const token = await loginAsStudent();
+        const response = await request(app)
+        .patch(`/users/${users[0].id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({firstName: "John", secondName: "Smith"});
+        
+        expect(response.status).toBe(403);
         expect(response).toSatisfyApiSpec();
     });
 
