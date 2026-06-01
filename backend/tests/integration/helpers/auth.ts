@@ -16,3 +16,16 @@ export async function loginAsInstructor() {
 
   return response.body.data.token;
 }
+
+export async function loginAsStudent() {
+  const user = await createUser();
+
+  const response = await request(app)
+    .post("/auth/login")
+    .send({
+      email: user.email,
+      password: "password",
+    });
+
+  return response.body.data.token;
+}
