@@ -373,9 +373,17 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
     patch:
       summary: Update user information (instructor only)
