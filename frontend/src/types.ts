@@ -7,6 +7,13 @@ export type User = {
     role: string;
 };
 
+export type LoginResponse = {
+  data: {
+    user: User;
+    token: string;
+  };
+};
+
 export type AuthState = {
     token: string;
     user: User;

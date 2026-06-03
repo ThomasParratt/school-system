@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import Home from "./Home.tsx";
-import { User, AuthState, ApiErrorResponse } from "../types.ts";
+import { useState } from "react";
+import type { AuthState } from "../types.ts"
+import { login } from "../services/loginService.ts";
 
 const AUTH_STORAGE_KEY = "auth";
 
@@ -23,62 +23,20 @@ function readStoredAuth() {
 }
 
 function Login() {
-    const [users, setUsers] = useState<User[]>([]);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [auth, setAuth] = useState<AuthState | null>(() => readStoredAuth());
     const loggedIn = auth?.user ?? null;
 
-    // Fetch all users
-    const fetchUsers = async () => {
-        try {
-            if (!auth?.token) {
-                return;
-            }
-
-            const res = await fetch("http://localhost:3000/users", {
-                headers: {
-                    Authorization: `Bearer ${auth.token}`,
-                },
-            });
-
-            if (!res.ok) {
-                const contentType = res.headers.get("content-type") ?? "";
-                const errorMessage = contentType.includes("application/json")
-                    ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-                    : await res.text();
-                throw new Error(errorMessage);
-            }
-
-            const { data } = await res.json();
-            setUsers(data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
     // Login functions
     const handleLogin = async () => {
         if (!email || !password) return alert("Fill email and password!");
         try {
-            const res = await fetch("http://localhost:3000/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-            if (!res.ok) {
-                const contentType = res.headers.get("content-type") ?? "";
-                const errorMessage = contentType.includes("application/json")
-                    ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-                    : await res.text();
-                throw new Error(errorMessage);
-            }
-            const { data: { token, user } } = await res.json();
+            const { data: { token, user } } = await login(email, password);
             const nextAuth = { token, user };
 
             setAuth(nextAuth);
             localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
-            await fetchUsers();
             setEmail("");
             setPassword("");
         } catch (err) {
@@ -86,11 +44,6 @@ function Login() {
         }
     };
 
-    useEffect(() => {
-        if (auth?.token) {
-            void fetchUsers();
-        }
-    }, [auth]);
 
     return (
         <div className="p-8 font-sans min-h-screen">
@@ -129,22 +82,17 @@ function Login() {
             )}
 
             {(loggedIn) && (
-                <div className="max-w-4xl mx-auto mt-6">
-                    <Home
-                        loggedIn={loggedIn}
-                        users={users}
-                        token={auth?.token ?? ""}
-                        canManageUsers={loggedIn.role === "instructor"}
-                        onLogout={() => {
+                <div>
+                    <h1>Logged in</h1>
+                    <button
+                        onClick={() => {
                             setAuth(null);
                             localStorage.removeItem(AUTH_STORAGE_KEY);
                         }}
-                        onUserDeleted={(id: number) => {
-                            setUsers((currentUsers) =>
-                                currentUsers.filter((user) => user.id !== id)
-                            );
-                        }}
-                    />
+                        className="bg-gray-500 text-white px-4 py-2 rounded"
+                    >
+                        Logout
+                    </button>
                 </div>
             )}
         </div>
