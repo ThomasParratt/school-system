@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { login } from "../services/loginService.ts";
 import { useAuth } from "../context/AuthContext";
+import InstructorDash from "./InstructorDash.tsx";
 
 function Login() {
     const { user, loginUser, logout } = useAuth();
@@ -90,11 +91,14 @@ function Login() {
                     <h1 className="text-xl mb-4">
                         Logged in as {user.email}
                     </h1>
-
+                    <button
+                        onClick={logout}
+                        className="bg-gray-500 text-white px-4 py-2 rounded"
+                    >
+                        Logout
+                    </button>
                     {user.role === "instructor" && (
-                        <p className="mb-4 text-gray-600">
-                            Instructor dashboard
-                        </p>
+                        <InstructorDash />
                     )}
 
                     {user.role === "student" && (
@@ -102,13 +106,6 @@ function Login() {
                             Student dashboard
                         </p>
                     )}
-
-                    <button
-                        onClick={logout}
-                        className="bg-gray-500 text-white px-4 py-2 rounded"
-                    >
-                        Logout
-                    </button>
                 </div>
             )}
         </div>
