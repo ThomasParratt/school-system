@@ -21,10 +21,15 @@ describe("POST /users", () => {
                 firstName: 'John',
                 secondName: 'Smith',
                 email: 'john.smith@test.com',
-                password: 'johnsmith' 
+                password: 'johnsmith'
             });
         
         expect(response.status).toBe(201);
+        expect(response.body.data).toMatchObject({
+            firstName: 'John',
+            secondName: 'Smith',
+            email: 'john.smith@test.com',
+        });
         expect(response).toSatisfyApiSpec();
     });
 

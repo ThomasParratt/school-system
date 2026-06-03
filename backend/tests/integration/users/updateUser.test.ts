@@ -26,6 +26,7 @@ describe("PATCH /users/:id", () => {
             .send({firstName: "John", secondName: "Smith"});
         
         expect(response.status).toBe(200);
+        expect(response.body.data).toMatchObject({firstName: "John", secondName: "Smith"});
         expect(response).toSatisfyApiSpec();
     });
 
