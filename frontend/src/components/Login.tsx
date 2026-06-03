@@ -1,25 +1,6 @@
 import { useEffect, useState } from "react";
 import Home from "./Home.tsx";
-
-export type User = {
-    id: number;
-    firstName: string;
-    secondName: string;
-    email: string;
-    role: string;
-};
-
-type AuthState = {
-    token: string;
-    user: User;
-};
-
-type ApiErrorResponse = {
-    error?: {
-        message?: string;
-        code?: string;
-    };
-};
+import { User, AuthState, ApiErrorResponse } from "../types.ts";
 
 const AUTH_STORAGE_KEY = "auth";
 
