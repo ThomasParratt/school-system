@@ -91,6 +91,18 @@ function Login() {
                         Logged in as {user.email}
                     </h1>
 
+                    {user.role === "instructor" && (
+                        <p className="mb-4 text-gray-600">
+                            Instructor dashboard
+                        </p>
+                    )}
+
+                    {user.role === "student" && (
+                        <p className="mb-4 text-gray-600">
+                            Student dashboard
+                        </p>
+                    )}
+
                     <button
                         onClick={logout}
                         className="bg-gray-500 text-white px-4 py-2 rounded"
