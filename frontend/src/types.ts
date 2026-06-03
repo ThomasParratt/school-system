@@ -14,11 +14,6 @@ export type LoginResponse = {
   };
 };
 
-export type AuthState = {
-    token: string;
-    user: User;
-};
-
 export type ApiErrorResponse = {
     error?: {
         message?: string;
