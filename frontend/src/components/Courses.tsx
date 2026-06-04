@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getCourses, addCourse } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
 import type { Course } from "../types";
+import bin from "../../dist/bin.svg";
 
 export default function Courses() {
     const { token } = useAuth();
@@ -48,7 +49,7 @@ export default function Courses() {
 
     return (
         <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
                 <h1 className="text-xl font-bold">Courses</h1>
 
                 <button
@@ -61,7 +62,12 @@ export default function Courses() {
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <ul>
                     {courses.map(u => (
-                        <li key={u.id}>{u.title} {u.level}</li>
+                        <li 
+                            className="flex justify-between items-center mb-2" key={u.id}
+                        >
+                            <span>{u.title} {u.level}</span>
+                            <img src={bin} alt="Delete" className="w-5 h-5" />
+                        </li>
                     ))}
                 </ul>
             </div>

@@ -24,3 +24,19 @@ export async function addUser(
     if (!res.ok) throw new Error("Failed to add user");
     return res.json();
 }
+
+export async function deleteUser(
+    token: string | null,
+    userId: number
+) {
+    const res = await fetch(`http://localhost:3000/users/${userId}`, {
+        method: "DELETE",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (!res.ok) throw new Error("Failed to delete user");
+    return res.json();
+}
