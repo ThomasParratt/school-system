@@ -44,6 +44,7 @@ export default function Students() {
             setUsers(prev => [...prev, newUser.data]);
         } catch (err) {
             console.error(err);
+            alert(err);
         }
     }
 
@@ -56,6 +57,7 @@ export default function Students() {
             setUsers(prev => prev.filter(u => u.id !== userId));
         } catch (err) {
             console.error(err);
+            alert(err);
         }
     }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getCourses, addCourse } from "../services/courseService";
+import { getCourses, addCourse, deleteCourse } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
 import type { Course } from "../types";
 import bin from "../../dist/bin.svg";
@@ -40,10 +40,23 @@ export default function Courses() {
                 level: `${level}`,
                 material: `${material}`
             });
-
             setCourses(prev => [...prev, newCourse.data]);
         } catch (err) {
             console.error(err);
+            alert(err);
+        }
+    }
+
+    async function handleDeleteCourse(courseId: number) {
+        if (!token) return;
+
+        try {
+            await deleteCourse(token, courseId);
+            //console.log(data);
+            setCourses(prev => prev.filter(u => u.id !== courseId));
+        } catch (err) {
+            console.error(err);
+            alert(err);
         }
     }
 
@@ -54,7 +67,7 @@ export default function Courses() {
 
                 <button
                     onClick={handleAddCourse}
-                    className="bg-indigo-600 text-white px-3 py-1 rounded"
+                    className="bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
                 >
                     Add
                 </button>
@@ -66,7 +79,11 @@ export default function Courses() {
                             className="flex justify-between items-center mb-2" key={u.id}
                         >
                             <span>{u.title} {u.level}</span>
-                            <img src={bin} alt="Delete" className="w-5 h-5" />
+                            <img 
+                                onClick={() => handleDeleteCourse(u.id)}
+                                src={bin} 
+                                alt="Delete" 
+                                className="w-5 h-5 cursor-pointer hover:opacity-70" />
                         </li>
                     ))}
                 </ul>
