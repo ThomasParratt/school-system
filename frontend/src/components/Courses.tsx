@@ -31,7 +31,7 @@ export default function Courses() {
         const level = prompt("Level?");
         const material = prompt("Material?");
 
-        if (!title || !language) return;
+        if (!title || !language || !level || !material) return;
 
         try {
             const newCourse: { data: Course } = await addCourse(token, {

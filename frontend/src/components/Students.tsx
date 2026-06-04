@@ -30,15 +30,17 @@ export default function Students() {
         const secondName = prompt("Second name?");
         const email = prompt("Email?");
         const password = prompt("Password?");
+        const comments = prompt("Comments?");
 
-        if (!firstName || !secondName) return;
+        if (!firstName || !secondName || !email || !password) return;
 
         try {
             const newUser: { data: User } = await addUser(token, {
                 firstName: `${firstName}`,
                 secondName: `${secondName}`,
                 email: `${email}`,
-                password: `${password}`
+                password: `${password}`,
+                comments: `${comments}`
             });
 
             setUsers(prev => [...prev, newUser.data]);

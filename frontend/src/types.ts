@@ -5,6 +5,7 @@ export type User = {
     secondName: string;
     email: string;
     role: string;
+    comments: string | null;
 };
 
 export type Course = {
