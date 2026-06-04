@@ -1,6 +1,6 @@
 
-export async function getUsers(token: string) {
-    const res = await fetch("/users", {
+export async function getUsers(token: string | null) {
+    const res = await fetch("http://localhost:3000/users", {
         headers: { Authorization: `Bearer ${token}` },
     });
 

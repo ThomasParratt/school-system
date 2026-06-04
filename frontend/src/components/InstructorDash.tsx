@@ -3,6 +3,7 @@ import Courses from "./Courses";
 import Calendar from "./Calendar";
 
 export default function InstructorDash() {
+
   return (
     <div className="flex gap-4 p-4 h-screen">
 

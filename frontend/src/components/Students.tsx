@@ -1,23 +1,37 @@
+import { useEffect, useState } from "react";
+import { getUsers } from "../services/userService";
+import { useAuth } from "../context/AuthContext";
+
 export default function Students() {
-  return (
-    <div className="flex flex-col flex-1 min-h-0">
-        <h1 className="text-xl font-bold mb-4">Students</h1>
-        <div className="flex-1 min-h-0 overflow-y-auto">
-            <ul>
-                <li>Student 1</li>
-                <li>Student 2</li>
-                <li>Student 3</li>
-                <li>Student 4</li>
-                <li>Student 5</li>
-                <li>Student 6</li>
-                <li>Student 7</li>
-                <li>Student 8</li>
-                <li>Student 9</li>
-                <li>Student 10</li>
-                <li>Student 11</li>
-                <li>Student 12</li>
-            </ul>
+    const { token } = useAuth();
+    const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        if (!token) return;
+
+        async function fetchUsers() {
+        try {
+            const data = await getUsers(token);
+            //console.log(data);
+            setUsers(data.data);
+        } catch (err) {
+            console.error("Failed to fetch users:", err);
+        }
+        }
+
+        fetchUsers();
+    }, [token]);
+
+    return (
+        <div className="flex flex-col flex-1 min-h-0">
+            <h1 className="text-xl font-bold mb-4">Students</h1>
+            <div className="flex-1 min-h-0 overflow-y-auto">
+                <ul>
+                    {users.map(u => (
+                        <li key={u.id}>{u.firstName} {u.secondName}</li>
+                    ))}
+                </ul>
+            </div>
         </div>
-    </div>
-  );
+    );
 }
