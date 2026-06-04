@@ -7,6 +7,7 @@ import bin from "../../dist/bin.svg";
 export default function Courses() {
     const { token } = useAuth();
     const [courses, setCourses] = useState<Course[]>([]);;
+    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
     useEffect(() => {
         if (!token) return;
@@ -60,6 +61,10 @@ export default function Courses() {
         }
     }
 
+    function handleCourseClick(course: Course) {
+        setSelectedCourse(course);
+    }
+
     return (
         <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center mb-6">
@@ -78,7 +83,12 @@ export default function Courses() {
                         <li 
                             className="flex justify-between items-center mb-2" key={u.id}
                         >
-                            <span>{u.title} {u.level}</span>
+                            <span
+                                onClick={() => handleCourseClick(u)}
+                                className="cursor-pointer hover:font-semibold"
+                            >
+                                {u.title} {u.level}
+                            </span>
                             <img 
                                 onClick={() => handleDeleteCourse(u.id)}
                                 src={bin} 
@@ -88,6 +98,27 @@ export default function Courses() {
                     ))}
                 </ul>
             </div>
+            {selectedCourse && (
+                <div className="fixed inset-0 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded shadow-lg w-96 relative">
+                        
+                        <button
+                            onClick={() => setSelectedCourse(null)}
+                            className="absolute top-2 right-3 text-gray-500 hover:text-black"
+                        >
+                            ✕
+                        </button>
+
+                        <h2 className="text-lg font-bold mb-4">
+                            {selectedCourse.title}
+                        </h2>
+                        
+                        <p className="mb-2"><strong>Language:</strong> {selectedCourse.language}</p>
+                        <p className="mb-2"><strong>Level:</strong> {selectedCourse.level}</p>
+                        <p className="mb-2"><strong>Material:</strong> {selectedCourse.material}</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

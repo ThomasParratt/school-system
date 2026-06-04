@@ -7,6 +7,7 @@ import bin from "../../dist/bin.svg";
 export default function Students() {
     const { token } = useAuth();
     const [users, setUsers] = useState<User[]>([]);;
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     useEffect(() => {
         if (!token) return;
@@ -63,6 +64,10 @@ export default function Students() {
         }
     }
 
+    function handleNameClick(user: User) {
+        setSelectedUser(user);
+    }
+
     return (
         <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center mb-6">
@@ -85,7 +90,12 @@ export default function Students() {
                                 className="flex justify-between items-center mb-2"
                                 key={u.id}
                             >
-                                <span>{u.secondName}, {u.firstName}</span>
+                                <span 
+                                    onClick={() => handleNameClick(u)}
+                                    className="cursor-pointer hover:font-semibold"
+                                >
+                                    {u.secondName}, {u.firstName}
+                                </span>
                                 <img 
                                     onClick={() => handleDeleteUser(u.id)}
                                     src={bin} alt="Delete" 
@@ -95,6 +105,26 @@ export default function Students() {
                         ))}
                 </ol>
             </div>
+            {selectedUser && (
+                <div className="fixed inset-0 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded shadow-lg w-96 relative">
+                        
+                        <button
+                            onClick={() => setSelectedUser(null)}
+                            className="absolute top-2 right-3 text-gray-500 hover:text-black"
+                        >
+                            ✕
+                        </button>
+
+                        <h2 className="text-lg font-bold mb-4">
+                            {selectedUser.firstName} {selectedUser.secondName}
+                        </h2>
+                        
+                        <p className="mb-2"><strong>Email:</strong> {selectedUser.email}</p>
+                        <p className="mb-2"><strong>Comments:</strong> {selectedUser.comments}</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

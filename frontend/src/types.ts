@@ -12,6 +12,7 @@ export type User = {
 export type Course = {
     id: number;
     title: string;
+    language: string;
     level: string;
     material: string;
 };
