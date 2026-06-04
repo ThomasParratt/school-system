@@ -8,17 +8,17 @@ export default function InstructorDash() {
 
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
-        <div className="flex-1 aspect-square bg-gray-100 rounded-xl p-4 flex items-center justify-center">
-          <Courses />
+        <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
+          <Students />
         </div>
 
-        <div className="flex-1 aspect-square bg-gray-100 rounded-xl p-4 flex items-center justify-center">
-          <Students />
+        <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col">
+          <Courses />
         </div>
       </div>
 
       {/* Main Calendar */}
-      <div className="flex-[3] aspect-square bg-gray-100 rounded-xl p-4 flex items-center justify-center">
+      <div className="flex-[3] min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col">
         <Calendar />
       </div>
     </div>
