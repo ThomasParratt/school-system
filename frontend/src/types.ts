@@ -7,6 +7,13 @@ export type User = {
     role: string;
 };
 
+export type Course = {
+    id: number;
+    title: string;
+    level: string;
+    material: string;
+};
+
 export type LoginResponse = {
   data: {
     user: User;
