@@ -17,7 +17,7 @@ export async function getUsers(token: string | null) {
 
 export async function addUser(
     token: string | null,
-    user: { firstName: string; secondName: string; email: string; password: string }
+    user: { firstName: string; secondName: string; email: string; password: string; comments: string }
 ) {
     const res = await fetch("http://localhost:3000/users", {
         method: "POST",
