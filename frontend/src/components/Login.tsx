@@ -89,7 +89,7 @@ function Login() {
             ) : (
                 <div className="text-center">
                     <h1 className="text-xl mb-4">
-                        Logged in as {user.email}
+                        Welcome {user.firstName}!
                     </h1>
                     <button
                         onClick={logout}
