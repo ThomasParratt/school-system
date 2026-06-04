@@ -80,7 +80,7 @@ function Login() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-500 text-white font-semibold py-2 rounded"
+                            className="w-full bg-indigo-600 text-white font-semibold py-2 rounded"
                         >
                             {loading ? "Logging in..." : "Login"}
                         </button>
