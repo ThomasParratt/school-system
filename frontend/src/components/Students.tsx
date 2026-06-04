@@ -15,7 +15,7 @@ export default function Students() {
             //console.log(data);
             setUsers(data.data);
         } catch (err) {
-            console.error("Failed to fetch users:", err);
+            console.error(err);
         }
         }
 
@@ -24,7 +24,13 @@ export default function Students() {
 
     return (
         <div className="flex flex-col flex-1 min-h-0">
-            <h1 className="text-xl font-bold mb-4">Students</h1>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-xl font-bold">Students</h1>
+
+                <button className="bg-indigo-600 text-white px-3 py-1 rounded">
+                    Add
+                </button>
+            </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <ul>
                     {users.map(u => (
