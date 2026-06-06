@@ -142,6 +142,13 @@ export default function Courses() {
             {selectedCourse && editForm && (
                 <div className="fixed inset-0 flex items-center justify-center">
                     <div className="bg-white p-6 rounded shadow-lg w-96 relative">
+
+                        <button
+                            onClick={() => setSelectedCourse(null)}
+                            className="absolute top-2 right-3 text-gray-500 hover:text-black"
+                        >
+                            ✕
+                        </button>
                         
                         <h2 className="text-lg font-bold mb-4">
                             {selectedCourse.title}
