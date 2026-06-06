@@ -3,6 +3,7 @@ import { getCourses, addCourse, deleteCourse } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
 import type { Course } from "../types";
 import bin from "../../dist/bin.svg";
+import edit from "../../dist/edit.svg";
 
 export default function Courses() {
     const { token } = useAuth();
@@ -89,11 +90,18 @@ export default function Courses() {
                             >
                                 {u.title} {u.level}
                             </span>
-                            <img 
-                                onClick={() => handleDeleteCourse(u.id)}
-                                src={bin} 
-                                alt="Delete" 
-                                className="w-5 h-5 cursor-pointer hover:opacity-70" />
+                            <div className="flex items-center gap-3">
+                                <img 
+                                    onClick={() => handleDeleteCourse(u.id)}
+                                    src={edit} alt="Edit" 
+                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
+                                />
+                                <img 
+                                    onClick={() => handleDeleteCourse(u.id)}
+                                    src={bin} alt="Delete" 
+                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
+                                />
+                            </div>
                         </li>
                     ))}
                 </ul>

@@ -3,11 +3,13 @@ import { getUsers, addUser, deleteUser } from "../services/userService";
 import { useAuth } from "../context/AuthContext";
 import type { User } from "../types";
 import bin from "../../dist/bin.svg";
+import edit from "../../dist/edit.svg";
 
 export default function Students() {
     const { token } = useAuth();
     const [users, setUsers] = useState<User[]>([]);;
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [selectedEdit, setSelectedEdit] = useState<User | null>(null);
 
     useEffect(() => {
         if (!token) return;
@@ -68,6 +70,10 @@ export default function Students() {
         setSelectedUser(user);
     }
 
+    function handleEditClick(user: User) {
+        setSelectedEdit(user);
+    }
+
     return (
         <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center mb-6">
@@ -96,11 +102,18 @@ export default function Students() {
                                 >
                                     {u.secondName}, {u.firstName}
                                 </span>
-                                <img 
-                                    onClick={() => handleDeleteUser(u.id)}
-                                    src={bin} alt="Delete" 
-                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
-                                />
+                                <div className="flex items-center gap-3">
+                                    <img 
+                                        onClick={() => handleEditClick(u)}
+                                        src={edit} alt="Edit" 
+                                        className="w-5 h-5 cursor-pointer hover:opacity-70" 
+                                    />
+                                    <img 
+                                        onClick={() => handleDeleteUser(u.id)}
+                                        src={bin} alt="Delete" 
+                                        className="w-5 h-5 cursor-pointer hover:opacity-70" 
+                                    />
+                                </div>
                             </li>
                         ))}
                 </ol>
@@ -122,6 +135,26 @@ export default function Students() {
                         
                         <p className="mb-2"><strong>Email:</strong> {selectedUser.email}</p>
                         <p className="mb-2"><strong>Comments:</strong> {selectedUser.comments}</p>
+                    </div>
+                </div>
+            )}
+            {selectedEdit && (
+                <div className="fixed inset-0 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded shadow-lg w-96 relative">
+                        
+                        <button
+                            onClick={() => setSelectedEdit(null)}
+                            className="absolute top-2 right-3 text-gray-500 hover:text-black"
+                        >
+                            ✕
+                        </button>
+
+                        <h2 className="text-lg font-bold mb-4">
+                            {selectedEdit.firstName} {selectedEdit.secondName}
+                        </h2>
+                        
+                        <p className="mb-2"><strong>Email:</strong> {selectedEdit.email}</p>
+                        <p className="mb-2"><strong>Comments:</strong> {selectedEdit.comments}</p>
                     </div>
                 </div>
             )}
