@@ -41,7 +41,7 @@ function Login() {
 
     return (
         <div className="p-8 font-sans min-h-screen">
-            <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">
+            <h1 className="text-4xl font-bold mb-4 text-center text-gray-800">
                 School Management System
             </h1>
 
@@ -88,15 +88,18 @@ function Login() {
                 </div>
             ) : (
                 <div className="text-center">
-                    <h1 className="text-xl mb-4">
-                        Welcome {user.firstName}!
-                    </h1>
-                    <button
-                        onClick={logout}
-                        className="bg-gray-500 text-white px-4 py-2 rounded"
-                    >
-                        Logout
-                    </button>
+                    <div className="relative mb-4">
+                        <h1 className="text-xl text-center">
+                            Welcome {user.firstName}!
+                        </h1>
+
+                        <button
+                            onClick={logout}
+                            className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-500 text-white px-4 py-2 rounded"
+                        >
+                            Logout
+                        </button>
+                    </div>
                     {user.role === "instructor" && (
                         <InstructorDash />
                     )}
