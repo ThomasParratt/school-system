@@ -41,7 +41,7 @@ function Login() {
 
     return (
         <div className="p-8 font-sans min-h-screen">
-            <h1 className="text-4xl font-bold mb-4 text-center text-gray-800">
+            <h1 className="text-3xl font-bold mb-4 text-center text-gray-800">
                 School Management System
             </h1>
 
