@@ -71,7 +71,21 @@ export default function Students() {
     }
 
     function handleEditClick(user: User) {
+        setSelectedUser(user);
         setSelectedEdit(user);
+    }
+
+    async function handleEditUser(userId: number) {
+        if (!token) return;
+
+        try {
+            await deleteUser(token, userId);
+            //console.log(data);
+            setUsers(prev => prev.filter(u => u.id !== userId));
+        } catch (err) {
+            console.error(err);
+            alert(err);
+        }
     }
 
     return (
@@ -120,7 +134,7 @@ export default function Students() {
             </div>
             {selectedUser && (
                 <div className="fixed inset-0 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded shadow-lg w-96 relative">
+                    <div className="bg-white p-6 rounded shadow-lg w-101 relative">
                         
                         <button
                             onClick={() => setSelectedUser(null)}
@@ -133,28 +147,26 @@ export default function Students() {
                             {selectedUser.firstName} {selectedUser.secondName}
                         </h2>
                         
-                        <p className="mb-2"><strong>Email:</strong> {selectedUser.email}</p>
-                        <p className="mb-2"><strong>Comments:</strong> {selectedUser.comments}</p>
-                    </div>
-                </div>
-            )}
-            {selectedEdit && (
-                <div className="fixed inset-0 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded shadow-lg w-96 relative">
-                        
-                        <button
-                            onClick={() => setSelectedEdit(null)}
-                            className="absolute top-2 right-3 text-gray-500 hover:text-black"
-                        >
-                            ✕
-                        </button>
-
-                        <h2 className="text-lg font-bold mb-4">
-                            {selectedEdit.firstName} {selectedEdit.secondName}
-                        </h2>
-                        
-                        <p className="mb-2"><strong>Email:</strong> {selectedEdit.email}</p>
-                        <p className="mb-2"><strong>Comments:</strong> {selectedEdit.comments}</p>
+                        <p className="flex justify-between items-center mb-2">
+                            <strong>Email:</strong> {selectedUser.email}
+                            {selectedEdit && (
+                                <img 
+                                    onClick={() => handleEditUser(selectedUser.id)}
+                                    src={edit} alt="Edit" 
+                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
+                                />
+                            )}
+                        </p>
+                        <p className="flex justify-between items-center mb-2">
+                            <strong>Comments:</strong> {selectedUser.comments}
+                            {selectedEdit && (
+                                <img 
+                                    onClick={() => handleEditUser(selectedUser.id)}
+                                    src={edit} alt="Edit" 
+                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
+                                />
+                            )}
+                        </p>
                     </div>
                 </div>
             )}
