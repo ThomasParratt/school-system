@@ -41,12 +41,11 @@ function Login() {
 
     return (
         <div className="p-8 font-sans min-h-screen">
-            <h1 className="text-3xl font-bold mb-4 text-center text-gray-800">
-                School Management System
-            </h1>
-
             {!user ? (
                 <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
+                    <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
+                        School Management System
+                    </h1>
                     <h2 className="text-2xl font-semibold mb-4 text-gray-700">
                         Login
                     </h2>
@@ -88,18 +87,28 @@ function Login() {
                 </div>
             ) : (
                 <div className="text-center">
-                    <div className="relative mb-4">
-                        <h1 className="text-xl text-center">
-                            Welcome {user.firstName}!
-                        </h1>
+                    <header className="bg-white rounded-xl">
+                        <div className="max-w-8xl mx-auto px-10 py-6 flex items-center justify-between">
+                            {/* Left side */}
+                            <h1 className="text-3xl font-bold text-gray-700">
+                                School Management System
+                            </h1>
 
-                        <button
-                            onClick={logout}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-500 text-white px-4 py-2 rounded"
-                        >
-                            Logout
-                        </button>
-                    </div>
+                            {/* Right side */}
+                            <div className="flex items-center gap-4">
+                                <span className="text-gray-700">
+                                    Welcome, <span className="font-medium">{user.firstName}</span>
+                                </span>
+
+                                <button
+                                    onClick={logout}
+                                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition"
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </header>
                     {user.role === "instructor" && (
                         <InstructorDash />
                     )}
