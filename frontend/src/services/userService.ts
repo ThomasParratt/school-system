@@ -59,3 +59,27 @@ export async function deleteUser(
     }
     return res.json();
 }
+
+export async function updateUser(
+    token: string | null,
+    userId: number,
+    user: { firstName: string; secondName: string; email: string; comments: string }
+) {
+    const res = await fetch(`http://localhost:3000/users/${userId}`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+    });
+
+    if (!res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        const errorMessage = contentType.includes("application/json")
+            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
+            : await res.text();
+        throw new Error(errorMessage);
+    }
+    return res.json();
+}

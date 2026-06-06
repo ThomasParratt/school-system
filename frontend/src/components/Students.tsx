@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getUsers, addUser, deleteUser } from "../services/userService";
+import { getUsers, addUser, deleteUser, updateUser } from "../services/userService";
 import { useAuth } from "../context/AuthContext";
 import type { User } from "../types";
 import bin from "../../dist/bin.svg";
@@ -9,7 +9,7 @@ export default function Students() {
     const { token } = useAuth();
     const [users, setUsers] = useState<User[]>([]);;
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [selectedEdit, setSelectedEdit] = useState<User | null>(null);
+    const [editForm, setEditForm] = useState<Partial<User> | null>(null);
 
     useEffect(() => {
         if (!token) return;
@@ -25,6 +25,15 @@ export default function Students() {
         }
         fetchUsers();
     }, [token]);
+
+    useEffect(() => {
+        if (selectedUser) {
+            setEditForm({
+                email: selectedUser.email,
+                comments: selectedUser.comments ?? ""
+            });
+        }
+    }, [selectedUser]);
 
     async function handleAddUser() {
         if (!token) return;
@@ -66,22 +75,28 @@ export default function Students() {
         }
     }
 
-    function handleNameClick(user: User) {
-        setSelectedUser(user);
-    }
-
     function handleEditClick(user: User) {
         setSelectedUser(user);
-        setSelectedEdit(user);
     }
 
-    async function handleEditUser(userId: number) {
-        if (!token) return;
+    async function handleUpdateUser(userId: number) {
+        if (!token || !editForm) return;
 
         try {
-            await deleteUser(token, userId);
-            //console.log(data);
-            setUsers(prev => prev.filter(u => u.id !== userId));
+            const updatedUser: { data: User } = await updateUser(token, userId, editForm);
+
+            setUsers(prev =>
+                prev.map(user =>
+                    user.id === userId ? updatedUser.data : user
+                )
+            );
+
+            setSelectedUser(updatedUser.data);
+            setEditForm({
+                email: updatedUser.data.email,
+                comments: updatedUser.data.comments ?? ""
+            });
+            setSelectedUser(null);
         } catch (err) {
             console.error(err);
             alert(err);
@@ -110,10 +125,7 @@ export default function Students() {
                                 className="flex justify-between items-center mb-2"
                                 key={u.id}
                             >
-                                <span 
-                                    onClick={() => handleNameClick(u)}
-                                    className="cursor-pointer hover:font-semibold"
-                                >
+                                <span >
                                     {u.secondName}, {u.firstName}
                                 </span>
                                 <div className="flex items-center gap-3">
@@ -132,7 +144,7 @@ export default function Students() {
                         ))}
                 </ol>
             </div>
-            {selectedUser && (
+            {selectedUser && editForm && (
                 <div className="fixed inset-0 flex items-center justify-center">
                     <div className="bg-white p-6 rounded shadow-lg w-101 relative">
                         
@@ -148,25 +160,31 @@ export default function Students() {
                         </h2>
                         
                         <p className="flex justify-between items-center mb-2">
-                            <strong>Email:</strong> {selectedUser.email}
-                            {selectedEdit && (
-                                <img 
-                                    onClick={() => handleEditUser(selectedUser.id)}
-                                    src={edit} alt="Edit" 
-                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
-                                />
-                            )}
+                            <strong>Email</strong>
+                            <input
+                                value={editForm.email || ""}
+                                onChange={(e) =>
+                                    setEditForm(prev => ({ ...prev, email: e.target.value }))
+                                }
+                                className="border p-1 w-64"
+                            />
                         </p>
                         <p className="flex justify-between items-center mb-2">
-                            <strong>Comments:</strong> {selectedUser.comments}
-                            {selectedEdit && (
-                                <img 
-                                    onClick={() => handleEditUser(selectedUser.id)}
-                                    src={edit} alt="Edit" 
-                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
-                                />
-                            )}
+                            <strong>Comments</strong>
+                            <textarea
+                                value={editForm.comments || ""}
+                                onChange={(e) =>
+                                    setEditForm(prev => ({ ...prev, comments: e.target.value }))
+                                }
+                                className="border p-1 w-64"
+                            />
                         </p>
+                        <button
+                            onClick={() => handleUpdateUser(selectedUser.id)}
+                            className="mt-4 bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
+                        >
+                            Save changes
+                        </button>
                     </div>
                 </div>
             )}
