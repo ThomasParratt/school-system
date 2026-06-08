@@ -166,7 +166,7 @@ export default function Students() {
                                 onChange={(e) =>
                                     setEditForm(prev => ({ ...prev, email: e.target.value }))
                                 }
-                                className="border p-1 w-64"
+                                className="border border-gray-200 rounded p-1 w-64"
                             />
                         </p>
                         <p className="flex justify-between items-center mb-2">
@@ -176,7 +176,7 @@ export default function Students() {
                                 onChange={(e) =>
                                     setEditForm(prev => ({ ...prev, comments: e.target.value }))
                                 }
-                                className="border p-1 w-64"
+                                className="border border-gray-200 rounded p-1 w-64"
                             />
                         </p>
                         <button

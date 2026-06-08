@@ -161,7 +161,7 @@ export default function Courses() {
                                 onChange={(e) =>
                                     setEditForm(prev => ({ ...prev, language: e.target.value }))
                                 }
-                                className="border p-1 w-64"
+                                className="border border-gray-200 rounded p-1 w-64"
                             >
                                 <option value="English">English</option>
                                 <option value="Finnish">Finnish</option>
@@ -178,7 +178,7 @@ export default function Courses() {
                                 onChange={(e) =>
                                     setEditForm(prev => ({ ...prev, level: e.target.value }))
                                 }
-                                className="border p-1 w-64"
+                                className="border border-gray-200 rounded p-1 w-64"
                             >
                                 <option value="A1">A1</option>
                                 <option value="A2">A2</option>
@@ -195,7 +195,7 @@ export default function Courses() {
                                 onChange={(e) =>
                                     setEditForm(prev => ({ ...prev, material: e.target.value }))
                                 }
-                                className="border p-1 w-64"
+                                className="border border-gray-200 rounded p-1 w-64"
                             />
                         </p>
                         <button
