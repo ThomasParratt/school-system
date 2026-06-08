@@ -18,6 +18,12 @@ export type Course = {
     material: string;
 };
 
+export type Enrollment = {
+    id: number;
+    courseId: number;
+    userId: number;
+};
+
 export type LoginResponse = {
   data: {
     user: User;

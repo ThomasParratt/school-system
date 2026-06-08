@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser } from "../services/userService";
-import { getCourses } from "../services/courseService";
+import { getCourses, enroll } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
-import type { User, Course } from "../types";
+import type { User, Course, Enrollment } from "../types";
 import bin from "../../dist/bin.svg";
 import edit from "../../dist/edit.svg";
 
 export default function Students() {
     const { token } = useAuth();
     const [users, setUsers] = useState<User[]>([]);;
+    const [enrollments, setEnrollments] = useState<Enrollment[]>([]);;
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [editForm, setEditForm] = useState<Partial<User> | null>(null);
     const [courses, setCourses] = useState<Course[]>([]);
@@ -116,6 +117,19 @@ export default function Students() {
                 comments: updatedUser.data.comments ?? ""
             });
             setSelectedUser(null);
+        } catch (err) {
+            console.error(err);
+            alert(err);
+        }
+    }
+
+    async function handleEnroll(courseId: number, userId: number) {
+        if (!token) return;
+
+        try {
+            const newEnrollment: { data: Enrollment } = await enroll(token, courseId, userId);
+
+            setEnrollments(prev => [...prev, newEnrollment.data]);
         } catch (err) {
             console.error(err);
             alert(err);
@@ -259,6 +273,8 @@ export default function Students() {
                                                 course,
                                             ],
                                         }));
+                                        //console.log(selectedUser.id);
+                                        handleEnroll(Number(selectedCourseId), selectedUser.id);
                                     }}
                                 >
                                     Add
