@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser } from "../services/userService";
+import { getCourses } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
-import type { User } from "../types";
+import type { User, Course } from "../types";
 import bin from "../../dist/bin.svg";
 import edit from "../../dist/edit.svg";
 
@@ -10,6 +11,8 @@ export default function Students() {
     const [users, setUsers] = useState<User[]>([]);;
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [editForm, setEditForm] = useState<Partial<User> | null>(null);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [selectedCourseId, setSelectedCourseId] = useState("");
 
     useEffect(() => {
         if (!token) return;
@@ -27,10 +30,26 @@ export default function Students() {
     }, [token]);
 
     useEffect(() => {
+            if (!token) return;
+    
+            async function fetchCourses() {
+            try {
+                const data = await getCourses(token);
+                //console.log(data);
+                setCourses(data.data);
+            } catch (err) {
+                console.error(err);
+            }
+            }
+            fetchCourses();
+        }, [token]);
+
+    useEffect(() => {
         if (selectedUser) {
             setEditForm({
                 email: selectedUser.email,
-                comments: selectedUser.comments ?? ""
+                comments: selectedUser.comments ?? "",
+                enrollments: selectedUser.enrollments ?? []
             });
         }
     }, [selectedUser]);
@@ -179,6 +198,73 @@ export default function Students() {
                                 className="border border-gray-200 rounded p-1 w-64"
                             />
                         </p>
+                        <div className="mb-2">
+                            <strong>Enrollments</strong>
+
+                            {editForm.enrollments?.map(course => (
+                                <div
+                                    key={course.id}
+                                    className="flex justify-between items-center border rounded p-1 mb-1"
+                                >
+                                    <span>{course.title}</span>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setEditForm(prev => ({
+                                                ...prev!,
+                                                enrollments:
+                                                    prev?.enrollments?.filter(
+                                                        c => c.id !== course.id
+                                                    ) ?? [],
+                                            }))
+                                        }
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+
+                            <div className="flex gap-2 mt-2">
+                                <select
+                                    value={selectedCourseId}
+                                    onChange={(e) => setSelectedCourseId(e.target.value)}
+                                    className="border rounded p-1 flex-1"
+                                >
+                                    <option value="">Select course</option>
+
+                                    {courses.map(course => (
+                                        <option
+                                            key={course.id}
+                                            value={course.id}
+                                        >
+                                            {course.title}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const course = courses.find(
+                                            c => c.id === Number(selectedCourseId)
+                                        );
+
+                                        if (!course) return;
+
+                                        setEditForm(prev => ({
+                                            ...prev!,
+                                            enrollments: [
+                                                ...(prev?.enrollments ?? []),
+                                                course,
+                                            ],
+                                        }));
+                                    }}
+                                >
+                                    Add
+                                </button>
+                            </div>
+                        </div>
                         <button
                             onClick={() => handleUpdateUser(selectedUser.id)}
                             className="mt-4 bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"

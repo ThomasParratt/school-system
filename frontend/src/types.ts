@@ -7,6 +7,7 @@ export type User = {
     password: string;
     role: string;
     comments: string | null;
+    enrollments: Course[];
 };
 
 export type Course = {
