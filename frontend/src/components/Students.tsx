@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getEnrollments } from "../services/userService";
-import { getCourses, enroll } from "../services/courseService";
+import { getCourses, enroll, unenroll } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
 import type { User, Course, UserEnrollment } from "../types";
 import bin from "../../dist/bin.svg";
@@ -141,8 +141,20 @@ export default function Students() {
 
         try {
             const enrollments: { data: UserEnrollment[] } = await getEnrollments(token, userId);
-            console.log(enrollments);
+            //console.log(enrollments);
             setEnrollments(enrollments.data);
+        } catch (err) {
+            console.error(err);
+            alert(err);
+        }
+    }
+
+    async function handleUnenroll(courseId: number, studentId: number) {
+        if (!token) return;
+
+        try {
+            await unenroll(token, courseId, studentId);
+
         } catch (err) {
             console.error(err);
             alert(err);
@@ -237,15 +249,17 @@ export default function Students() {
 
                                     <button
                                         type="button"
-                                        onClick={() =>
+                                        onClick={() => {
                                             setEditForm(prev => ({
                                                 ...prev!,
                                                 enrollments:
                                                     prev?.enrollments?.filter(
                                                         c => c.id !== enrollment.id
                                                     ) ?? [],
-                                            }))
-                                        }
+                                            }));
+
+                                            handleUnenroll(enrollment.courseId, enrollment.userId);
+                                        }}
                                     >
                                         Remove
                                     </button>
