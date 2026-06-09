@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getUsers, addUser, deleteUser, updateUser } from "../services/userService";
+import { getUsers, addUser, deleteUser, updateUser, getEnrollments } from "../services/userService";
 import { getCourses, enroll } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
 import type { User, Course, Enrollment } from "../types";
@@ -136,6 +136,19 @@ export default function Students() {
         }
     }
 
+    async function handleGetEnrollments(courseId: number, userId: number) {
+        if (!token) return;
+
+        try {
+            const enrollments: { data: Enrollment[] } = await getEnrollments(token, courseId, userId);
+
+            setEnrollments(enrollments.data);
+        } catch (err) {
+            console.error(err);
+            alert(err);
+        }
+    }
+
     return (
         <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center mb-6">
@@ -214,7 +227,7 @@ export default function Students() {
                         </p>
                         <div className="mb-2">
                             <strong>Enrollments</strong>
-
+        
                             {editForm.enrollments?.map(course => (
                                 <div
                                     key={course.id}
@@ -275,6 +288,7 @@ export default function Students() {
                                         }));
                                         //console.log(selectedUser.id);
                                         handleEnroll(Number(selectedCourseId), selectedUser.id);
+                                        //handleGetEnrollments();
                                     }}
                                 >
                                     Add

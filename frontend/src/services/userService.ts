@@ -83,3 +83,27 @@ export async function updateUser(
     }
     return res.json();
 }
+
+export async function getEnrollments(
+    token: string | null,
+    userId: number,
+    courseId: number
+) {
+    const res = await fetch(`http://localhost:3000/users/${userId}/enrollments`, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ courseId }),
+    });
+
+    if (!res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        const errorMessage = contentType.includes("application/json")
+            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
+            : await res.text();
+        throw new Error(errorMessage);
+    }
+    return res.json();
+}

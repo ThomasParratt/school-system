@@ -29,7 +29,6 @@ describe("GET /users/:id/enrollments", () => {
         const response = await request(app)
         .get(`/users/${userId}/enrollments`)
         .set("Authorization", `Bearer ${token}`)
-        .send({courseId: `${courseId}`});
 
         expect(response.status).toBe(200);
         expect(response.body.data).toHaveLength(1);
