@@ -1,36 +1,26 @@
 # School Management System
 
-## Current Project Status
+School Management System is a full-stack app for managing instructors, students, courses, and class sessions. The MVP scope is documented in [MVP.md](MVP.md).
 
-This project implements a school management system with instructor and student roles. Instructors can manage students, courses, and class sessions, while students can view their own information and enrolled courses. The MVP scope is documented in [MVP.md](MVP.md).
-
-## What Is Implemented Today
+## Current State
 
 ### Backend
 
-- Express server running on port `3000`
-- Prisma + PostgreSQL integration
-- Database models:
-  - `User` with roles (`instructor`, `student`) and fields: firstName, secondName, email, password, role, comments
-  - `Course` with language level, material, and instructor relationship
-  - `ClassSession` with location, start/end times, content, and homework
-  - `Enrollment` for student-course relationships
-- Password hashing with bcrypt
-- JWT token generation on login
-- JWT authentication middleware on protected routes
-- Role-based authorization (instructor-only operations)
-- Full CRUD operations for users, courses, and class sessions
-- Student enrollment management
-- Seed script that creates one instructor account
+- Express API on port `3000`
+- Prisma + PostgreSQL persistence
+- JWT authentication and role-based authorization
+- CRUD for users, courses, and class sessions
+- Student enrollment and unenrollment flows
+- Authenticated student views for enrolled courses and sessions
+- Seed script that creates an instructor account
 
 ### Frontend
 
-- React + TypeScript app running on port `5173`
-- Login form with persistent state in `localStorage`
-- Home view after login:
-  - List all users (instructor only)
-  - Add a new user via form (instructor only)
-  - Logout
+- React + TypeScript + Vite app on port `5173`
+- Login flow with session persistence in `localStorage`
+- Instructor dashboard with students, courses, and calendar panels
+- CRUD actions for students and courses in the dashboard
+- Student view is currently a simple placeholder after login
 
 ## Seeded Instructor Account
 
@@ -39,48 +29,43 @@ Created by [backend/prisma/seed.ts](backend/prisma/seed.ts).
 - Email: `instructor@school.local`
 - Password: `password123`
 
-## Current API Endpoints
+## API Overview
 
 Base URL: `http://localhost:3000`
 
 ### Authentication
-- `POST /auth/login` - login and receive JWT
+
+- `POST /auth/login` - login and receive a JWT
 
 ### Users
+
 - `GET /users` - list all users (instructor only)
-- `POST /users` - create user (instructor only)
-- `GET /users/me` - get authenticated user's info
-- `GET /users/:id` - get user by ID (instructor only)
-- `PATCH /users/:id` - update user (instructor only)
-- `DELETE /users/:id` - delete user (instructor only)
-- `GET /users/me/courses` - get authenticated student's enrolled courses
-- `GET /users/me/sessions` - get authenticated student's sessions
+- `POST /users` - create a student user (instructor only)
+- `GET /users/me` - get the authenticated user's profile
+- `GET /users/me/courses` - get the authenticated user's enrolled courses
+- `GET /users/me/sessions` - get the authenticated user's sessions
+- `GET /users/:id` - get a user by ID (instructor only)
+- `PATCH /users/:id` - update a user (instructor only)
+- `DELETE /users/:id` - delete a user (instructor only)
+- `GET /users/:id/enrollments` - list enrollments for a user (instructor only)
 
 ### Courses
+
 - `GET /courses` - list all courses (instructor only)
-- `POST /courses` - create course (instructor only)
-- `GET /courses/:id` - get course by ID (instructor only)
-- `PATCH /courses/:id` - update course (instructor only)
-- `DELETE /courses/:id` - delete course (instructor only)
-- `POST /courses/:id/enroll` - enroll student in course (instructor only)
+- `POST /courses` - create a course (instructor only)
+- `GET /courses/:id` - get a course by ID (instructor only)
+- `PATCH /courses/:id` - update a course (instructor only)
+- `DELETE /courses/:id` - delete a course (instructor only)
+- `POST /courses/:id/enroll` - enroll a student in a course (instructor only)
+- `DELETE /courses/:courseId/enrollments/:studentId` - remove an enrollment (instructor only)
+- `GET /courses/:id/sessions` - list sessions for a course
+- `POST /courses/:id/sessions` - create a session for a course (instructor only)
 
-### Class Sessions
-- `GET /sessions` - list all sessions (instructor only)
-- `POST /courses/:id/sessions` - create session for course (instructor only)
-- `GET /sessions/:id` - get session by ID (instructor only)
-- `PATCH /sessions/:id` - update session (instructor only)
-- `DELETE /sessions/:id` - delete session (instructor only)
-- `GET /courses/:id/sessions` - get all sessions for a course
+### Sessions
 
-## Known Gaps vs MVP
-
-- Frontend instructor dashboard not yet implemented (student list, course management UI)
-- Frontend student dashboard not yet implemented (calendar view)
-- No calendar/scheduling UI yet
-- No enrollment status tracking beyond basic student-course relationship
-- Limited error handling and validation on frontend
-
-See [MVP.md](MVP.md) for the target feature set.
+- `GET /sessions/:id` - get a session by ID (instructor only)
+- `PATCH /sessions/:id` - update a session (instructor only)
+- `DELETE /sessions/:id` - delete a session (instructor only)
 
 ## Tech Stack
 
@@ -88,58 +73,80 @@ See [MVP.md](MVP.md) for the target feature set.
 - Frontend: React, TypeScript, Vite
 - Dev/runtime: Docker Compose
 
-## Run Locally (Docker)
+## Run Locally
+
+### Docker
 
 ```bash
 docker compose up --build
 ```
 
 Services:
+
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:3000`
 - Postgres: `localhost:5432`
+
+### Local development
+
+Backend:
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ## Repository Structure
 
 ```text
 school-system/
 ├── backend/
-│   ├── src/
-│   │   ├── index.ts
-│   │   ├── lib/
-│   │   │   ├── auth.ts
-│   │   │   └── prisma.ts
-│   │   ├── middleware/
-│   │   │   └── authMiddleware.ts
-│   │   └── routes/
-│   │       ├── authRoutes.ts
-│   │       ├── users.ts
-│   │       ├── courses.ts
-│   │       └── sessions.ts
 │   ├── prisma/
 │   │   ├── schema.prisma
 │   │   ├── seed.ts
 │   │   └── migrations/
-│   ├── Dockerfile
+│   ├── src/
+│   │   ├── app.ts
+│   │   ├── index.ts
+│   │   ├── lib/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   └── types/
 │   ├── openapi.yaml
 │   ├── package.json
-│   └── tsconfig.json
+│   ├── tsconfig.json
+│   └── vitest.config.ts
 ├── frontend/
 │   ├── src/
-│   │   ├── main.tsx
 │   │   ├── App.tsx
-│   │   ├── index.css
-│   │   └── components/
-│   │       ├── Login.tsx
-│   │       └── Home.tsx
-│   ├── Dockerfile
-│   ├── vite.config.ts
+│   │   ├── main.tsx
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── services/
+│   │   └── types.ts
+│   ├── index.html
 │   ├── package.json
-│   └── index.html
+│   └── vite.config.ts
 ├── bruno/
-│   └── [API testing collection with endpoint definitions]
 ├── MVP.md
 ├── TO_DO.md
 ├── README.md
 └── docker-compose.yml
 ```
+
+## Notes
+
+- The instructor dashboard is implemented in [frontend/src/components/InstructorDash.tsx](frontend/src/components/InstructorDash.tsx).
+- Students and courses are managed through [frontend/src/components/Students.tsx](frontend/src/components/Students.tsx) and [frontend/src/components/Courses.tsx](frontend/src/components/Courses.tsx).
+- The calendar panel is currently a placeholder in [frontend/src/components/Calendar.tsx](frontend/src/components/Calendar.tsx).
+
+See [MVP.md](MVP.md) for the target feature set.
