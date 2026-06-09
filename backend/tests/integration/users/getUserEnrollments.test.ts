@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../../../src/app.js";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { loginAsInstructor, loginAsStudent } from "../helpers/auth.js";
+import { loginAsInstructor } from "../helpers/auth.js";
 import { cleanupTestData } from "../helpers/cleanup.js";
 import { createEnrollment } from "../factories/enrollmentFactory.js";
 import { createUser } from "../factories/userFactory.js";
