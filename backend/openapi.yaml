@@ -510,7 +510,6 @@ paths:
   
   /users/{id}/enrollments:
     get:
-      get:
       summary: Get enrollments by userId
       security:
         - bearerAuth: []
