@@ -54,7 +54,7 @@ export default function Students() {
                 enrollments: selectedUser.enrollments ?? []
             });
         }
-    }, [selectedUser]);
+    }, [selectedUser, enrollments]);
 
     async function handleAddUser() {
         if (!token) return;
@@ -302,6 +302,7 @@ export default function Students() {
                                         }));
                                         //console.log(selectedUser.id);
                                         handleEnroll(Number(selectedCourseId), selectedUser.id);
+                                        setSelectedCourseId("");
                                     }}
                                 >
                                     Add
