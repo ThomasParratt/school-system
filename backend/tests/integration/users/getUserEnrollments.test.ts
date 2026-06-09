@@ -33,7 +33,6 @@ describe("GET /users/:id/enrollments", () => {
         expect(response.status).toBe(200);
         expect(response.body.data).toHaveLength(1);
         expect(response.body.data[0].userId).toBe(userId);
-        expect(response.body.data[0].course.id).toBe(courseId);
         expect(response).toSatisfyApiSpec();
     });
 

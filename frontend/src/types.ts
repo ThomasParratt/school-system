@@ -24,6 +24,13 @@ export type Enrollment = {
     userId: number;
 };
 
+export type UserEnrollment = {
+    course: Course;
+    courseId: number;
+    id: number;
+    userId: number;
+};
+
 export type LoginResponse = {
   data: {
     user: User;

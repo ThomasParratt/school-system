@@ -433,20 +433,19 @@ router.get("/:id/enrollments", requireAuth, requireRole("instructor"), async (re
         course: true,
       },
     });
-
     return res.status(200).json({
       data: enrollments,
     });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({
-      error: {
-        message: "Failed to fetch enrollments",
-        code: "FETCH_ENROLLMENTS_ERROR",
-      },
-    });
-  }
-});
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        error: {
+          message: "Failed to fetch enrollments",
+          code: "FETCH_ENROLLMENTS_ERROR",
+        },
+      });
+    }
+  });
 
 
 export default router;

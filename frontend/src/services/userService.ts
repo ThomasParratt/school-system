@@ -87,7 +87,6 @@ export async function updateUser(
 export async function getEnrollments(
     token: string | null,
     userId: number,
-    courseId: number
 ) {
     const res = await fetch(`http://localhost:3000/users/${userId}/enrollments`, {
         method: "GET",
@@ -95,9 +94,8 @@ export async function getEnrollments(
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ courseId }),
     });
-
+    
     if (!res.ok) {
         const contentType = res.headers.get("content-type") ?? "";
         const errorMessage = contentType.includes("application/json")

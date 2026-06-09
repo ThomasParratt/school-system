@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getEnrollments } from "../services/userService";
 import { getCourses, enroll } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
-import type { User, Course, Enrollment } from "../types";
+import type { User, Course, Enrollment, UserEnrollment } from "../types";
 import bin from "../../dist/bin.svg";
 import edit from "../../dist/edit.svg";
 
 export default function Students() {
     const { token } = useAuth();
     const [users, setUsers] = useState<User[]>([]);;
-    const [enrollments, setEnrollments] = useState<Enrollment[]>([]);;
+    const [enrollments, setEnrollments] = useState<UserEnrollment[]>([]);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [editForm, setEditForm] = useState<Partial<User> | null>(null);
     const [courses, setCourses] = useState<Course[]>([]);
@@ -47,6 +47,7 @@ export default function Students() {
 
     useEffect(() => {
         if (selectedUser) {
+            handleGetEnrollments(selectedUser.id);
             setEditForm({
                 email: selectedUser.email,
                 comments: selectedUser.comments ?? "",
@@ -127,21 +128,20 @@ export default function Students() {
         if (!token) return;
 
         try {
-            const newEnrollment: { data: Enrollment } = await enroll(token, courseId, userId);
+            await enroll(token, courseId, userId);
 
-            setEnrollments(prev => [...prev, newEnrollment.data]);
         } catch (err) {
             console.error(err);
             alert(err);
         }
     }
 
-    async function handleGetEnrollments(courseId: number, userId: number) {
+    async function handleGetEnrollments(userId: number) {
         if (!token) return;
 
         try {
-            const enrollments: { data: Enrollment[] } = await getEnrollments(token, courseId, userId);
-
+            const enrollments: { data: UserEnrollment[] } = await getEnrollments(token, userId);
+            console.log(enrollments);
             setEnrollments(enrollments.data);
         } catch (err) {
             console.error(err);
@@ -228,12 +228,12 @@ export default function Students() {
                         <div className="mb-2">
                             <strong>Enrollments</strong>
         
-                            {editForm.enrollments?.map(course => (
+                            {enrollments.map(enrollment => (
                                 <div
-                                    key={course.id}
+                                    key={enrollment.id}
                                     className="flex justify-between items-center border rounded p-1 mb-1"
                                 >
-                                    <span>{course.title}</span>
+                                    <span>{enrollment.course.title}</span>
 
                                     <button
                                         type="button"
@@ -242,7 +242,7 @@ export default function Students() {
                                                 ...prev!,
                                                 enrollments:
                                                     prev?.enrollments?.filter(
-                                                        c => c.id !== course.id
+                                                        c => c.id !== enrollment.id
                                                     ) ?? [],
                                             }))
                                         }
@@ -288,7 +288,6 @@ export default function Students() {
                                         }));
                                         //console.log(selectedUser.id);
                                         handleEnroll(Number(selectedCourseId), selectedUser.id);
-                                        //handleGetEnrollments();
                                     }}
                                 >
                                     Add
