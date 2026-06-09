@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getEnrollments } from "../services/userService";
 import { getCourses, enroll } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
-import type { User, Course, Enrollment, UserEnrollment } from "../types";
+import type { User, Course, UserEnrollment } from "../types";
 import bin from "../../dist/bin.svg";
 import edit from "../../dist/edit.svg";
 
