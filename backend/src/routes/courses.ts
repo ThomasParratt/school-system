@@ -425,4 +425,68 @@ router.post(
   }
 );
 
+// DELETE /courses/:courseId/enrollments/:studentId
+router.delete(
+  "/:courseId/enrollments/:studentId",
+  requireAuth,
+  requireRole("instructor"),
+  async (req, res) => {
+    try {
+      const courseId = Number(req.params.courseId);
+      const studentId = Number(req.params.studentId);
+
+      if (!Number.isInteger(courseId) || courseId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid course ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+      if (!Number.isInteger(studentId) || studentId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid user ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+      await prisma.enrollment.delete({
+        where: {
+          userId_courseId: {
+            userId: studentId,
+            courseId,
+          },
+        },
+      });
+
+      return res.status(200).json({
+        data: {
+          message: "Enrollment deleted successfully",
+        },
+      });
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "code" in err && err.code === "P2025") {
+        return res.status(404).json({
+          error: {
+            message: "Enrollment not found",
+            code: "ENROLLMENT_NOT_FOUND",
+          },
+        });
+      }
+
+      console.error(err);
+
+      return res.status(500).json({
+        error: {
+          message: "Failed to delete enrollment",
+          code: "DELETE_ENROLLMENT_ERROR",
+        },
+      });
+    }
+  }
+);
+
 export default router;
