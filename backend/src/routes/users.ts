@@ -413,4 +413,40 @@ router.delete(
   }
 );
 
+// GET /users/:id/enrollments
+router.get("/:id/enrollments", requireAuth, requireRole("instructor"), async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return res.status(400).json({
+        error: {
+          message: "Invalid user ID",
+          code: "INVALID_ID",
+        },
+      });
+    }
+    
+    const enrollments = await prisma.enrollment.findMany({
+      where: { userId: userId },
+      include: {
+        course: true,
+      },
+    });
+
+    return res.status(200).json({
+      data: enrollments,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch enrollments",
+        code: "FETCH_ENROLLMENTS_ERROR",
+      },
+    });
+  }
+});
+
+
 export default router;
