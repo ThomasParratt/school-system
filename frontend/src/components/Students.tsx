@@ -31,19 +31,19 @@ export default function Students() {
     }, [token]);
 
     useEffect(() => {
-            if (!token) return;
-    
-            async function fetchCourses() {
-            try {
-                const data = await getCourses(token);
-                //console.log(data);
-                setCourses(data.data);
-            } catch (err) {
-                console.error(err);
-            }
-            }
-            fetchCourses();
-        }, [token]);
+        if (!token) return;
+
+        async function fetchCourses() {
+        try {
+            const data = await getCourses(token);
+            //console.log(data);
+            setCourses(data.data);
+        } catch (err) {
+            console.error(err);
+        }
+        }
+        fetchCourses();
+    }, [token]);
 
     useEffect(() => {
         if (selectedUser) {
