@@ -2,33 +2,32 @@ import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getEnrollments } from "../services/userService";
 import { getCourses, enroll, unenroll } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
+import { useCrud } from "../hooks/useCrud";
 import type { User, Course, UserEnrollment } from "../types";
 import bin from "../../dist/bin.svg";
 import edit from "../../dist/edit.svg";
 
 export default function Students() {
     const { token } = useAuth();
-    const [users, setUsers] = useState<User[]>([]);;
     const [enrollments, setEnrollments] = useState<UserEnrollment[]>([]);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [editForm, setEditForm] = useState<Partial<User> | null>(null);
     const [courses, setCourses] = useState<Course[]>([]);
     const [selectedCourseId, setSelectedCourseId] = useState("");
 
-    useEffect(() => {
-        if (!token) return;
-
-        async function fetchUsers() {
-        try {
-            const data = await getUsers(token);
-            //console.log(data);
-            setUsers(data.data);
-        } catch (err) {
-            console.error(err);
-        }
-        }
-        fetchUsers();
-    }, [token]);
+    const {
+        items: users,
+        selectedItem: selectedUser,
+        setSelectedItem: setSelectedUser,
+        addItem,
+        updateItem,
+        deleteItem
+    } = useCrud<User>({
+        token,
+        getAll: getUsers,
+        create: addUser,
+        update: updateUser,
+        remove: deleteUser
+    });
 
     useEffect(() => {
         if (!token) return;
@@ -68,15 +67,13 @@ export default function Students() {
         if (!firstName || !secondName || !email || !password) return;
 
         try {
-            const newUser: { data: User } = await addUser(token, {
+            await addItem({
                 firstName: `${firstName}`,
                 secondName: `${secondName}`,
                 email: `${email}`,
                 password: `${password}`,
                 comments: `${comments}`
             });
-
-            setUsers(prev => [...prev, newUser.data]);
         } catch (err) {
             console.error(err);
             alert(err);
@@ -87,9 +84,7 @@ export default function Students() {
         if (!token) return;
 
         try {
-            await deleteUser(token, userId);
-            //console.log(data);
-            setUsers(prev => prev.filter(u => u.id !== userId));
+            await deleteItem(userId);
         } catch (err) {
             console.error(err);
             alert(err);
@@ -104,19 +99,7 @@ export default function Students() {
         if (!token || !editForm) return;
 
         try {
-            const updatedUser: { data: User } = await updateUser(token, userId, editForm);
-
-            setUsers(prev =>
-                prev.map(user =>
-                    user.id === userId ? updatedUser.data : user
-                )
-            );
-
-            setSelectedUser(updatedUser.data);
-            setEditForm({
-                email: updatedUser.data.email,
-                comments: updatedUser.data.comments ?? ""
-            });
+            await updateItem(userId, editForm);
             setSelectedUser(null);
         } catch (err) {
             console.error(err);
