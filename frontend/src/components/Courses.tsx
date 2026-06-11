@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
-import { getCourses, addCourse, deleteCourse, updateCourse } from "../services/courseService";
+import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../services/courseService";
+import { getUsers } from "../services/userService";
 import { useAuth } from "../context/AuthContext";
 import { useCrud } from "../hooks/useCrud";
-import type { Course } from "../types";
+import type { Course, User } from "../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
+import bin from "../../dist/bin.svg";
 
 export default function Courses() {
     const { token } = useAuth();
     const [editForm, setEditForm] = useState<Partial<Course>>({});
+    const [users, setUsers] = useState<User[]>([]);
+    const [selectedUserId, setSelectedUserId] = useState("");
 
     const {
         items: courses,
@@ -26,11 +30,28 @@ export default function Courses() {
     });
 
     useEffect(() => {
+        if (!token) return;
+
+        async function fetchUsers() {
+        try {
+            const data = await getUsers(token);
+            //console.log(data);
+            setUsers(data.data);
+        } catch (err) {
+            console.error(err);
+        }
+        }
+        fetchUsers();
+    }, [token]);
+
+    useEffect(() => {
         if (selectedCourse) {
+            handleGetEnrollments(selectedCourse.id);
             setEditForm({
                 language: selectedCourse.language,
                 level: selectedCourse.level,
-                material: selectedCourse.material
+                material: selectedCourse.material,
+                enrollments: selectedCourse.enrollments ?? []
             });
         }
     }, [selectedCourse]);
@@ -76,6 +97,45 @@ export default function Courses() {
         try {
             await updateItem(courseId, editForm);
             setSelectedCourse(null);
+        } catch (err) {
+            console.error(err);
+            alert(err);
+        }
+    }
+
+    async function handleEnroll(courseId: number, userId: number) {
+        if (!token) return;
+
+        try {
+            await enroll(token, courseId, userId);
+
+        } catch (err) {
+            console.error(err);
+            alert(err);
+        }
+    }
+
+    async function handleGetEnrollments(courseId: number) {
+        if (!token) return;
+
+        try {
+            const result = await getCourseEnrollments(token, courseId);
+            setEditForm(prev => ({
+                ...prev!,
+                enrollments: result.data.map(e => e.user)
+            }));
+        } catch (err) {
+            console.error(err);
+            alert(err);
+        }
+    }
+
+    async function handleUnenroll(courseId: number, studentId: number) {
+        if (!token) return;
+
+        try {
+            await unenroll(token, courseId, studentId);
+
         } catch (err) {
             console.error(err);
             alert(err);
@@ -147,7 +207,7 @@ export default function Courses() {
                         <option value="C2">C2</option>
                     </select>
                 </p>
-                <p className="flex justify-between items-center mb-2">
+                <p className="flex justify-between items-center mb-3">
                     <strong>Material</strong>
                     <textarea
                         value={editForm.material || ""}
@@ -157,6 +217,92 @@ export default function Courses() {
                         className="border border-gray-200 rounded p-1 w-64"
                     />
                 </p>
+
+                <div className="mb-2">
+                    <strong>Enrollments</strong>
+
+                    {/* Add course */}
+                    <div className="flex gap-2 mt-2 mb-2">
+                        <select
+                            value={selectedUserId}
+                            onChange={(e) =>
+                                setSelectedUserId(e.target.value)
+                            }
+                            className="border rounded p-1 flex-1"
+                        >
+                            <option value="">Select student</option>
+
+                            {users
+                                .filter(u => u.role === "student")
+                                .map(user => (
+                                <option
+                                    key={user.id}
+                                    value={user.id}
+                                >
+                                    {user.firstName}, {user.secondName}
+                                </option>
+                            ))}
+                        </select>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const user = users.find(
+                                    c =>
+                                        c.id === Number(selectedUserId)
+                                );
+
+                                if (!user) return;
+
+                                setEditForm(prev => ({
+                                    ...prev!,
+                                    enrollments: [
+                                        ...(prev?.enrollments ?? []),
+                                        user,
+                                    ],
+                                }));
+
+                                handleEnroll(
+                                    selectedCourse.id,
+                                    Number(selectedUserId)
+                                );
+
+                                setSelectedUserId("");
+                            }}
+                        >
+                            ➕
+                        </button>
+                    </div>
+
+                    {editForm.enrollments?.map(user => (
+                        <div
+                            key={user.id}
+                            className="flex justify-between items-center border-gray-200 rounded p-1 mb-1"
+                        >
+                            <span>{user.firstName}, {user.secondName}</span>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setEditForm(prev => ({
+                                        ...prev!,
+                                        enrollments:
+                                            prev?.enrollments?.filter(
+                                                c => c.id !== user.id
+                                            ) ?? [],
+                                    }));
+
+                                    handleUnenroll(selectedCourse.id, user.id);
+                                }}
+                            >
+                                <img
+                                    src={bin} alt="Delete" 
+                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
+                                />
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </CrudModal>
         </div>
     );

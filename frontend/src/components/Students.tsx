@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { getUsers, addUser, deleteUser, updateUser, getEnrollments } from "../services/userService";
+import { getUsers, addUser, deleteUser, updateUser, getUserEnrollments } from "../services/userService";
 import { getCourses, enroll, unenroll } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
 import { useCrud } from "../hooks/useCrud";
-import type { User, Course, UserEnrollment } from "../types";
+import type { User, Course } from "../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
+import bin from "../../dist/bin.svg";
 
 export default function Students() {
     const { token } = useAuth();
@@ -118,7 +119,7 @@ export default function Students() {
         if (!token) return;
 
         try {
-            const result = await getEnrollments(token, userId);
+            const result = await getUserEnrollments(token, userId);
             setEditForm(prev => ({
                 ...prev!,
                 enrollments: result.data.map(e => e.course)
@@ -188,7 +189,7 @@ export default function Students() {
                 </p>
 
                 {/* Comments */}
-                <p className="flex justify-between items-center mb-2">
+                <p className="flex justify-between items-center mb-3">
                     <strong>Comments</strong>
                     <textarea
                         value={editForm.comments || ""}
@@ -206,34 +207,8 @@ export default function Students() {
                 <div className="mb-2">
                     <strong>Enrollments</strong>
 
-                    {editForm.enrollments?.map(course => (
-                        <div
-                            key={course.id}
-                            className="flex justify-between items-center border rounded p-1 mb-1"
-                        >
-                            <span>{course.title}</span>
-
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setEditForm(prev => ({
-                                        ...prev!,
-                                        enrollments:
-                                            prev?.enrollments?.filter(
-                                                c => c.id !== course.id
-                                            ) ?? [],
-                                    }));
-
-                                    handleUnenroll(course.id, selectedUser.id);
-                                }}
-                            >
-                                Remove
-                            </button>
-                        </div>
-                    ))}
-
                     {/* Add course */}
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex gap-2 mt-2 mb-2">
                         <select
                             value={selectedCourseId}
                             onChange={(e) =>
@@ -279,9 +254,38 @@ export default function Students() {
                                 setSelectedCourseId("");
                             }}
                         >
-                            Add
+                            ➕
                         </button>
                     </div>
+
+                    {editForm.enrollments?.map(course => (
+                        <div
+                            key={course.id}
+                            className="flex justify-between items-center border-gray-200 rounded p-1 mb-1"
+                        >
+                            <span>{course.title}</span>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setEditForm(prev => ({
+                                        ...prev!,
+                                        enrollments:
+                                            prev?.enrollments?.filter(
+                                                c => c.id !== course.id
+                                            ) ?? [],
+                                    }));
+
+                                    handleUnenroll(course.id, selectedUser.id);
+                                }}
+                            >
+                                <img
+                                    src={bin} alt="Delete" 
+                                    className="w-5 h-5 cursor-pointer hover:opacity-70" 
+                                />
+                            </button>
+                        </div>
+                    ))}
                 </div>
             </CrudModal>
         </div>

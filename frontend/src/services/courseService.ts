@@ -130,3 +130,25 @@ export async function unenroll(
     }
     return res.json();
 }
+
+export async function getCourseEnrollments(
+    token: string | null,
+    courseId: number,
+) {
+    const res = await fetch(`http://localhost:3000/courses/${courseId}/enrollments`, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    });
+    
+    if (!res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        const errorMessage = contentType.includes("application/json")
+            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
+            : await res.text();
+        throw new Error(errorMessage);
+    }
+    return res.json();
+}

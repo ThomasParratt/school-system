@@ -84,7 +84,7 @@ export async function updateUser(
     return res.json();
 }
 
-export async function getEnrollments(
+export async function getUserEnrollments(
     token: string | null,
     userId: number,
 ) {
