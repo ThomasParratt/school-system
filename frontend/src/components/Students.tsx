@@ -90,10 +90,6 @@ export default function Students() {
         }
     }
 
-    function handleEditClick(user: User) {
-        setSelectedUser(user);
-    }
-
     async function handleUpdateUser(userId: number) {
         if (!token || !editForm) return;
 
@@ -165,7 +161,7 @@ export default function Students() {
                         `${u.secondName}, ${u.firstName}`
                     }
                     onEdit={setSelectedUser}
-                    onDelete={deleteItem}
+                    onDelete={handleDeleteUser}
                 />
             </div>
             <CrudModal
