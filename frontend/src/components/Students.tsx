@@ -9,7 +9,6 @@ import edit from "../../dist/edit.svg";
 
 export default function Students() {
     const { token } = useAuth();
-    const [enrollments, setEnrollments] = useState<UserEnrollment[]>([]);
     const [editForm, setEditForm] = useState<Partial<User> | null>(null);
     const [courses, setCourses] = useState<Course[]>([]);
     const [selectedCourseId, setSelectedCourseId] = useState("");
@@ -53,7 +52,7 @@ export default function Students() {
                 enrollments: selectedUser.enrollments ?? []
             });
         }
-    }, [selectedUser, enrollments]);
+    }, [selectedUser]);
 
     async function handleAddUser() {
         if (!token) return;
@@ -123,9 +122,11 @@ export default function Students() {
         if (!token) return;
 
         try {
-            const enrollments: { data: UserEnrollment[] } = await getEnrollments(token, userId);
-            //console.log(enrollments);
-            setEnrollments(enrollments.data);
+            const result = await getEnrollments(token, userId);
+            setEditForm(prev => ({
+                ...prev!,
+                enrollments: result.data.map(e => e.course)
+            }));
         } catch (err) {
             console.error(err);
             alert(err);
@@ -223,12 +224,12 @@ export default function Students() {
                         <div className="mb-2">
                             <strong>Enrollments</strong>
         
-                            {enrollments.map(enrollment => (
+                            {editForm.enrollments?.map(course => (
                                 <div
-                                    key={enrollment.id}
+                                    key={course.id}
                                     className="flex justify-between items-center border rounded p-1 mb-1"
                                 >
-                                    <span>{enrollment.course.title}</span>
+                                    <span>{course.title}</span>
 
                                     <button
                                         type="button"
@@ -237,11 +238,11 @@ export default function Students() {
                                                 ...prev!,
                                                 enrollments:
                                                     prev?.enrollments?.filter(
-                                                        c => c.id !== enrollment.id
+                                                        c => c.id !== course.id
                                                     ) ?? [],
                                             }));
 
-                                            handleUnenroll(enrollment.courseId, enrollment.userId);
+                                            handleUnenroll(course.id, selectedUser.id);
                                         }}
                                     >
                                         Remove
