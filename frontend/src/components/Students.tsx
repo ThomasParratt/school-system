@@ -4,12 +4,12 @@ import { getCourses, enroll, unenroll } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
 import { useCrud } from "../hooks/useCrud";
 import type { User, Course, UserEnrollment } from "../types";
-import bin from "../../dist/bin.svg";
-import edit from "../../dist/edit.svg";
+import CrudList from "./CrudList";
+import CrudModal from "./CrudModal";
 
 export default function Students() {
     const { token } = useAuth();
-    const [editForm, setEditForm] = useState<Partial<User> | null>(null);
+    const [editForm, setEditForm] = useState<Partial<User>>({});
     const [courses, setCourses] = useState<Course[]>([]);
     const [selectedCourseId, setSelectedCourseId] = useState("");
 
@@ -158,150 +158,136 @@ export default function Students() {
                 </button>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
-                <ol>
-                    {[...users]
-                        .filter(user => user.role === "student")
-                        .sort((a, b) => a.secondName.localeCompare(b.secondName))
-                        .map(u => (
-                            <li
-                                className="flex justify-between items-center mb-2"
-                                key={u.id}
-                            >
-                                <span >
-                                    {u.secondName}, {u.firstName}
-                                </span>
-                                <div className="flex items-center gap-3">
-                                    <img 
-                                        onClick={() => handleEditClick(u)}
-                                        src={edit} alt="Edit" 
-                                        className="w-5 h-5 cursor-pointer hover:opacity-70" 
-                                    />
-                                    <img 
-                                        onClick={() => handleDeleteUser(u.id)}
-                                        src={bin} alt="Delete" 
-                                        className="w-5 h-5 cursor-pointer hover:opacity-70" 
-                                    />
-                                </div>
-                            </li>
-                        ))}
-                </ol>
+                <CrudList<User>
+                    items={users.filter(u => u.role === "student")}
+                    getKey={(u) => u.id}
+                    renderLabel={(u) =>
+                        `${u.secondName}, ${u.firstName}`
+                    }
+                    onEdit={setSelectedUser}
+                    onDelete={deleteItem}
+                />
             </div>
-            {selectedUser && editForm && (
-                <div className="fixed inset-0 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded shadow-lg w-101 relative">
-                        
-                        <button
-                            onClick={() => setSelectedUser(null)}
-                            className="absolute top-2 right-3 text-gray-500 hover:text-black"
+            <CrudModal
+                open={!!selectedUser}
+                title={`${selectedUser?.firstName} ${selectedUser?.secondName}`}
+                onClose={() => setSelectedUser(null)}
+                onSave={() =>
+                    handleUpdateUser(selectedUser!.id)
+                }
+            >
+                {/* Email */}
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Email</strong>
+                    <input
+                        value={editForm.email || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({
+                                ...prev!,
+                                email: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+
+                {/* Comments */}
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Comments</strong>
+                    <textarea
+                        value={editForm.comments || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({
+                                ...prev!,
+                                comments: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+
+                {/* Enrollments */}
+                <div className="mb-2">
+                    <strong>Enrollments</strong>
+
+                    {editForm.enrollments?.map(course => (
+                        <div
+                            key={course.id}
+                            className="flex justify-between items-center border rounded p-1 mb-1"
                         >
-                            ✕
-                        </button>
+                            <span>{course.title}</span>
 
-                        <h2 className="text-lg font-bold mb-4">
-                            {selectedUser.firstName} {selectedUser.secondName}
-                        </h2>
-                        
-                        <p className="flex justify-between items-center mb-2">
-                            <strong>Email</strong>
-                            <input
-                                value={editForm.email || ""}
-                                onChange={(e) =>
-                                    setEditForm(prev => ({ ...prev, email: e.target.value }))
-                                }
-                                className="border border-gray-200 rounded p-1 w-64"
-                            />
-                        </p>
-                        <p className="flex justify-between items-center mb-2">
-                            <strong>Comments</strong>
-                            <textarea
-                                value={editForm.comments || ""}
-                                onChange={(e) =>
-                                    setEditForm(prev => ({ ...prev, comments: e.target.value }))
-                                }
-                                className="border border-gray-200 rounded p-1 w-64"
-                            />
-                        </p>
-                        <div className="mb-2">
-                            <strong>Enrollments</strong>
-        
-                            {editForm.enrollments?.map(course => (
-                                <div
-                                    key={course.id}
-                                    className="flex justify-between items-center border rounded p-1 mb-1"
-                                >
-                                    <span>{course.title}</span>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setEditForm(prev => ({
+                                        ...prev!,
+                                        enrollments:
+                                            prev?.enrollments?.filter(
+                                                c => c.id !== course.id
+                                            ) ?? [],
+                                    }));
 
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setEditForm(prev => ({
-                                                ...prev!,
-                                                enrollments:
-                                                    prev?.enrollments?.filter(
-                                                        c => c.id !== course.id
-                                                    ) ?? [],
-                                            }));
-
-                                            handleUnenroll(course.id, selectedUser.id);
-                                        }}
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            ))}
-
-                            <div className="flex gap-2 mt-2">
-                                <select
-                                    value={selectedCourseId}
-                                    onChange={(e) => setSelectedCourseId(e.target.value)}
-                                    className="border rounded p-1 flex-1"
-                                >
-                                    <option value="">Select course</option>
-
-                                    {courses.map(course => (
-                                        <option
-                                            key={course.id}
-                                            value={course.id}
-                                        >
-                                            {course.title}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        const course = courses.find(
-                                            c => c.id === Number(selectedCourseId)
-                                        );
-
-                                        if (!course) return;
-
-                                        setEditForm(prev => ({
-                                            ...prev!,
-                                            enrollments: [
-                                                ...(prev?.enrollments ?? []),
-                                                course,
-                                            ],
-                                        }));
-                                        //console.log(selectedUser.id);
-                                        handleEnroll(Number(selectedCourseId), selectedUser.id);
-                                        setSelectedCourseId("");
-                                    }}
-                                >
-                                    Add
-                                </button>
-                            </div>
+                                    handleUnenroll(course.id, selectedUser.id);
+                                }}
+                            >
+                                Remove
+                            </button>
                         </div>
-                        <button
-                            onClick={() => handleUpdateUser(selectedUser.id)}
-                            className="mt-4 bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
+                    ))}
+
+                    {/* Add course */}
+                    <div className="flex gap-2 mt-2">
+                        <select
+                            value={selectedCourseId}
+                            onChange={(e) =>
+                                setSelectedCourseId(e.target.value)
+                            }
+                            className="border rounded p-1 flex-1"
                         >
-                            Save changes
+                            <option value="">Select course</option>
+
+                            {courses.map(course => (
+                                <option
+                                    key={course.id}
+                                    value={course.id}
+                                >
+                                    {course.title}
+                                </option>
+                            ))}
+                        </select>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const course = courses.find(
+                                    c =>
+                                        c.id === Number(selectedCourseId)
+                                );
+
+                                if (!course) return;
+
+                                setEditForm(prev => ({
+                                    ...prev!,
+                                    enrollments: [
+                                        ...(prev?.enrollments ?? []),
+                                        course,
+                                    ],
+                                }));
+
+                                handleEnroll(
+                                    Number(selectedCourseId),
+                                    selectedUser.id
+                                );
+
+                                setSelectedCourseId("");
+                            }}
+                        >
+                            Add
                         </button>
                     </div>
                 </div>
-            )}
+            </CrudModal>
         </div>
     );
 }

@@ -1,30 +1,29 @@
 import { useEffect, useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse } from "../services/courseService";
 import { useAuth } from "../context/AuthContext";
+import { useCrud } from "../hooks/useCrud";
 import type { Course } from "../types";
 import bin from "../../dist/bin.svg";
 import edit from "../../dist/edit.svg";
 
 export default function Courses() {
     const { token } = useAuth();
-    const [courses, setCourses] = useState<Course[]>([]);;
-    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
     const [editForm, setEditForm] = useState<Partial<Course> | null>(null);
 
-    useEffect(() => {
-        if (!token) return;
-
-        async function fetchCourses() {
-        try {
-            const data = await getCourses(token);
-            //console.log(data);
-            setCourses(data.data);
-        } catch (err) {
-            console.error(err);
-        }
-        }
-        fetchCourses();
-    }, [token]);
+    const {
+        items: courses,
+        selectedItem: selectedCourse,
+        setSelectedItem: setSelectedCourse,
+        addItem,
+        updateItem,
+        deleteItem
+    } = useCrud<Course>({
+        token,
+        getAll: getCourses,
+        create: addCourse,
+        update: updateCourse,
+        remove: deleteCourse
+    });
 
     useEffect(() => {
         if (selectedCourse) {
@@ -47,13 +46,12 @@ export default function Courses() {
         if (!title || !language || !level || !material) return;
 
         try {
-            const newCourse: { data: Course } = await addCourse(token, {
+            await addItem({
                 title: `${title}`,
                 language: `${language}`,
                 level: `${level}`,
                 material: `${material}`
             });
-            setCourses(prev => [...prev, newCourse.data]);
         } catch (err) {
             console.error(err);
             alert(err);
@@ -64,9 +62,8 @@ export default function Courses() {
         if (!token) return;
 
         try {
-            await deleteCourse(token, courseId);
+            await deleteItem(courseId);
             //console.log(data);
-            setCourses(prev => prev.filter(u => u.id !== courseId));
         } catch (err) {
             console.error(err);
             alert(err);
@@ -74,33 +71,20 @@ export default function Courses() {
     }
 
     function handleEditClick(course: Course) {
-            setSelectedCourse(course);
+        setSelectedCourse(course);
+    }
+
+    async function handleUpdateCourse(courseId: number) {
+        if (!token || !editForm) return;
+
+        try {
+            await updateItem(courseId, editForm);
+            setSelectedCourse(null);
+        } catch (err) {
+            console.error(err);
+            alert(err);
         }
-    
-        async function handleUpdateCourse(courseId: number) {
-            if (!token || !editForm) return;
-    
-            try {
-                const updatedCourse: { data: Course } = await updateCourse(token, courseId, editForm);
-    
-                setCourses(prev =>
-                    prev.map(course =>
-                        course.id === courseId ? updatedCourse.data : course
-                    )
-                );
-    
-                setSelectedCourse(updatedCourse.data);
-                setEditForm({
-                    language: updatedCourse.data.language,
-                    level: updatedCourse.data.level,
-                    material: updatedCourse.data.material
-                });
-                setSelectedCourse(null);
-            } catch (err) {
-                console.error(err);
-                alert(err);
-            }
-        }
+    }
 
     return (
         <div className="flex flex-col flex-1 min-h-0">
