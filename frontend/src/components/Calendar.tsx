@@ -1,19 +1,3 @@
-/*import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
-
-export default function Calendar() {
-  return (
-    <div>
-      <h1 className="text-xl font-bold">Calendar</h1>
-      <FullCalendar
-        plugins={[ dayGridPlugin ]}
-        initialView="dayGridMonth"
-        height="auto"
-      />
-    </div>
-  )
-}*/
-
 import { useState } from 'react'
 import { formatDate } from '@fullcalendar/core'
 import FullCalendar from '@fullcalendar/react'
