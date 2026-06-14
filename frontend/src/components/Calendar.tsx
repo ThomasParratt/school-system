@@ -105,6 +105,16 @@ export default function Calendar({ token }) {
         slotMinTime="08:00:00"
         slotMaxTime="22:00:00"
         slotDuration="00:15:00"
+        slotLabelFormat={{
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }}
+        eventTimeFormat={{
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }}
         editable={true}
         selectable={true}
         selectMirror={true}
