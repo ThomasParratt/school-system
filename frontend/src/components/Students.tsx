@@ -7,9 +7,8 @@ import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../dist/bin.svg";
 
-export default function Students({ token }) {
+export default function Students({ token, courses }) {
     const [editForm, setEditForm] = useState<Partial<User>>({});
-    const [courses, setCourses] = useState<Course[]>([]);
     const [selectedCourseId, setSelectedCourseId] = useState("");
 
     const {
@@ -26,21 +25,6 @@ export default function Students({ token }) {
         update: updateUser,
         remove: deleteUser
     });
-
-    useEffect(() => {
-        if (!token) return;
-
-        async function fetchCourses() {
-        try {
-            const data = await getCourses(token);
-            //console.log(data);
-            setCourses(data.data);
-        } catch (err) {
-            console.error(err);
-        }
-        }
-        fetchCourses();
-    }, [token]);
 
     useEffect(() => {
         if (selectedUser) {

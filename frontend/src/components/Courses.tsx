@@ -7,13 +7,12 @@ import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../dist/bin.svg";
 
-export default function Courses({ token }) {
+export default function Courses({ token, courses, refreshCourses }) {
     const [editForm, setEditForm] = useState<Partial<Course>>({});
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUserId, setSelectedUserId] = useState("");
 
     const {
-        items: courses,
         selectedItem: selectedCourse,
         setSelectedItem: setSelectedCourse,
         addItem,
@@ -71,6 +70,7 @@ export default function Courses({ token }) {
                 level: `${level}`,
                 material: `${material}`
             });
+            await refreshCourses();
         } catch (err) {
             console.error(err);
             alert(err);
