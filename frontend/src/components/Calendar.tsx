@@ -4,8 +4,9 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
+import { addCourseSession, getCourseSessions } from '../services/courseService'
 
-export default function Calendar() {
+export default function Calendar({ token }) {
   const [weekendsVisible, setWeekendsVisible] = useState(true)
   const [currentEvents, setCurrentEvents] = useState([])
 
@@ -55,6 +56,38 @@ export default function Calendar() {
     return String(eventGuid++)
   }
 
+  async function handleGetSessions(courseId: number) {
+      if (!token) return;
+
+      try {
+        await getCourseSessions(token, courseId);
+      } catch (err) {
+        console.error(err);
+        alert(err);
+      }
+  }
+
+  async function handleAddSession(courseId: number) {
+      if (!token) return;
+
+      const location = prompt("Location?");
+      const startsAt = prompt("Start time?");
+      const endsAt = prompt("End time?");
+
+      if (!location || !startsAt || !endsAt) return;
+
+      try {
+          await addCourseSession(token, courseId, {
+              location: `${location}`,
+              startsAt: `${startsAt}`,
+              endsAt: `${endsAt}`,
+          });
+      } catch (err) {
+          console.error(err);
+          alert(err);
+      }
+  }
+
   return (
     <div className="flex-1 min-h-0">
       <Sidebar
@@ -91,7 +124,8 @@ export default function Calendar() {
         selectMirror={true}
         dayMaxEvents={true}
         weekends={weekendsVisible}
-        initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
+        //initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
+        events={handleGetSessions(3)}
         select={handleDateSelect}
         eventContent={renderEventContent} // custom render function
         eventClick={handleEventClick}

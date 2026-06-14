@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../services/courseService";
 import { getUsers } from "../services/userService";
-import { useAuth } from "../context/AuthContext";
 import { useCrud } from "../hooks/useCrud";
 import type { Course, User } from "../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../dist/bin.svg";
 
-export default function Courses() {
-    const { token } = useAuth();
+export default function Courses({ token }) {
     const [editForm, setEditForm] = useState<Partial<Course>>({});
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUserId, setSelectedUserId] = useState("");

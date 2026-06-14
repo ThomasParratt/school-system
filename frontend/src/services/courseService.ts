@@ -175,9 +175,10 @@ export async function getCourseSessions(
     return res.json();
 }
 
-export async function addCourseSessions(
+export async function addCourseSession(
     token: string | null,
     courseId: number,
+    session: { location: string; startsAt: string; endsAt: string }
 ) {
     const res = await fetch(`http://localhost:3000/courses/${courseId}/sessions`, {
         method: "POST",
@@ -185,6 +186,7 @@ export async function addCourseSessions(
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
         },
+        body: JSON.stringify({ session }),
     });
 
     if (!res.ok) {
