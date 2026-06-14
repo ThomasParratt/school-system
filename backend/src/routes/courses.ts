@@ -265,7 +265,7 @@ router.get("/:id/sessions", requireAuth, async (req, res) => {
       }
       
     const sessions = await prisma.classSession.findMany({
-      where: { courseId },
+      where: { courseId: courseId },
       select: {
         id: true,
         courseId: true,

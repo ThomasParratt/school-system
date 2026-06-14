@@ -158,13 +158,8 @@ export async function getCourseSessions(
     courseId: number,
 ) {
     const res = await fetch(`http://localhost:3000/courses/${courseId}/sessions`, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${token}` },
     });
-    
     if (!res.ok) {
         const contentType = res.headers.get("content-type") ?? "";
         const errorMessage = contentType.includes("application/json")
@@ -172,7 +167,9 @@ export async function getCourseSessions(
             : await res.text();
         throw new Error(errorMessage);
     }
-    return res.json();
+    const data = await res.json();
+    //console.log(data.data);
+    return data.data;
 }
 
 export async function addCourseSession(
@@ -186,9 +183,9 @@ export async function addCourseSession(
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ session }),
+        body: JSON.stringify(session),
     });
-
+    console.log(session);
     if (!res.ok) {
         const contentType = res.headers.get("content-type") ?? "";
         const errorMessage = contentType.includes("application/json")

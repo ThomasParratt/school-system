@@ -1,184 +1,118 @@
-import { useState } from 'react'
-import { formatDate } from '@fullcalendar/core'
-import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
-import { addCourseSession, getCourseSessions } from '../services/courseService'
+import { useState, useEffect, useCallback } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import {
+  addCourseSession,
+  getCourseSessions,
+  //deleteCourseSession,
+} from "../services/courseService";
+import { deleteSession } from "../services/sessionService";
 
 export default function Calendar({ token }) {
-  const [weekendsVisible, setWeekendsVisible] = useState(true)
-  const [currentEvents, setCurrentEvents] = useState([])
+  const [events, setEvents] = useState([]);
 
-  function handleWeekendsToggle() {
-    setWeekendsVisible(!weekendsVisible)
-  }
+  /**
+   * Load from backend (source of truth)
+   */
+  const loadSessions = useCallback(async () => {
+    if (!token) return;
 
-  function handleDateSelect(selectInfo) {
-    let title = prompt('Please enter a new title for your event')
-    let calendarApi = selectInfo.view.calendar
+    try {
+      const data = await getCourseSessions(token, 3);
 
-    calendarApi.unselect() // clear date selection
-
-    if (title) {
-      calendarApi.addEvent({
-        id: createEventId(),
-        title,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-      })
+      setEvents(
+        data.map((s) => ({
+          id: s.id,
+          title: `Session ${s.id} - ${s.location}`,
+          start: s.startsAt,
+          end: s.endsAt,
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to load sessions:", err);
     }
-  }
+  }, [token]);
 
-  function handleEventClick(clickInfo) {
-    if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
-      clickInfo.event.remove()
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
+
+  /**
+   * CREATE FLOW
+   * select → addEvent → eventAdd → backend sync
+   */
+  const handleSelect = (info) => {
+    const title = prompt("Session title?");
+    if (!title) return;
+
+    info.view.calendar.addEvent({
+      title,
+      start: info.start,
+      end: info.end,
+    });
+
+    info.view.calendar.unselect();
+  };
+
+  const handleEventAdd = async (info) => {
+    const event = info.event;
+
+    try {
+      const created = await addCourseSession(token, 3, {
+        location: event.title,
+        startsAt: event.start.toISOString(),
+        endsAt: event.end.toISOString(),
+      });
+
+      // reconcile backend ID with UI event
+      event.setProp("id", created.id);
+    } catch (err) {
+      console.error("Failed to create event:", err);
+
+      // rollback UI event if backend fails
+      info.revert();
     }
-  }
+  };
 
-  function handleEvents(events) {
-    setCurrentEvents(events)
-  }
+  /**
+   * DELETE FLOW
+   */
+  const handleEventClick = async (clickInfo) => {
+    const event = clickInfo.event;
 
+    if (!confirm(`Delete '${event.title}'?`)) return;
 
-  let eventGuid = 0
-  let todayStr = new Date().toISOString().replace(/T.*$/, '') // YYYY-MM-DD of today
-  
-  const INITIAL_EVENTS = [
-    {
-      id: createEventId(),
-      title: 'Timed event',
-      start: todayStr + 'T12:00:00'
+    try {
+      await deleteSession(token, event.id);
+      event.remove();
+    } catch (err) {
+      console.error("Failed to delete event:", err);
+      alert("Delete failed, reloading calendar...");
+      loadSessions();
     }
-  ]
-  
-  function createEventId() {
-    return String(eventGuid++)
-  }
-
-  async function handleGetSessions(courseId: number) {
-      if (!token) return;
-
-      try {
-        await getCourseSessions(token, courseId);
-      } catch (err) {
-        console.error(err);
-        alert(err);
-      }
-  }
-
-  async function handleAddSession(courseId: number) {
-      if (!token) return;
-
-      const location = prompt("Location?");
-      const startsAt = prompt("Start time?");
-      const endsAt = prompt("End time?");
-
-      if (!location || !startsAt || !endsAt) return;
-
-      try {
-          await addCourseSession(token, courseId, {
-              location: `${location}`,
-              startsAt: `${startsAt}`,
-              endsAt: `${endsAt}`,
-          });
-      } catch (err) {
-          console.error(err);
-          alert(err);
-      }
-  }
+  };
 
   return (
     <div className="flex-1 min-h-0">
-      <Sidebar
-        weekendsVisible={weekendsVisible}
-        handleWeekendsToggle={handleWeekendsToggle}
-        currentEvents={currentEvents}
-      />
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'timeGridWeek,timeGridDay'
-        }}
+        initialView="timeGridWeek"
         height="100%"
-        initialView='timeGridWeek'
         allDaySlot={false}
         firstDay={1}
         slotMinTime="08:00:00"
         slotMaxTime="22:00:00"
         slotDuration="00:15:00"
-        slotLabelFormat={{
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }}
-        eventTimeFormat={{
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }}
         editable={true}
         selectable={true}
         selectMirror={true}
-        dayMaxEvents={true}
-        weekends={weekendsVisible}
-        //initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
-        events={handleGetSessions(3)}
-        select={handleDateSelect}
-        eventContent={renderEventContent} // custom render function
+        events={events}
+        select={handleSelect}
+        eventAdd={handleEventAdd}
         eventClick={handleEventClick}
-        eventsSet={handleEvents} // called after events are initialized/added/changed/removed
-        /* you can update a remote database when these fire:
-        eventAdd={function(){}}
-        eventChange={function(){}}
-        eventRemove={function(){}}
-        */
       />
     </div>
-  )
-}
-
-function renderEventContent(eventInfo) {
-  return (
-    <>
-      <b>{eventInfo.timeText}</b>
-      <i>{eventInfo.event.title}</i>
-    </>
-  )
-}
-
-function Sidebar({ weekendsVisible, handleWeekendsToggle, currentEvents }) {
-  return (
-    <div className='demo-app-sidebar'>
-      <div className='demo-app-sidebar-section'>
-        <label>
-          <input
-            type='checkbox'
-            checked={weekendsVisible}
-            onChange={handleWeekendsToggle}
-          ></input>
-          toggle weekends
-        </label>
-      </div>
-      <div className='demo-app-sidebar-section'>
-        <h2>All Events ({currentEvents.length})</h2>
-        <ul>
-          {currentEvents.map((event) => (
-            <SidebarEvent key={event.id} event={event} />
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
-
-function SidebarEvent({ event }) {
-  return (
-    <li key={event.id}>
-      <b>{formatDate(event.start, {year: 'numeric', month: 'short', day: 'numeric'})}</b>
-      <i>{event.title}</i>
-    </li>
-  )
+  );
 }
