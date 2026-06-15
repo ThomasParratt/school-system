@@ -164,59 +164,56 @@ export default function Calendar({ token, courses }: CalendarProps) {
   };
 
   return (
-    <div className="flex-1 min-h-0">
-      <p className="flex justify-between items-center mb-2">
-          <select
-              value={selectedCourseId}
-              onChange={(e) =>
-                  setSelectedCourseId(e.target.value)
-              }
-              className="border border-gray-200 rounded p-1 w-64"
-          >
-            <option value="">All courses</option>
-            {courses
-                .map((course: Course) => (
-                <option
-                    key={course.id}
-                    value={course.id}
-                >
-                    {course.title}
-                </option>
-            ))}
-          </select>
-      </p>
-      <FullCalendar
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="timeGridWeek"
-        dayHeaderContent={(arg) => {
-          const date = arg.date;
-          return `${arg.text.split(' ')[0]} ${date.getDate()}/${date.getMonth() + 1}`;
-        }}
-        height="100%"
-        allDaySlot={false}
-        firstDay={1}
-        slotMinTime="08:00:00"
-        slotMaxTime="22:00:00"
-        slotDuration="00:15:00"
-        slotLabelFormat={{
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }}
-        eventTimeFormat={{
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        }}
-        editable={true}
-        selectable={true}
-        selectMirror={true}
-        events={events}
-        select={handleSelect}
-        eventAdd={handleEventAdd}
-        eventClick={handleEventClick}
-        eventContent={eventContent}
-      />
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="mb-2 flex items-center justify-between border-b border-gray-200 pb-2">
+        <h1 className="text-xl font-bold">Calendar</h1>
+        <select
+          value={selectedCourseId}
+          onChange={(e) => setSelectedCourseId(e.target.value)}
+          className="w-64 rounded border border-gray-200 p-1"
+        >
+          <option value="">All courses</option>
+          {courses.map((course: Course) => (
+            <option key={course.id} value={course.id}>
+              {course.title}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="min-h-0 flex-1">
+        <FullCalendar
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          initialView="timeGridWeek"
+          dayHeaderContent={(arg) => {
+            const date = arg.date;
+            return `${arg.text.split(' ')[0]} ${date.getDate()}/${date.getMonth() + 1}`;
+          }}
+          height="100%"
+          allDaySlot={false}
+          firstDay={1}
+          slotMinTime="08:00:00"
+          slotMaxTime="22:00:00"
+          slotDuration="00:15:00"
+          slotLabelFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }}
+          eventTimeFormat={{
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }}
+          editable={true}
+          selectable={true}
+          selectMirror={true}
+          events={events}
+          select={handleSelect}
+          eventAdd={handleEventAdd}
+          eventClick={handleEventClick}
+          eventContent={eventContent}
+        />
+      </div>
     </div>
   );
 }
