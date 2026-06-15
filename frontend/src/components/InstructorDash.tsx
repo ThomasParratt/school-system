@@ -2,13 +2,21 @@ import Students from "./Students";
 import Courses from "./Courses";
 import Calendar from "./Calendar";
 import { useAuth } from "../context/AuthContext";
+import { getUsers } from "../services/userService";
 import { getCourses } from "../services/courseService";
-import type { Course } from "../types";
+import type { User, Course } from "../types";
 import { useState, useEffect } from "react";
 
 export default function InstructorDash() {
   const { token } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+
+  const fetchUsers = async () => {
+    if (!token) return;
+    const data = await getUsers(token);
+    setUsers(data.data);
+  };
 
   const fetchCourses = async () => {
     if (!token) return;
@@ -17,6 +25,7 @@ export default function InstructorDash() {
   };
 
   useEffect(() => {
+    fetchUsers();
     fetchCourses();
   }, [token]);
 
@@ -26,11 +35,11 @@ export default function InstructorDash() {
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <Students token={token} courses={courses}/>
+          <Students token={token} users={users} courses={courses} refreshUsers={fetchUsers} />
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <Courses token={token} courses={courses} refreshCourses={fetchCourses} />
+          <Courses token={token} users={users} courses={courses} refreshCourses={fetchCourses} />
         </div>
       </div>
 

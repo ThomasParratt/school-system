@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getUserEnrollments } from "../services/userService";
-import { getCourses, enroll, unenroll } from "../services/courseService";
+import { enroll, unenroll } from "../services/courseService";
 import { useCrud } from "../hooks/useCrud";
-import type { User, Course } from "../types";
+import type { User } from "../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../dist/bin.svg";
 
-export default function Students({ token, courses }) {
+export default function Students({ token, users, courses, refreshUsers }) {
     const [editForm, setEditForm] = useState<Partial<User>>({});
     const [selectedCourseId, setSelectedCourseId] = useState("");
 
     const {
-        items: users,
         selectedItem: selectedUser,
         setSelectedItem: setSelectedUser,
         addItem,
@@ -56,6 +55,7 @@ export default function Students({ token, courses }) {
                 password: `${password}`,
                 comments: `${comments}`
             });
+            await refreshUsers();
         } catch (err) {
             console.error(err);
             alert(err);
