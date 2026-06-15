@@ -45,7 +45,7 @@ export default function InstructorDash() {
 
       {/* Main Calendar */}
       <div className="flex-[3] min-h-0 h-full bg-gray-100 rounded-xl p-4 flex flex-col">
-        <Calendar token={token} />
+        <Calendar token={token} courses={courses} />
       </div>
     </div>
   );

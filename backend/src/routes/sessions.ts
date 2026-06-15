@@ -4,6 +4,36 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 
 const router = Router();
 
+// GET /sessions
+router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+  try {
+    const sessions = await prisma.classSession.findMany({
+      select: {
+        id: true,
+        courseId: true,
+        location: true,
+        startsAt: true,
+        endsAt: true,
+        content: true,
+        homework: true,
+        createdAt: true,
+      },
+    });
+
+    return res.status(200).json({
+      data: sessions,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch sessions",
+        code: "FETCH_SESSIONS_ERROR",
+      },
+    });
+  }
+});
+
 // GET /sessions/:id
 router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
   try {

@@ -4,19 +4,25 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { addCourseSession, getCourseSessions } from "../services/courseService";
-import { deleteSession } from "../services/sessionService";
+import { getAllSessions, deleteSession } from "../services/sessionService";
 
-export default function Calendar({ token }) {
+export default function Calendar({ token, courses }) {
   const [events, setEvents] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
 
   /**
    * Load from backend (source of truth)
    */
   const loadSessions = useCallback(async () => {
     if (!token) return;
+    const courseId = Number(selectedCourseId); 
 
     try {
-      const data = await getCourseSessions(token, 3);
+      let data;
+      if (courseId === 0)
+        data = await getAllSessions(token);
+      else
+        data = await getCourseSessions(token, courseId);
 
       setEvents(
         data.map((s) => ({
@@ -54,9 +60,9 @@ export default function Calendar({ token }) {
 
   const handleEventAdd = async (info) => {
     const event = info.event;
-
+    const courseId = Number(selectedCourseId);
     try {
-      const created = await addCourseSession(token, 3, {
+      const created = await addCourseSession(token, courseId, {
         location: event.title,
         startsAt: event.start.toISOString(),
         endsAt: event.end.toISOString(),
@@ -92,6 +98,26 @@ export default function Calendar({ token }) {
 
   return (
     <div className="flex-1 min-h-0">
+      <p className="flex justify-between items-center mb-2">
+          <select
+              value={selectedCourseId}
+              onChange={(e) =>
+                  setSelectedCourseId(e.target.value)
+              }
+              className="border border-gray-200 rounded p-1 w-64"
+          >
+            <option value="">All courses</option>
+            {courses
+                .map(course => (
+                <option
+                    key={course.id}
+                    value={course.id}
+                >
+                    {course.title}
+                </option>
+            ))}
+          </select>
+      </p>
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
