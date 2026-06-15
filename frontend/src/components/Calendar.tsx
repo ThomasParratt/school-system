@@ -95,10 +95,9 @@ export default function Calendar({ token }) {
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
-        dayHeaderFormat={{
-          weekday: 'short',
-          day: 'numeric',
-          month: 'numeric'
+        dayHeaderContent={(arg) => {
+          const date = arg.date;
+          return `${arg.text.split(' ')[0]} ${date.getDate()}/${date.getMonth() + 1}`;
         }}
         height="100%"
         allDaySlot={false}
