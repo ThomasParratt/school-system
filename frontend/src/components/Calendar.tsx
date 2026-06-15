@@ -3,11 +3,7 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import {
-  addCourseSession,
-  getCourseSessions,
-  //deleteCourseSession,
-} from "../services/courseService";
+import { addCourseSession, getCourseSessions } from "../services/courseService";
 import { deleteSession } from "../services/sessionService";
 
 export default function Calendar({ token }) {
@@ -99,6 +95,11 @@ export default function Calendar({ token }) {
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"
+        dayHeaderFormat={{
+          weekday: 'short',
+          day: 'numeric',
+          month: 'numeric'
+        }}
         height="100%"
         allDaySlot={false}
         firstDay={1}
