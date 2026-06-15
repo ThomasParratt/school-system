@@ -3,39 +3,68 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import type {
+  DateSelectArg,
+  EventAddArg,
+  EventClickArg,
+  EventContentArg,
+  EventInput,
+} from "@fullcalendar/core";
 import { addCourseSession, getCourseSessions } from "../services/courseService";
 import { getAllSessions, deleteSession } from "../services/sessionService";
+import type { Course } from "../types";
 
-export default function Calendar({ token, courses }) {
-  const [events, setEvents] = useState([]);
+type CalendarSession = {
+  id: number;
+  courseId: number;
+  location: string;
+  startsAt: string;
+  endsAt: string | null;
+  title?: string;
+};
+
+type CalendarProps = {
+  token: string | null;
+  courses: Course[];
+};
+
+export default function Calendar({ token, courses }: CalendarProps) {
+  const [events, setEvents] = useState<EventInput[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState("");
+
+  const getCourseTitle = (courseId: number) =>
+    courses.find((course: Course) => course.id === courseId)?.title ?? "";
 
   /**
    * Load from backend (source of truth)
    */
   const loadSessions = useCallback(async () => {
     if (!token) return;
-    const courseId = Number(selectedCourseId); 
+    const courseId = Number(selectedCourseId);
 
     try {
-      let data;
+      let data: CalendarSession[];
       if (courseId === 0)
         data = await getAllSessions(token);
       else
         data = await getCourseSessions(token, courseId);
 
       setEvents(
-        data.map((s) => ({
-          id: s.id,
-          title: `Session ${s.id} - ${s.location}`,
+        data.map((s: CalendarSession) => ({
+          id: String(s.id),
+          title: getCourseTitle(s.courseId) || s.title || "",
           start: s.startsAt,
-          end: s.endsAt,
+          end: s.endsAt ?? undefined,
+          extendedProps: {
+            location: s.location,
+            courseId: s.courseId,
+          },
         }))
       );
     } catch (err) {
       console.error("Failed to load sessions:", err);
     }
-  }, [token]);
+  }, [token, selectedCourseId, courses]);
 
   useEffect(() => {
     loadSessions();
@@ -45,31 +74,52 @@ export default function Calendar({ token, courses }) {
    * CREATE FLOW
    * select → addEvent → eventAdd → backend sync
    */
-  const handleSelect = (info) => {
-    const title = prompt("Session title?");
+  const handleSelect = (info: DateSelectArg) => {
+    const courseId = Number(selectedCourseId);
+
+    if (courseId === 0) {
+      alert("Cannot add session. Choose a course from the drop down menu.");
+      return;
+    }
+    const title = getCourseTitle(courseId);
     if (!title) return;
+
+    const location = prompt("Session location?");
+    if (!location) return;
+
+    const end = new Date(info.start.getTime() + 45 * 60 * 1000);
 
     info.view.calendar.addEvent({
       title,
       start: info.start,
-      end: info.end,
+      end,
+      extendedProps: {
+        location,
+        courseId,
+      },
     });
 
     info.view.calendar.unselect();
   };
 
-  const handleEventAdd = async (info) => {
+  const handleEventAdd = async (info: EventAddArg) => {
     const event = info.event;
-    const courseId = Number(selectedCourseId);
+    const courseId = event.extendedProps.courseId;
+
+    if (!event.start || !event.end) {
+      info.revert();
+      return;
+    }
+
     try {
       const created = await addCourseSession(token, courseId, {
-        location: event.title,
+        location: event.extendedProps.location,
         startsAt: event.start.toISOString(),
         endsAt: event.end.toISOString(),
       });
 
       // reconcile backend ID with UI event
-      event.setProp("id", created.id);
+      event.setProp("id", String(created.id));
     } catch (err) {
       console.error("Failed to create event:", err);
 
@@ -81,19 +131,36 @@ export default function Calendar({ token, courses }) {
   /**
    * DELETE FLOW
    */
-  const handleEventClick = async (clickInfo) => {
+  const handleEventClick = async (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
-
+  
     if (!confirm(`Delete '${event.title}'?`)) return;
 
     try {
-      await deleteSession(token, event.id);
+      await deleteSession(token, Number(event.id));
       event.remove();
     } catch (err) {
       console.error("Failed to delete event:", err);
       alert("Delete failed, reloading calendar...");
       loadSessions();
     }
+  };
+
+  const eventContent = (arg: EventContentArg) => {
+    const { title, start, end } = arg.event;
+    const { location } = arg.event.extendedProps;
+
+    return (
+      <div className="p-1">
+        <div>{title}</div>
+        <div>{location}</div>
+        <div>
+          {start?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}{" "}
+          -{" "}
+          {end?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -108,7 +175,7 @@ export default function Calendar({ token, courses }) {
           >
             <option value="">All courses</option>
             {courses
-                .map(course => (
+                .map((course: Course) => (
                 <option
                     key={course.id}
                     value={course.id}
@@ -148,6 +215,7 @@ export default function Calendar({ token, courses }) {
         select={handleSelect}
         eventAdd={handleEventAdd}
         eventClick={handleEventClick}
+        eventContent={eventContent}
       />
     </div>
   );
