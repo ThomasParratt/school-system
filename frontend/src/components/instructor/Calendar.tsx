@@ -10,9 +10,9 @@ import type {
   EventContentArg,
   EventInput,
 } from "@fullcalendar/core";
-import { addCourseSession, getCourseSessions } from "../services/courseService";
-import { getAllSessions, deleteSession } from "../services/sessionService";
-import type { Course } from "../types";
+import { addCourseSession, getCourseSessions } from "../../services/courseService";
+import { getAllSessions, deleteSession } from "../../services/sessionService";
+import type { Course } from "../../types";
 
 type CalendarSession = {
   id: number;

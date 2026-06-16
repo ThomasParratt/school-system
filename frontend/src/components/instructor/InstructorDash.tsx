@@ -1,10 +1,10 @@
 import Students from "./Students";
 import Courses from "./Courses";
 import Calendar from "./Calendar";
-import { useAuth } from "../context/AuthContext";
-import { getUsers } from "../services/userService";
-import { getCourses } from "../services/courseService";
-import type { User, Course } from "../types";
+import { useAuth } from "../../context/AuthContext";
+import { getUsers } from "../../services/userService";
+import { getCourses } from "../../services/courseService";
+import type { User, Course } from "../../types";
 import { useState, useEffect } from "react";
 
 export default function InstructorDash() {

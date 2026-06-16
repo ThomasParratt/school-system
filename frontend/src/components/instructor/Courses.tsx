@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../services/courseService";
-import { useCrud } from "../hooks/useCrud";
-import type { Course } from "../types";
+import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../../services/courseService";
+import { useCrud } from "../../hooks/useCrud";
+import type { Course } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
-import bin from "../../dist/bin.svg";
+import bin from "../../../dist/bin.svg";
 
 export default function Courses({ token, users, courses, refreshCourses }) {
     const [editForm, setEditForm] = useState<Partial<Course>>({});

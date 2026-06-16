@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { login } from "../services/loginService.ts";
 import { useAuth } from "../context/AuthContext";
-import InstructorDash from "./InstructorDash.tsx";
+import InstructorDash from "./instructor/InstructorDash.tsx";
 
 function Login() {
     const { user, loginUser, logout } = useAuth();
