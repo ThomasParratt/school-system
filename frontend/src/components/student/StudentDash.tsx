@@ -1,17 +1,14 @@
-import Students from "../instructor/Students";
-import Courses from "../instructor/Courses";
-import Calendar from "../instructor/Calendar";
 import { useAuth } from "../../context/AuthContext";
-import { getUsers } from "../../services/userService";
-import { getCourses } from "../../services/courseService";
-import type { User, Course } from "../../types";
+import type { Course, Session } from "../../types";
 import { useState, useEffect } from "react";
-import { getUserCourses } from "../../services/userService";
+import { getUserCourses, getUserSessions } from "../../services/userService";
 import MyCourses from "./MyCourses";
+import MyCalendar from "./MyCalendar";
 
 export default function StudentDash() {
   const { token } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   const fetchCourses = async () => {
     if (!token) return;
@@ -19,8 +16,15 @@ export default function StudentDash() {
     setCourses(data.data);
   };
 
+  const fetchSessions = async () => {
+    if (!token) return;
+    const data = await getUserSessions(token);
+    setSessions(data.data);
+  };
+
   useEffect(() => {
     fetchCourses();
+    fetchSessions();
   }, [token]);
 
   return (
@@ -39,7 +43,7 @@ export default function StudentDash() {
 
       {/* Main Calendar */}
       <div className="flex-[3] min-h-0 h-full bg-gray-100 rounded-xl p-4 flex flex-col">
-        Calendar
+        <MyCalendar token={token} courses={courses} sessions={sessions} />
       </div>
     </div>
   );

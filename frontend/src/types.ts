@@ -19,6 +19,15 @@ export type Course = {
     enrollments: User[];
 };
 
+export type Session = {
+    id: number;
+    location: string;
+    startsAt: string;
+    endsAt: string;
+    content: string | null;
+    homework: string | null;
+};
+
 export type Enrollment = {
     id: number;
     courseId: number;
