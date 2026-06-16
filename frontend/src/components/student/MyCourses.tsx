@@ -1,10 +1,3 @@
-import { useEffect, useState } from "react";
-import { getUserCourses } from "../../services/userService";
-//import { useCrud } from "../../hooks/useCrud";
-import type { Course } from "../../types";
-import CrudList from "../instructor/CrudList";
-//import CrudModal from "./CrudModal";
-//import bin from "../../../dist/bin.svg";
 import edit from "../../../dist/edit.svg";
 
 export default function MyCourses({ token, courses }) {
