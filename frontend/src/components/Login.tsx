@@ -2,6 +2,7 @@ import { useState } from "react";
 import { login } from "../services/loginService.ts";
 import { useAuth } from "../context/AuthContext";
 import InstructorDash from "./instructor/InstructorDash.tsx";
+import StudentDash from "./student/StudentDash.tsx";
 
 function Login() {
     const { user, loginUser, logout } = useAuth();
@@ -114,9 +115,7 @@ function Login() {
                     )}
 
                     {user.role === "student" && (
-                        <p className="mb-4 text-gray-600">
-                            Student dashboard
-                        </p>
+                        <StudentDash />
                     )}
                 </div>
             )}
