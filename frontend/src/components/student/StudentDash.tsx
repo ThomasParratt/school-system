@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getUserCourses, getUserSessions } from "../../services/userService";
 import MyCourses from "./MyCourses";
 import MyCalendar from "./MyCalendar";
+import MyLessons from "./MyLessons";
 
 export default function StudentDash() {
   const { token } = useAuth();
@@ -37,7 +38,7 @@ export default function StudentDash() {
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          Upcoming lessons
+          <MyLessons token={token} courses={courses} sessions={sessions} />
         </div>
       </div>
 

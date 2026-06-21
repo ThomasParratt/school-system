@@ -26,6 +26,7 @@ export type Session = {
     endsAt: string;
     content: string | null;
     homework: string | null;
+    courseId: number
 };
 
 export type Enrollment = {

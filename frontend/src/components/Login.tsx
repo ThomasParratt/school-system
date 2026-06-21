@@ -89,7 +89,7 @@ function Login() {
             ) : (
                 <div className="text-center">
                     <header className="bg-white rounded-xl">
-                        <div className="max-w-8xl mx-auto px-10 py-6 flex items-center justify-between">
+                        <div className="max-w-8xl mx-auto px-10 py-4 flex items-center justify-between">
                             {/* Left side */}
                             <h1 className="text-3xl font-bold text-gray-700">
                                 School Management System
