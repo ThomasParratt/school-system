@@ -30,16 +30,16 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
     if (!token) return;
 
     setEvents(
-        sessions.map((s: CalendarSession) => ({
-            id: String(s.id),
-            title: getCourseTitle(s.courseId) || s.title || "",
-            start: s.startsAt,
-            end: s.endsAt ?? undefined,
-            extendedProps: {
+      sessions.map((s: CalendarSession) => ({
+          id: String(s.id),
+          title: getCourseTitle(s.courseId) || s.title || "",
+          start: s.startsAt,
+          end: s.endsAt ?? undefined,
+          extendedProps: {
             location: s.location,
             courseId: s.courseId,
-            },
-        }))
+          },
+      }))
     );
   }, [token, courses]);
 
@@ -90,6 +90,7 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
             minute: '2-digit',
             hour12: false
           }}
+          eventBackgroundColor="#5759e9"
           editable={true}
           selectable={true}
           selectMirror={true}

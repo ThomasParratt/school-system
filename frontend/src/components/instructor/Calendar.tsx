@@ -204,6 +204,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
             minute: '2-digit',
             hour12: false
           }}
+          eventBackgroundColor="#5759e9"
           editable={true}
           selectable={true}
           selectMirror={true}
