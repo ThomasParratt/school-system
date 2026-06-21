@@ -20,7 +20,16 @@ export default function MyLessons({ token, courses, sessions }) {
                             key={session.id}
                             className="flex justify-between items-center mb-2"
                         >
-                            <span>{getCourseTitle(session.courseId)}</span>
+                            <div className="flex items-center gap-4">
+                                <span>{getCourseTitle(session.courseId)}</span>
+                                <span>
+                                    {new Date(session.startsAt).toLocaleString("en-GB", {
+                                        dateStyle: "short",
+                                        timeStyle: "short",
+                                        hour12: false,
+                                    })}
+                                </span>
+                            </div>
 
                             <div className="flex items-center gap-3">
                                 <img 
@@ -48,6 +57,18 @@ export default function MyLessons({ token, courses, sessions }) {
                         <h2 className="text-lg font-bold mb-4">
                             {getCourseTitle(selectedSession.courseId)}
                         </h2>
+                        <p className="flex justify-between items-center mb-2">
+                            <strong>Location</strong>
+                            <h2>{selectedSession.location}</h2>
+                        </p>
+                        <p className="flex justify-between items-center mb-2">
+                            <strong>Content</strong>
+                            <h2>{selectedSession.content}</h2>
+                        </p>
+                        <p className="flex justify-between items-center mb-2">
+                            <strong>Homework</strong>
+                            <h2>{selectedSession.homework}</h2>
+                        </p>
                     </div>
                 </div>
             )}
