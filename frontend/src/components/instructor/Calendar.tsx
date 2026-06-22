@@ -11,7 +11,7 @@ import type {
   EventInput,
 } from "@fullcalendar/core";
 import { addCourseSession, getCourseSessions } from "../../services/courseService";
-import { getAllSessions, deleteSession, getSession } from "../../services/sessionService";
+import { getAllSessions, deleteSession, getSession, updateSession } from "../../services/sessionService";
 import type { Course, Session } from "../../types";
 import CrudModal from "./CrudModal";
 
@@ -46,15 +46,15 @@ export default function Calendar({ token, courses }: CalendarProps) {
   }, [clickedSession]);
 
   async function handleUpdateSession(sessionId: number) {
-      /*if (!token || !editForm) return;
+      if (!token || !editForm) return;
 
       try {
-          await updateItem(courseId, editForm);
-          setSelectedCourse(null);
+          await updateSession(token, sessionId, editForm);
+          setClickedSession(null);
       } catch (err) {
           console.error(err);
           alert(err);
-      }*/
+      }
   }
 
   const getCourseTitle = (courseId: number) =>
@@ -258,7 +258,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
                     onChange={(e) =>
                         setEditForm(prev => ({
                             ...prev!,
-                            email: e.target.value
+                            location: e.target.value
                         }))
                     }
                     className="border border-gray-200 rounded p-1 w-64"
@@ -269,7 +269,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
                 <textarea
                     value={editForm.content || ""}
                     onChange={(e) =>
-                        setEditForm(prev => ({ ...prev, material: e.target.value }))
+                        setEditForm(prev => ({ ...prev, content: e.target.value }))
                     }
                     className="border border-gray-200 rounded p-1 w-64"
                 />
@@ -279,7 +279,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
                 <textarea
                     value={editForm.homework || ""}
                     onChange={(e) =>
-                        setEditForm(prev => ({ ...prev, material: e.target.value }))
+                        setEditForm(prev => ({ ...prev, homework: e.target.value }))
                     }
                     className="border border-gray-200 rounded p-1 w-64"
                 />

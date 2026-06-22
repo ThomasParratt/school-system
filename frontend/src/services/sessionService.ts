@@ -56,3 +56,33 @@ export async function getSession(
     }
     return res.json();
 }
+
+export async function updateSession(
+    token: string | null,
+    sessionId: number,
+    session: { 
+        location: string; 
+        startsAt: string; 
+        endsAt: string; 
+        content: string;
+        homework: string
+    }
+) {
+    const res = await fetch(`http://localhost:3000/sessions/${sessionId}`, {
+        method: "PATCH",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(session),
+    });
+
+    if (!res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        const errorMessage = contentType.includes("application/json")
+            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
+            : await res.text();
+        throw new Error(errorMessage);
+    }
+    return res.json();
+}

@@ -29,6 +29,7 @@ export type Session = {
     courseId: number;
 };
 
+
 export type Enrollment = {
     id: number;
     courseId: number;
