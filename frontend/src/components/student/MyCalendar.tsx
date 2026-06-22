@@ -66,12 +66,6 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
     );
   };
 
-  const handleDeleteSession = async (clickInfo: EventClickArg) => {
-    const event = clickInfo.event;
-    const session = await getSession(token, Number(event.id));
-    setClickedSession(session.data);
-  };
-
   return (
     <div className="flex-1 min-h-0 flex flex-col">
       <div className="min-h-0 flex-1">
@@ -103,7 +97,7 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
           selectable={true}
           selectMirror={true}
           events={events}
-          eventClick={handleEventClick}
+          //eventClick={handleEventClick}
           eventContent={eventContent}
         />
         {clickedSession && (
