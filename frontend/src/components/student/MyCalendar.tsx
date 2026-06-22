@@ -66,7 +66,7 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
     );
   };
 
-  const handleEventClick = async (clickInfo: EventClickArg) => {
+  const handleDeleteSession = async (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
     const session = await getSession(token, Number(event.id));
     setClickedSession(session.data);

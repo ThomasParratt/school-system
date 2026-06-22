@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -33,7 +33,10 @@ export default function Calendar({ token, courses }: CalendarProps) {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [clickedSession, setClickedSession] = useState<Session | null>(null);
+  const [clickedEventId, setClickedEventId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<Session>>({});
+
+  const calendarRef = useRef<FullCalendar | null>(null);
 
   useEffect(() => {
       if (clickedSession) {
@@ -93,7 +96,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
 
   useEffect(() => {
     loadSessions();
-  }, [loadSessions]);
+  }, [loadSessions, clickedEventId]);
 
   /**
    * CREATE FLOW
@@ -160,20 +163,31 @@ export default function Calendar({ token, courses }: CalendarProps) {
     const event = clickInfo.event;
     const session = await getSession(token, Number(event.id));
     setClickedSession(session.data);
+    setClickedEventId(Number(event.id));
     console.log(Number(event.id));
     console.log(session.data);
+  };
 
-    if (!confirm(`Delete '${event.title}'?`)) return;
+  async function handleEventDelete() {
+    if (!token || !clickedEventId) return;
+    if (!confirm("Delete this session?")) return;
 
     try {
-      await deleteSession(token, Number(event.id));
-      event.remove();
+      await deleteSession(token, clickedEventId);
+
+      const calendarApi = calendarRef.current?.getApi();
+      const event = calendarApi?.getEventById(String(clickedEventId));
+
+      event?.remove();
+
+      setClickedSession(null);
+      setClickedEventId(null);
     } catch (err) {
-      console.error("Failed to delete event:", err);
+      console.error(err);
       alert("Delete failed, reloading calendar...");
       loadSessions();
     }
-  };
+  }
 
   const eventContent = (arg: EventContentArg) => {
     const { title, start, end } = arg.event;
@@ -284,6 +298,14 @@ export default function Calendar({ token, courses }: CalendarProps) {
                     className="border border-gray-200 rounded p-1 w-64"
                 />
             </p>
+            <div>
+              <button
+                  onClick={handleEventDelete}
+                  className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-400"
+              >
+                  Delete session
+              </button>
+            </div>
         </CrudModal>
       </div>
     </div>
