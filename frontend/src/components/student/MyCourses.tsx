@@ -44,18 +44,18 @@ export default function MyCourses({ token, courses }) {
                         <h2 className="text-lg font-bold mb-4">
                             {selectedCourse.title}
                         </h2>
-                        <p className="flex justify-between items-center mb-2">
+                        <div className="flex justify-between items-center mb-2">
                             <strong>Language</strong>
-                            <h2>{selectedCourse.language}</h2>
-                        </p>
-                        <p className="flex justify-between items-center mb-2">
+                            <div>{selectedCourse.language}</div>
+                        </div>
+                        <div className="flex justify-between items-center mb-2">
                             <strong>Level</strong>
-                            <h2>{selectedCourse.level}</h2>
-                        </p>
-                        <p className="flex justify-between items-center mb-2">
+                            <div>{selectedCourse.level}</div>
+                        </div>
+                        <div className="flex justify-between items-center mb-2">
                             <strong>Material</strong>
-                            <h2>{selectedCourse.material}</h2>
-                        </p>
+                            <div>{selectedCourse.material}</div>
+                        </div>
                     </div>
                 </div>
             )}

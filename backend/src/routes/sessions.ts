@@ -35,7 +35,7 @@ router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
 });
 
 // GET /sessions/:id
-router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id", requireAuth, async (req, res) => {
   try {
     const sessionId = Number(req.params.id);
 
