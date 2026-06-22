@@ -67,6 +67,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
 
         try {
             await deleteItem(userId);
+            await refreshUsers();
         } catch (err) {
             console.error(err);
             alert(err);
@@ -78,6 +79,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
 
         try {
             await updateItem(userId, editForm);
+            await refreshUsers();
             setSelectedUser(null);
         } catch (err) {
             console.error(err);

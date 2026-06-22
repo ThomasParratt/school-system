@@ -66,6 +66,7 @@ export default function Courses({ token, users, courses, refreshCourses }) {
         try {
             await deleteItem(courseId);
             //console.log(data);
+            await refreshCourses();
         } catch (err) {
             console.error(err);
             alert(err);
@@ -77,6 +78,7 @@ export default function Courses({ token, users, courses, refreshCourses }) {
 
         try {
             await updateItem(courseId, editForm);
+            await refreshCourses();
             setSelectedCourse(null);
         } catch (err) {
             console.error(err);
