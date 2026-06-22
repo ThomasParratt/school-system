@@ -11,8 +11,9 @@ import type {
   EventInput,
 } from "@fullcalendar/core";
 import { addCourseSession, getCourseSessions } from "../../services/courseService";
-import { getAllSessions, deleteSession } from "../../services/sessionService";
-import type { Course } from "../../types";
+import { getAllSessions, deleteSession, getSession } from "../../services/sessionService";
+import type { Course, Session } from "../../types";
+import CrudModal from "./CrudModal";
 
 type CalendarSession = {
   id: number;
@@ -31,6 +32,30 @@ type CalendarProps = {
 export default function Calendar({ token, courses }: CalendarProps) {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [clickedSession, setClickedSession] = useState<Session | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Session>>({});
+
+  useEffect(() => {
+      if (clickedSession) {
+          setEditForm({
+              location: clickedSession.location,
+              content: clickedSession.content ?? "",
+              homework: clickedSession.homework ?? ""
+          });
+      }
+  }, [clickedSession]);
+
+  async function handleUpdateSession(sessionId: number) {
+      /*if (!token || !editForm) return;
+
+      try {
+          await updateItem(courseId, editForm);
+          setSelectedCourse(null);
+      } catch (err) {
+          console.error(err);
+          alert(err);
+      }*/
+  }
 
   const getCourseTitle = (courseId: number) =>
     courses.find((course: Course) => course.id === courseId)?.title ?? "";
@@ -133,7 +158,11 @@ export default function Calendar({ token, courses }: CalendarProps) {
    */
   const handleEventClick = async (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
-  
+    const session = await getSession(token, Number(event.id));
+    setClickedSession(session.data);
+    console.log(Number(event.id));
+    console.log(session.data);
+
     if (!confirm(`Delete '${event.title}'?`)) return;
 
     try {
@@ -214,6 +243,48 @@ export default function Calendar({ token, courses }: CalendarProps) {
           eventClick={handleEventClick}
           eventContent={eventContent}
         />
+        <CrudModal
+            open={!!clickedSession}
+            title={`${getCourseTitle(clickedSession?.courseId)}`}
+            onClose={() => setClickedSession(null)}
+            onSave={() =>
+                handleUpdateSession(clickedSession!.id)
+            }
+        >
+            <p className="flex justify-between items-center mb-2">
+                <strong>Location</strong>
+                <input
+                    value={editForm.location || ""}
+                    onChange={(e) =>
+                        setEditForm(prev => ({
+                            ...prev!,
+                            email: e.target.value
+                        }))
+                    }
+                    className="border border-gray-200 rounded p-1 w-64"
+                />
+            </p>
+            <p className="flex justify-between items-center mb-2">
+                <strong>Content</strong>
+                <textarea
+                    value={editForm.content || ""}
+                    onChange={(e) =>
+                        setEditForm(prev => ({ ...prev, material: e.target.value }))
+                    }
+                    className="border border-gray-200 rounded p-1 w-64"
+                />
+            </p>
+            <p className="flex justify-between items-center mb-3">
+                <strong>Homework</strong>
+                <textarea
+                    value={editForm.homework || ""}
+                    onChange={(e) =>
+                        setEditForm(prev => ({ ...prev, material: e.target.value }))
+                    }
+                    className="border border-gray-200 rounded p-1 w-64"
+                />
+            </p>
+        </CrudModal>
       </div>
     </div>
   );
