@@ -301,7 +301,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
             <div>
               <button
                   onClick={handleEventDelete}
-                  className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-400"
+                  className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-400"
               >
                   Delete session
               </button>
