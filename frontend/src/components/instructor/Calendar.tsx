@@ -189,6 +189,40 @@ export default function Calendar({ token, courses }: CalendarProps) {
     }
   }
 
+  const handleEventDrop = async (info: any) => {
+    if (!token) return;
+
+    const event = info.event;
+
+    try {
+      await updateSession(token, Number(event.id), {
+        startsAt: event.start?.toISOString(),
+        endsAt: event.end?.toISOString(),
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to move session");
+      info.revert(); // IMPORTANT: rollback UI change
+    }
+  }
+
+  const handleEventResize = async (info: any) => {
+    if (!token) return;
+
+    const event = info.event;
+
+    try {
+      await updateSession(token, Number(event.id), {
+        startsAt: event.start?.toISOString(),
+        endsAt: event.end?.toISOString(),
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Failed to resize session");
+      info.revert();
+    }
+  }
+
   const eventContent = (arg: EventContentArg) => {
     const { title, start, end } = arg.event;
     const { location } = arg.event.extendedProps;
@@ -255,6 +289,8 @@ export default function Calendar({ token, courses }: CalendarProps) {
           select={handleSelect}
           eventAdd={handleEventAdd}
           eventClick={handleEventClick}
+          eventDrop={handleEventDrop}
+          eventResize={handleEventResize}
           eventContent={eventContent}
         />
         <CrudModal
