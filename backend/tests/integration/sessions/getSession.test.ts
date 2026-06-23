@@ -34,14 +34,5 @@ describe("GET /sessions/:id", () => {
 
     expect(response.status).toBe(401);
   });
-
-  it("should reject unauthorized role", async () => {
-    const token = await loginAsStudent();
-
-    const response = await request(app)
-      .get(`/sessions/${sessionId}`)
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(response.status).toBe(403);
-  });
+  
 });

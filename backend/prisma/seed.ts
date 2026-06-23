@@ -116,6 +116,7 @@ async function main() {
         content: `Week ${index + 1} lesson for ${course.title}`,
         homework: `Homework ${index + 1}: practice exercises`,
       })),
+      skipDuplicates: true,
     });
   }
 
@@ -149,7 +150,7 @@ async function main() {
     });
   }
 
-  console.log("🌱 Realistic school system seed complete");
+  console.log("🌱 Seed complete");
 }
 
 main()

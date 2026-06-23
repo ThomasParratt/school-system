@@ -76,6 +76,7 @@ model ClassSession {
 
 	course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
+	@@unique([courseId, startsAt])
 	@@map("class_sessions")
 }
 
