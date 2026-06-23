@@ -150,7 +150,6 @@ export default function Courses({ token, users, courses, refreshCourses }) {
             </div>
             <CrudModal
                 open={!!selectedCourse}
-                title={`${selectedCourse?.title} ${selectedCourse?.level}`}
                 onClose={() => setSelectedCourse(null)}
                 onSave={() =>
                     handleUpdateCourse(selectedCourse!.id)

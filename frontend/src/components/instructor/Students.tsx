@@ -10,6 +10,8 @@ import bin from "../../../dist/bin.svg";
 export default function Students({ token, users, courses, refreshUsers }) {
     const [editForm, setEditForm] = useState<Partial<User>>({});
     const [selectedCourseId, setSelectedCourseId] = useState("");
+    const [addForm, setAddForm] = useState<Partial<User>>({});
+    const [clickedAdd, setClickedAdd] = useState(false);
 
     const {
         selectedItem: selectedUser,
@@ -29,6 +31,8 @@ export default function Students({ token, users, courses, refreshUsers }) {
         if (selectedUser) {
             handleGetEnrollments(selectedUser.id);
             setEditForm({
+                firstName: selectedUser.firstName,
+                secondName: selectedUser.secondName,
                 email: selectedUser.email,
                 comments: selectedUser.comments ?? "",
                 enrollments: selectedUser.enrollments ?? []
@@ -151,12 +155,41 @@ export default function Students({ token, users, courses, refreshUsers }) {
             </div>
             <CrudModal
                 open={!!selectedUser}
-                title={`${selectedUser?.firstName} ${selectedUser?.secondName}`}
                 onClose={() => setSelectedUser(null)}
                 onSave={() =>
                     handleUpdateUser(selectedUser!.id)
                 }
             >
+                {/* First name */}
+                <p className="flex justify-between items-center mb-2">
+                    <strong>First name</strong>
+                    <input
+                        value={editForm.firstName || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({
+                                ...prev!,
+                                firstName: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+
+                {/* Last name */}
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Last name</strong>
+                    <input
+                        value={editForm.secondName || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({
+                                ...prev!,
+                                secondName: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+
                 {/* Email */}
                 <p className="flex justify-between items-center mb-2">
                     <strong>Email</strong>

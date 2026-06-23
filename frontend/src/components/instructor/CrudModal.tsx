@@ -1,6 +1,5 @@
 type CrudModalProps = {
     open: boolean;
-    title: string;
     onClose: () => void;
     onSave: () => void;
     children: React.ReactNode;
@@ -8,7 +7,6 @@ type CrudModalProps = {
 
 export default function CrudModal({
     open,
-    title,
     onClose,
     onSave,
     children
@@ -25,10 +23,6 @@ export default function CrudModal({
                 >
                     ✕
                 </button>
-
-                <h2 className="text-lg font-bold mb-4">
-                    {title}
-                </h2>
 
                 <div className="space-y-3">
                     {children}
