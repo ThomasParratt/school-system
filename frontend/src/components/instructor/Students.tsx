@@ -11,7 +11,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
     const [editForm, setEditForm] = useState<Partial<User>>({});
     const [selectedCourseId, setSelectedCourseId] = useState("");
     const [addForm, setAddForm] = useState<Partial<User>>({});
-    const [clickedAdd, setClickedAdd] = useState(false);
+    const [add, setAdd] = useState(false);
 
     const {
         selectedItem: selectedUser,
@@ -27,6 +27,15 @@ export default function Students({ token, users, courses, refreshUsers }) {
         remove: deleteUser
     });
 
+    const emptyUser : Partial<User> = {
+        firstName: "",
+        secondName: "",
+        email: "",
+        password: "",
+        comments: "",
+        enrollments: []
+    }
+
     useEffect(() => {
         if (selectedUser) {
             handleGetEnrollments(selectedUser.id);
@@ -40,26 +49,25 @@ export default function Students({ token, users, courses, refreshUsers }) {
         }
     }, [selectedUser]);
 
-    async function handleAddUser() {
-        if (!token) return;
-
-        const firstName = prompt("First name?");
-        const secondName = prompt("Second name?");
-        const email = prompt("Email?");
-        const password = prompt("Password?");
-        const comments = prompt("Comments?");
-
-        if (!firstName || !secondName || !email || !password) return;
-
-        try {
-            await addItem({
-                firstName: `${firstName}`,
-                secondName: `${secondName}`,
-                email: `${email}`,
-                password: `${password}`,
-                comments: `${comments}`
+    useEffect(() => {
+        if (add) {
+            setAddForm({
+                firstName: emptyUser.firstName,
+                secondName: emptyUser.secondName,
+                email: emptyUser.email,
+                password: emptyUser.password,
+                comments: emptyUser.comments ?? "",
+                enrollments: emptyUser.enrollments ?? []
             });
+        }
+    }, [add]);
+
+    async function handleAddUser() {
+        if (!token || !addForm) return;
+        try {
+            await addItem(addForm);
             await refreshUsers();
+            setAdd(false);
         } catch (err) {
             console.error(err);
             alert(err);
@@ -136,7 +144,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
                 <h1 className="text-xl font-bold">Students</h1>
 
                 <button
-                    onClick={handleAddUser}
+                    onClick={() => setAdd(true)}
                     className="bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
                 >
                     Add
@@ -153,6 +161,89 @@ export default function Students({ token, users, courses, refreshUsers }) {
                     onDelete={handleDeleteUser}
                 />
             </div>
+            <CrudModal
+                open={!!add}
+                onClose={() => setAdd(false)}
+                onSave={() =>
+                    handleAddUser()
+                }
+            >
+                {/* First name */}
+                <p className="flex justify-between items-center mb-2">
+                    <strong>First name</strong>
+                    <input
+                        value={addForm.firstName || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({
+                                ...prev!,
+                                firstName: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+
+                {/* Last name */}
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Last name</strong>
+                    <input
+                        value={addForm.secondName || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({
+                                ...prev!,
+                                secondName: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+
+                {/* Email */}
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Email</strong>
+                    <input
+                        value={addForm.email || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({
+                                ...prev!,
+                                email: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+
+                {/* Password */}
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Password</strong>
+                    <input
+                        type="password"
+                        value={addForm.password || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({
+                                ...prev!,
+                                password: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+
+                {/* Comments */}
+                <p className="flex justify-between items-center mb-3">
+                    <strong>Comments</strong>
+                    <textarea
+                        value={addForm.comments || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({
+                                ...prev!,
+                                comments: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+            </CrudModal>
             <CrudModal
                 open={!!selectedUser}
                 onClose={() => setSelectedUser(null)}
