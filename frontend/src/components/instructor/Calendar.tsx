@@ -35,8 +35,17 @@ export default function Calendar({ token, courses }: CalendarProps) {
   const [clickedSession, setClickedSession] = useState<Session | null>(null);
   const [clickedEventId, setClickedEventId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<Session>>({});
+  const [add, setAdd] = useState(false);
+  const [addForm, setAddForm] = useState<Partial<Session>>({});
 
   const calendarRef = useRef<FullCalendar | null>(null);
+
+  const emptySession : Partial<Session> = {
+        title: "",
+        language: "",
+        level: "",
+        material: ""
+    }
 
   useEffect(() => {
       if (clickedSession) {
@@ -48,12 +57,33 @@ export default function Calendar({ token, courses }: CalendarProps) {
       }
   }, [clickedSession]);
 
+  useEffect(() => {
+      if (add) {
+          setAddForm({
+              location: emptySession.location,
+              startsAt: emptySession.startsAt,
+          });
+      }
+  }, [add]);
+
   async function handleUpdateSession(sessionId: number) {
       if (!token || !editForm) return;
 
       try {
           await updateSession(token, sessionId, editForm);
           setClickedSession(null);
+      } catch (err) {
+          console.error(err);
+          alert(err);
+      }
+  }
+
+  async function handleAddSession() {
+      if (!token || !addForm) return;
+      
+      try {
+          await addCourseSession(token, Number(selectedCourseId), addForm);
+          setAdd(false);
       } catch (err) {
           console.error(err);
           alert(err);
@@ -259,7 +289,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
             ))}
           </select>
           <button
-            onClick={() => alert("New session")}
+            onClick={() => setAdd(true)}
             className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-400"
           >
             Add session
@@ -302,6 +332,27 @@ export default function Calendar({ token, courses }: CalendarProps) {
           eventResize={handleEventResize}
           eventContent={eventContent}
         />
+        <CrudModal
+            open={!!add}
+            onClose={() => setAdd(false)}
+            onSave={() =>
+                handleAddSession()
+            }
+        >
+            <p className="flex justify-between items-center mb-2">
+                <strong>Location</strong>
+                <input
+                    value={addForm.location || ""}
+                    onChange={(e) =>
+                        setAddForm(prev => ({
+                            ...prev!,
+                            title: e.target.value
+                        }))
+                    }
+                    className="border border-gray-200 rounded p-1 w-64"
+                />
+            </p>
+        </CrudModal>
         <CrudModal
             open={!!clickedSession}
             onClose={() => setClickedSession(null)}
