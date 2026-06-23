@@ -241,21 +241,30 @@ export default function Calendar({ token, courses }: CalendarProps) {
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
-      <div className="mb-2 flex items-center justify-between border-b border-gray-200 pb-2">
-        <h1 className="text-xl font-bold">Calendar</h1>
-        <select
-          value={selectedCourseId}
-          onChange={(e) => setSelectedCourseId(e.target.value)}
-          className="w-64 rounded border border-gray-200 p-1"
-        >
-          <option value="">All courses</option>
-          {courses.map((course: Course) => (
-            <option key={course.id} value={course.id}>
-              {course.title}
-            </option>
-          ))}
-        </select>
+    <div className="min-h-0 flex-1 flex flex-col">
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-xl font-bold">Sessions</h1>
+
+        <div className="flex gap-2">
+          <select
+            value={selectedCourseId}
+            onChange={(e) => setSelectedCourseId(e.target.value)}
+            className="w-64 rounded border border-gray-200 p-1"
+          >
+            <option value="">All courses</option>
+            {courses.map((course: Course) => (
+              <option key={course.id} value={course.id}>
+                {course.title}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => alert("New session")}
+            className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-400"
+          >
+            Add session
+          </button>
+        </div>
       </div>
       <div className="min-h-0 flex-1">
         <FullCalendar
@@ -295,12 +304,14 @@ export default function Calendar({ token, courses }: CalendarProps) {
         />
         <CrudModal
             open={!!clickedSession}
-            title={`${getCourseTitle(clickedSession?.courseId)}`}
             onClose={() => setClickedSession(null)}
             onSave={() =>
                 handleUpdateSession(clickedSession!.id)
             }
         >
+            <h2 className="text-lg font-bold mb-4">
+                {`${getCourseTitle(clickedSession?.courseId)}`}
+            </h2>
             <p className="flex justify-between items-center mb-2">
                 <strong>Location</strong>
                 <input
