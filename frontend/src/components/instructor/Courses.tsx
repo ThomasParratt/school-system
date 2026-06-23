@@ -28,6 +28,7 @@ export default function Courses({ token, users, courses, refreshCourses }) {
         if (selectedCourse) {
             handleGetEnrollments(selectedCourse.id);
             setEditForm({
+                title: selectedCourse.title,
                 language: selectedCourse.language,
                 level: selectedCourse.level,
                 material: selectedCourse.material,
@@ -155,6 +156,19 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                     handleUpdateCourse(selectedCourse!.id)
                 }
             >
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Course name</strong>
+                    <input
+                        value={editForm.title || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({
+                                ...prev!,
+                                title: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
                 <p className="flex justify-between items-center mb-2">
                     <strong>Language</strong>
                     <select
