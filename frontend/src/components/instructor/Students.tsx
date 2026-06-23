@@ -32,8 +32,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
         secondName: "",
         email: "",
         password: "",
-        comments: "",
-        enrollments: []
+        comments: ""
     }
 
     useEffect(() => {
@@ -56,8 +55,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
                 secondName: emptyUser.secondName,
                 email: emptyUser.email,
                 password: emptyUser.password,
-                comments: emptyUser.comments ?? "",
-                enrollments: emptyUser.enrollments ?? []
+                comments: emptyUser.comments ?? ""
             });
         }
     }, [add]);

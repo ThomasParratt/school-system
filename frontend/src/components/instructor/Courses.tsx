@@ -9,6 +9,8 @@ import bin from "../../../dist/bin.svg";
 export default function Courses({ token, users, courses, refreshCourses }) {
     const [editForm, setEditForm] = useState<Partial<Course>>({});
     const [selectedUserId, setSelectedUserId] = useState("");
+    const [addForm, setAddForm] = useState<Partial<Course>>({});
+    const [add, setAdd] = useState(false);
 
     const {
         selectedItem: selectedCourse,
@@ -24,6 +26,13 @@ export default function Courses({ token, users, courses, refreshCourses }) {
         remove: deleteCourse
     });
 
+    const emptyCourse : Partial<Course> = {
+        title: "",
+        language: "",
+        level: "",
+        material: ""
+    }
+
     useEffect(() => {
         if (selectedCourse) {
             handleGetEnrollments(selectedCourse.id);
@@ -37,24 +46,29 @@ export default function Courses({ token, users, courses, refreshCourses }) {
         }
     }, [selectedCourse]);
 
+    useEffect(() => {
+        if (add) {
+            setAddForm({
+                title: emptyCourse.title,
+                language: emptyCourse.language,
+                level: emptyCourse.level,
+                material: emptyCourse.material
+            });
+        }
+    }, [add]);
+
     async function handleAddCourse() {
-        if (!token) return;
+        if (!token || !addForm) return;
 
-        const title = prompt("Title?");
-        const language = prompt("Language?");
-        const level = prompt("Level?");
-        const material = prompt("Material?");
-
-        if (!title || !language || !level || !material) return;
+        if (!addForm.title || !addForm.language || !addForm.level || !addForm.material) {
+            alert("Please fill in all required fields.");
+            return;
+        }
 
         try {
-            await addItem({
-                title: `${title}`,
-                language: `${language}`,
-                level: `${level}`,
-                material: `${material}`
-            });
+            await addItem(addForm);
             await refreshCourses();
+            setAdd(false);
         } catch (err) {
             console.error(err);
             alert(err);
@@ -132,7 +146,7 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                 <h1 className="text-xl font-bold">Courses</h1>
 
                 <button
-                    onClick={handleAddCourse}
+                    onClick={() => setAdd(true)}
                     className="bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
                 >
                     Add
@@ -149,6 +163,77 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                     onDelete={handleDeleteCourse}
                 />
             </div>
+            <CrudModal
+                open={!!add}
+                onClose={() => setAdd(false)}
+                onSave={() =>
+                    handleAddCourse()
+                }
+            >
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Course name</strong>
+                    <input
+                        value={addForm.title || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({
+                                ...prev!,
+                                title: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Language</strong>
+                    <select
+                        value={addForm.language || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({ ...prev, language: e.target.value }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    >
+                        <option value="" disabled>
+                            Select language
+                        </option>
+                        <option value="English">English</option>
+                        <option value="Finnish">Finnish</option>
+                        <option value="Swedish">Swedish</option>
+                        <option value="Russian">Russian</option>
+                        <option value="German">German</option>
+                        <option value="French">French</option>
+                    </select>
+                </p>
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Level</strong>
+                    <select
+                        value={addForm.level || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({ ...prev, level: e.target.value }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    >
+                        <option value="" disabled>
+                            Select level
+                        </option>
+                        <option value="A1">A1</option>
+                        <option value="A2">A2</option>
+                        <option value="B1">B1</option>
+                        <option value="B2">B2</option>
+                        <option value="C1">C1</option>
+                        <option value="C2">C2</option>
+                    </select>
+                </p>
+                <p className="flex justify-between items-center mb-3">
+                    <strong>Material</strong>
+                    <textarea
+                        value={addForm.material || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({ ...prev, material: e.target.value }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+            </CrudModal>
             <CrudModal
                 open={!!selectedCourse}
                 onClose={() => setSelectedCourse(null)}
