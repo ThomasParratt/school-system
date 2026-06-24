@@ -175,7 +175,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
     const title = getCourseTitle(courseId);
     if (!title) return;
 
-    const location = prompt("Session location?");
+    const location = prompt("Please enter session location:");
     if (!location) return;
 
     const end = new Date(info.start.getTime() + 45 * 60 * 1000);
