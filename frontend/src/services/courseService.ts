@@ -175,7 +175,7 @@ export async function getCourseSessions(
 export async function addCourseSession(
     token: string | null,
     courseId: number,
-    session: { location: string; startsAt: string; endsAt: string }
+    session: { location: string; startsAt: string; endsAt?: string }
 ) {
     const res = await fetch(`http://localhost:3000/courses/${courseId}/sessions`, {
         method: "POST",

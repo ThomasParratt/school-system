@@ -60,12 +60,12 @@ export async function getSession(
 export async function updateSession(
     token: string | null,
     sessionId: number,
-    session: { 
-        location: string; 
-        startsAt: string; 
-        endsAt: string; 
-        content: string;
-        homework: string
+    session: {
+        location?: string;
+        startsAt?: string;
+        endsAt?: string | null;
+        content?: string | null;
+        homework?: string | null;
     }
 ) {
     const res = await fetch(`http://localhost:3000/sessions/${sessionId}`, {

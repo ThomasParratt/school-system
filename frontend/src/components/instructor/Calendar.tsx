@@ -41,10 +41,8 @@ export default function Calendar({ token, courses }: CalendarProps) {
   const calendarRef = useRef<FullCalendar | null>(null);
 
   const emptySession : Partial<Session> = {
-        title: "",
-        language: "",
-        level: "",
-        material: ""
+        location: "",
+        startsAt: ""
     }
 
   useEffect(() => {
@@ -80,18 +78,53 @@ export default function Calendar({ token, courses }: CalendarProps) {
 
   async function handleAddSession() {
       if (!token || !addForm) return;
-      
+      if (Number(selectedCourseId) === 0) {
+        alert("Cannot add session. Choose a course from the drop down menu.");
+        return;
+      }
+
+      const startsAtValue = addForm.startsAt;
+
+      if (!startsAtValue) {
+        alert("Please choose a valid start time.");
+        return;
+      }
+
+      const startsAt = new Date(startsAtValue);
+
+      if (Number.isNaN(startsAt.getTime())) {
+        alert("Please choose a valid start time.");
+        return;
+      }
+
+      const endsAt = new Date(startsAt.getTime() + 45 * 60 * 1000);
+
       try {
-          await addCourseSession(token, Number(selectedCourseId), addForm);
+          await addCourseSession(token, Number(selectedCourseId), {
+            location: addForm.location ?? "",
+            startsAt: startsAt.toISOString(),
+            endsAt: endsAt.toISOString()
+          });
           setAdd(false);
+          await loadSessions();
       } catch (err) {
           console.error(err);
           alert(err);
       }
   }
 
-  const getCourseTitle = (courseId: number) =>
-    courses.find((course: Course) => course.id === courseId)?.title ?? "";
+  const handleOpenAddModal = () => {
+      if (!selectedCourseId) {
+          alert("Cannot add session. Choose a course from the drop down menu.");
+          return;
+      }
+      setAdd(true);
+  };
+
+  const getCourseTitle = (courseId?: number) =>
+    courseId === undefined
+      ? ""
+      : courses.find((course: Course) => course.id === courseId)?.title ?? "";
 
   /**
    * Load from backend (source of truth)
@@ -289,7 +322,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
             ))}
           </select>
           <button
-            onClick={() => setAdd(true)}
+            onClick={handleOpenAddModal}
             className="bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-400"
           >
             Add session
@@ -332,7 +365,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
           eventResize={handleEventResize}
           eventContent={eventContent}
         />
-        <CrudModal
+        {selectedCourseId && (<CrudModal
             open={!!add}
             onClose={() => setAdd(false)}
             onSave={() =>
@@ -346,13 +379,28 @@ export default function Calendar({ token, courses }: CalendarProps) {
                     onChange={(e) =>
                         setAddForm(prev => ({
                             ...prev!,
-                            title: e.target.value
+                            location: e.target.value
                         }))
                     }
                     className="border border-gray-200 rounded p-1 w-64"
                 />
             </p>
-        </CrudModal>
+            <p className="flex justify-between items-center mb-2">
+                <strong>Starts at</strong>
+
+                <input
+                    type="datetime-local"
+                    value={addForm.startsAt || ""}
+                    onChange={(e) =>
+                        setAddForm(prev => ({
+                            ...prev!,
+                            startsAt: e.target.value
+                        }))
+                    }
+                    className="border border-gray-200 rounded p-1 w-64"
+                />
+            </p>
+        </CrudModal>)}
         <CrudModal
             open={!!clickedSession}
             onClose={() => setClickedSession(null)}
