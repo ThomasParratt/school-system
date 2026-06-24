@@ -1,30 +1,78 @@
 # School Management System
 
-School Management System is a full-stack app for managing instructors, students, courses, and class sessions. The MVP scope is documented in [MVP.md](MVP.md).
+School Management System is a full-stack app for managing instructors, students, courses, and class sessions. It combines an Express + Prisma backend with a React + Vite frontend and supports role-based access for instructors and students.
 
-## Current State
+## What It Does
+
+- Login with JWT authentication
+- Instructor CRUD for users, courses, and class sessions
+- Enrollment management between students and courses
+- Student dashboard for enrolled courses and lessons
+- Swagger/OpenAPI docs served by the backend at `/docs`
+- Bruno API collections in `bruno/`
+
+## Tech Stack
+
+- Backend: Node.js, Express, Prisma, PostgreSQL, JWT, bcrypt
+- Frontend: React, TypeScript, Vite, React Router
+- Tooling: Docker Compose, Vitest, ESLint
+
+## Project Structure
+
+```text
+school-system/
+├── backend/
+├── frontend/
+├── bruno/
+├── docker-compose.yml
+├── README.md
+└── TO_DO.md
+```
+
+## Run With Docker
+
+From the repository root:
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- Frontend at `http://localhost:5173`
+- Backend at `http://localhost:3000`
+- Swagger UI at `http://localhost:3000/docs`
+- PostgreSQL at `localhost:5432`
+
+## Run Locally
 
 ### Backend
 
-- Express API on port `3000`
-- Prisma + PostgreSQL persistence
-- JWT authentication and role-based authorization
-- CRUD for users, courses, and class sessions
-- Student enrollment and unenrollment flows
-- Authenticated student views for enrolled courses and sessions
-- Seed script that creates an instructor account
+The backend expects a `DATABASE_URL` environment variable. `JWT_SECRET` is optional and defaults to `supersecretkey`.
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+If you want to generate Prisma client code, apply migrations, seed the database, and then start the server, use:
+
+```bash
+npm run dev:docker
+```
 
 ### Frontend
 
-- React + TypeScript + Vite app on port `5173`
-- Login flow with session persistence in `localStorage`
-- Instructor dashboard with students, courses, and calendar panels
-- CRUD actions for students and courses in the dashboard
-- Student view is currently a simple placeholder after login
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Seeded Instructor Account
+## Seeded Account
 
-Created by [backend/prisma/seed.ts](backend/prisma/seed.ts).
+The backend seed script creates an instructor account:
 
 - Email: `instructor@school.local`
 - Password: `password123`
@@ -35,7 +83,7 @@ Base URL: `http://localhost:3000`
 
 ### Authentication
 
-- `POST /auth/login` - login and receive a JWT
+- `POST /auth/login` - login and receive a JWT plus user data
 
 ### Users
 
@@ -67,86 +115,18 @@ Base URL: `http://localhost:3000`
 - `PATCH /sessions/:id` - update a session (instructor only)
 - `DELETE /sessions/:id` - delete a session (instructor only)
 
-## Tech Stack
+## Testing
 
-- Backend: Node.js, Express, Prisma, PostgreSQL, JWT, bcrypt
-- Frontend: React, TypeScript, Vite
-- Dev/runtime: Docker Compose
-
-## Run Locally
-
-### Docker
-
-```bash
-docker compose up --build
-```
-
-Services:
-
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:3000`
-- Postgres: `localhost:5432`
-
-### Local development
-
-Backend:
+Backend tests run with Vitest:
 
 ```bash
 cd backend
-npm install
-npm run dev
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## Repository Structure
-
-```text
-school-system/
-├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma
-│   │   ├── seed.ts
-│   │   └── migrations/
-│   ├── src/
-│   │   ├── app.ts
-│   │   ├── index.ts
-│   │   ├── lib/
-│   │   ├── middleware/
-│   │   ├── routes/
-│   │   └── types/
-│   ├── openapi.yaml
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── vitest.config.ts
-├── frontend/
-│   ├── src/
-│   │   ├── App.tsx
-│   │   ├── main.tsx
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── services/
-│   │   └── types.ts
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.ts
-├── bruno/
-├── MVP.md
-├── TO_DO.md
-├── README.md
-└── docker-compose.yml
+npm test
 ```
 
 ## Notes
 
-- The instructor dashboard is implemented in [frontend/src/components/InstructorDash.tsx](frontend/src/components/InstructorDash.tsx).
-- Students and courses are managed through [frontend/src/components/Students.tsx](frontend/src/components/Students.tsx) and [frontend/src/components/Courses.tsx](frontend/src/components/Courses.tsx).
-- The calendar panel is currently a placeholder in [frontend/src/components/Calendar.tsx](frontend/src/components/Calendar.tsx).
+- The backend OpenAPI definition lives in `backend/openapi.yaml`.
+- The frontend login screen routes users into the instructor or student dashboard based on their role.
 
-See [MVP.md](MVP.md) for the target feature set.
+
