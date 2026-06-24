@@ -25,8 +25,7 @@ school-system/
 ├── frontend/
 ├── bruno/
 ├── docker-compose.yml
-├── README.md
-└── TO_DO.md
+└── README.md
 ```
 
 ## Run With Docker
