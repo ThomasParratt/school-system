@@ -43,7 +43,7 @@ export default function StudentDash() {
       </div>
 
       {/* Main Calendar */}
-      <div className="flex-[3] min-h-0 h-full bg-gray-100 rounded-xl p-4 flex flex-col">
+      <div className="flex-[3] min-h-0 h-full bg-gray-100 rounded-xl p-4 flex flex-col text-left">
         <MyCalendar token={token} courses={courses} sessions={sessions} />
       </div>
     </div>

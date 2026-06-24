@@ -66,6 +66,12 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
     );
   };
 
+  const handleEventClick = async (clickInfo: EventClickArg) => {
+    const event = clickInfo.event;
+    const session = await getSession(token, Number(event.id));
+    setClickedSession(session.data);
+  };
+
   return (
     <div className="flex-1 min-h-0 flex flex-col">
       <div className="min-h-0 flex-1">
@@ -93,42 +99,41 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
             hour12: false
           }}
           eventBackgroundColor="#5759e9"
-          editable={true}
           selectable={true}
           selectMirror={true}
           events={events}
-          //eventClick={handleEventClick}
+          eventClick={handleEventClick}
           eventContent={eventContent}
         />
         {clickedSession && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setSelectedSession(null)}>
-            <div className="bg-white p-6 rounded shadow-lg w-[420px] relative" onClick={(e) => e.stopPropagation()}>
-            
-              <button
-                  onClick={() => setClickedSession(null)}
-                  className="absolute top-2 right-3 text-gray-500 hover:text-black"
-              >
-                  ✕
-              </button>
+              <div className="bg-white p-6 rounded shadow-lg w-[420px] relative" onClick={(e) => e.stopPropagation()}>
+              
+                  <button
+                      onClick={() => setClickedSession(null)}
+                      className="absolute top-2 right-3 text-gray-500 hover:text-black"
+                  >
+                      ✕
+                  </button>
 
-              <h2 className="text-lg font-bold mb-4">
-                  {getCourseTitle(clickedSession.courseId)}
-              </h2>
-              <div className="flex justify-between items-center mb-2">
-                  <strong>Location</strong>
-                  <div>{clickedSession.location}</div>
+                  <h2 className="text-lg font-bold mb-4">
+                      {getCourseTitle(clickedSession.courseId)}
+                  </h2>
+                  <div className="flex justify-between items-center mb-2">
+                      <strong>Location</strong>
+                      <div>{clickedSession.location}</div>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                      <strong>Content</strong>
+                      <div>{clickedSession.content}</div>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                      <strong>Homework</strong>
+                      <div>{clickedSession.homework}</div>
+                  </div>
               </div>
-              <div className="flex justify-between items-center mb-2">
-                  <strong>Content</strong>
-                  <div>{clickedSession.content}</div>
-              </div>
-              <div className="flex justify-between items-center mb-2">
-                  <strong>Homework</strong>
-                  <div>{clickedSession.homework}</div>
-              </div>
-            </div>
           </div>
-        )}
+      )}
       </div>
     </div>
   );
