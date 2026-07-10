@@ -1,3 +1,4 @@
+import Instructors from "./Instructors";
 import Students from "./Students";
 import Courses from "./Courses";
 import Calendar from "./Calendar";
@@ -34,6 +35,10 @@ export default function AdminDash() {
 
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
+        <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
+          <Instructors token={token} users={users} courses={courses} refreshUsers={fetchUsers} />
+        </div>
+
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
           <Students token={token} users={users} courses={courses} refreshUsers={fetchUsers} />
         </div>

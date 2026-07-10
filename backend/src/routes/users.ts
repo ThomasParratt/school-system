@@ -43,7 +43,7 @@ router.post(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const { firstName, secondName, email, password, comments } = req.body;
+      const { firstName, secondName, email, password, role, comments } = req.body;
 
       // Validation
       if (!firstName || !secondName || !email || !password ) {
@@ -63,7 +63,7 @@ router.post(
           secondName,
           email,
           password: hashedPassword,
-          role: "student",
+          role: role,
           comments
         },
         select: {
