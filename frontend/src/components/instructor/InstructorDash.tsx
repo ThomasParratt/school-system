@@ -1,32 +1,31 @@
-import Students from "./Students";
-import Courses from "./Courses";
-import Calendar from "./Calendar";
 import { useAuth } from "../../context/AuthContext";
-import { getUsers } from "../../services/userService";
-import { getCourses } from "../../services/courseService";
-import type { User, Course } from "../../types";
+import type { Course, Session } from "../../types";
 import { useState, useEffect } from "react";
+import { getUserCourses, getUserSessions } from "../../services/userService";
+import MyCourses from "./MyCourses";
+import MyCalendar from "./MyCalendar";
+import MyLessons from "./MyLessons";
 
 export default function InstructorDash() {
   const { token } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
-
-  const fetchUsers = async () => {
-    if (!token) return;
-    const data = await getUsers(token);
-    setUsers(data.data);
-  };
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   const fetchCourses = async () => {
     if (!token) return;
-    const data = await getCourses(token);
+    const data = await getUserCourses(token);
     setCourses(data.data);
   };
 
+  const fetchSessions = async () => {
+    if (!token) return;
+    const data = await getUserSessions(token);
+    setSessions(data.data);
+  };
+
   useEffect(() => {
-    fetchUsers();
     fetchCourses();
+    fetchSessions();
   }, [token]);
 
   return (
@@ -35,17 +34,17 @@ export default function InstructorDash() {
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <Students token={token} users={users} courses={courses} refreshUsers={fetchUsers} />
+          <MyCourses token={token} courses={courses} />
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <Courses token={token} users={users} courses={courses} refreshCourses={fetchCourses} />
+          <MyLessons token={token} courses={courses} sessions={sessions} />
         </div>
       </div>
 
       {/* Main Calendar */}
-      <div className="flex-[3] min-h-0 h-full bg-gray-100 rounded-xl p-4 flex flex-col">
-        <Calendar token={token} courses={courses} />
+      <div className="flex-[3] min-h-0 h-full bg-gray-100 rounded-xl p-4 flex flex-col text-left">
+        <MyCalendar token={token} courses={courses} sessions={sessions} />
       </div>
     </div>
   );
