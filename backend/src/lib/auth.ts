@@ -1,5 +1,7 @@
-import type { Role } from "@prisma/client";
 import jwt from "jsonwebtoken";
+
+export const AUTH_ROLES = ["admin", "instructor", "student"] as const;
+export type Role = (typeof AUTH_ROLES)[number];
 
 export type AuthTokenPayload = {
 	id: number;

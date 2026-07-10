@@ -7,7 +7,7 @@ import { getCourses } from "../../services/courseService";
 import type { User, Course } from "../../types";
 import { useState, useEffect } from "react";
 
-export default function InstructorDash() {
+export default function AdminDash() {
   const { token } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);

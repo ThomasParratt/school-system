@@ -5,7 +5,7 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 const router = Router();
 
 // GET /courses
-router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const courses = await prisma.course.findMany({
       select: {
@@ -38,7 +38,7 @@ router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
 router.post(
   "/",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const { title, language, level, material } = req.body;
@@ -94,7 +94,7 @@ router.post(
 );
 
 // GET /courses/:id
-router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const courseId = Number(req.params.id);
 
@@ -138,7 +138,7 @@ router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
 router.patch(
   "/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const courseId = Number(req.params.id);
@@ -214,7 +214,7 @@ router.patch(
 router.delete(
   "/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const courseId = Number(req.params.id);
@@ -296,7 +296,7 @@ router.get("/:id/sessions", requireAuth, async (req, res) => {
 router.post(
   "/:id/sessions",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const courseId = Number(req.params.id);
@@ -361,7 +361,7 @@ router.post(
 router.post(
   "/:id/enroll",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const courseId = Number(req.params.id);
@@ -429,7 +429,7 @@ router.post(
 router.delete(
   "/:courseId/enrollments/:studentId",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const courseId = Number(req.params.courseId);
@@ -490,7 +490,7 @@ router.delete(
 );
 
 // GET /courses/:id/enrollments
-router.get("/:id/enrollments", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const courseId = Number(req.params.id);
 

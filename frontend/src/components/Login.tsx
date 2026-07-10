@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { login } from "../services/loginService.ts";
 import { useAuth } from "../context/AuthContext";
-import InstructorDash from "./instructor/InstructorDash.tsx";
+import AdminDash from "./admin/AdminDash.tsx";
 import StudentDash from "./student/StudentDash.tsx";
 
 function Login() {
@@ -110,8 +110,8 @@ function Login() {
                             </div>
                         </div>
                     </header>
-                    {user.role === "instructor" && (
-                        <InstructorDash />
+                    {user.role === "admin" && (
+                        <AdminDash />
                     )}
 
                     {user.role === "student" && (

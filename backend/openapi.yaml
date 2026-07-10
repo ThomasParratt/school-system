@@ -31,7 +31,7 @@ components:
           type: string
         role:
           type: string
-          enum: [student, instructor]
+          enum: [admin, student, instructor]
         comments:
           type: string
           nullable: true
@@ -211,7 +211,7 @@ paths:
                     $ref: "#/components/schemas/User"
     
     post:
-      summary: Create user (instructor only)
+      summary: Create user (admin only)
       security:
         - bearerAuth: []
       requestBody:
@@ -383,7 +383,7 @@ paths:
                 $ref: "#/components/schemas/Error"
 
     patch:
-      summary: Update user information (instructor only)
+      summary: Update user information (admin only)
       security:
         - bearerAuth: []
       parameters:
@@ -567,7 +567,7 @@ paths:
           description: Server error
     
     post:
-      summary: Create course (instructor only)
+      summary: Create course (admin only)
       security:
         - bearerAuth: []
       requestBody:
@@ -656,7 +656,7 @@ paths:
 
 
     patch:
-      summary: Update course information (instructor only)
+      summary: Update course information (admin only)
       security:
         - bearerAuth: []
       parameters:
@@ -979,7 +979,7 @@ paths:
   
   /courses/{id}/enroll:
     post:
-      summary: Create enrollment (instructor only)
+      summary: Create enrollment (admin only)
       security:
         - bearerAuth: []
       parameters:
@@ -1111,7 +1111,7 @@ paths:
           description: Server error
 
     patch:
-      summary: Update session information (instructor only)
+      summary: Update session information (admin or instructor only)
       security:
         - bearerAuth: []
       parameters:

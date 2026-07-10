@@ -2,7 +2,7 @@ import request from "supertest";
 import app from "../../../src/app.js";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createUser } from "../factories/userFactory.js";
-import { loginAsInstructor, loginAsStudent } from "../helpers/auth.js";
+import { loginAsAdmin, loginAsStudent } from "../helpers/auth.js";
 import { cleanupTestData } from "../helpers/cleanup.js";
 
 describe("DELETE /users/:id", () => {
@@ -18,7 +18,7 @@ describe("DELETE /users/:id", () => {
   });
 
   it("should delete user", async () => {
-    const token = await loginAsInstructor();
+    const token = await loginAsAdmin();
 
     const response = await request(app)
       .delete(`/users/${userId}`)

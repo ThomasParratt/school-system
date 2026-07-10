@@ -7,7 +7,7 @@ const router = Router();
 const SALT_ROUNDS = 10;
 
 // GET /users
-router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -40,7 +40,7 @@ router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
 router.post(
   "/",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const { firstName, secondName, email, password, comments } = req.body;
@@ -256,7 +256,7 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
 });
 
 // GET /users/:id
-router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const userId = Number(req.params.id);
 
@@ -301,7 +301,7 @@ router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
 router.patch(
   "/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const userId = Number(req.params.id);
@@ -377,7 +377,7 @@ router.patch(
 router.delete(
   "/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const userId = Number(req.params.id);
@@ -414,7 +414,7 @@ router.delete(
 );
 
 // GET /users/:id/enrollments
-router.get("/:id/enrollments", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const userId = Number(req.params.id);
 

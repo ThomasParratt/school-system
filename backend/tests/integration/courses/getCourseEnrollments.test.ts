@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../../../src/app.js";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { loginAsInstructor } from "../helpers/auth.js";
+import { loginAsAdmin } from "../helpers/auth.js";
 import { cleanupTestData } from "../helpers/cleanup.js";
 import { createEnrollment } from "../factories/enrollmentFactory.js";
 import { createUser } from "../factories/userFactory.js";
@@ -24,7 +24,7 @@ describe("GET /courses/:id/enrollments", () => {
     });
 
     it("should return requested enrollment", async () => {
-        const token = await loginAsInstructor();
+        const token = await loginAsAdmin();
 
         const response = await request(app)
         .get(`/courses/${courseId}/enrollments`)

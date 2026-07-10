@@ -2,9 +2,9 @@ import request from "supertest";
 import app from "../../../src/app.js";
 import { createUser } from '../factories/userFactory.js';
 
-export async function loginAsInstructor() {
+export async function loginAsAdmin() {
   const user = await createUser({
-    role: "instructor",
+    role: "admin",
   });
 
   const response = await request(app)
