@@ -1,4 +1,4 @@
-import type { ApiErrorResponse } from "../types";
+import type { ApiErrorResponse, User } from "../types";
 
 export async function getCourses(token: string | null) {
     const res = await fetch("http://localhost:3000/courses", {
@@ -17,7 +17,7 @@ export async function getCourses(token: string | null) {
 
 export async function addCourse(
     token: string | null,
-    user: { title: string; language: string; level: string; material: string }
+    user: { title: string; language: string; level: string; instructorId: number; material: string }
 ) {
     const res = await fetch("http://localhost:3000/courses", {
         method: "POST",
@@ -63,7 +63,7 @@ export async function deleteCourse(
 export async function updateCourse(
     token: string | null,
     courseId: number,
-    course: { title: string; language: string; level: string; material: string }
+    course: { title: string; language: string; level: string; instructorId: number; material: string }
 ) {
     const res = await fetch(`http://localhost:3000/courses/${courseId}`, {
         method: "PATCH",

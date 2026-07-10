@@ -312,7 +312,7 @@ export default function Instructors({ token, users, courses, refreshUsers }) {
 
                 {/* Enrollments */}
                 <div className="mb-2">
-                    <strong>Enrollments</strong>
+                    <strong>Taught courses NOT WORKING YET</strong>
 
                     {/* Add course */}
                     <div className="flex gap-2 mt-2 mb-2">
