@@ -105,7 +105,7 @@ router.post(
 // GET /users/me
 router.get("/me", requireAuth, async (req, res) => {
   try {
-    const userId = Number(req.user.id);
+    const userId = Number(req.user?.id ?? 0);
 
       if (!Number.isInteger(userId) || userId <= 0) {
         return res.status(400).json({
@@ -147,7 +147,7 @@ router.get("/me", requireAuth, async (req, res) => {
 // GET /users/me/courses
 router.get("/me/courses", requireAuth, async (req, res) => {
   try {
-    const userId = Number(req.user.id);
+    const userId = Number(req.user?.id ?? 0);
 
       if (!Number.isInteger(userId) || userId <= 0) {
         return res.status(400).json({
@@ -157,7 +157,32 @@ router.get("/me/courses", requireAuth, async (req, res) => {
           },
         });
       }
+    // If the authenticated user is an instructor, return courses they teach
+    if (req.user?.role === "instructor") {
+      const taughtCourses = await prisma.course.findMany({
+        where: { instructorId: userId },
+        select: {
+          id: true,
+          title: true,
+          language: true,
+          level: true,
+          material: true,
+          instructor: {
+            select: {
+              id: true,
+              firstName: true,
+              secondName: true,
+            },
+          },
+        },
+      });
 
+      return res.status(200).json({
+        data: taughtCourses,
+      });
+    }
+
+    // Otherwise return courses the user is enrolled in
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -203,7 +228,7 @@ router.get("/me/courses", requireAuth, async (req, res) => {
 // GET /users/me/sessions
 router.get("/me/sessions", requireAuth, async (req, res) => {
   try {
-    const userId = Number(req.user.id);
+    const userId = Number(req.user?.id ?? 0);
 
       if (!Number.isInteger(userId) || userId <= 0) {
         return res.status(400).json({
@@ -213,6 +238,33 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
           },
         });
       }
+
+
+    // If instructor, return sessions for courses they teach
+    if (req.user?.role === "instructor") {
+      const taughtCoursesWithSessions = await prisma.course.findMany({
+        where: { instructorId: userId },
+        select: {
+          sessions: {
+            select: {
+              id: true,
+              courseId: true,
+              location: true,
+              startsAt: true,
+              endsAt: true,
+              content: true,
+              homework: true,
+            },
+          },
+        },
+      });
+
+      const sessions = taughtCoursesWithSessions.flatMap(c => c.sessions);
+
+      return res.status(200).json({
+        data: sessions,
+      });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
