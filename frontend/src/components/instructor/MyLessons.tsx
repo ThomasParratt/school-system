@@ -11,7 +11,7 @@ export default function MyLessons({ token, courses, sessions }) {
     return (
         <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-xl font-bold">My Lessons</h1>
+                <h1 className="text-xl font-bold">My Lessons NEED TO BE ABLE TO EDIT</h1>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <ol>

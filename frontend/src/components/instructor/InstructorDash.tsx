@@ -34,7 +34,7 @@ export default function InstructorDash() {
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <h1 className="text-xl font-bold">My Students</h1>
+          <h1 className="text-xl font-bold">My Students STUDENTS NEED TO BE LISTED HERE</h1>
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
