@@ -29,3 +29,16 @@ export async function loginAsStudent() {
 
   return response.body.data.token;
 }
+
+export async function loginAsInstructor() {
+  const user = await createUser({ role: "instructor" });
+
+  const response = await request(app)
+    .post("/auth/login")
+    .send({
+      email: user.email,
+      password: "password",
+    });
+
+  return response.body.data.token;
+}

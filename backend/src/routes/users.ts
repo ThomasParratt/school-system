@@ -307,6 +307,65 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
   }
 });
 
+// GET /users/me/students (instructors only)
+router.get("/me/students", requireAuth, requireRole("instructor"), async (req, res) => {
+  try {
+    const userId = Number(req.user?.id ?? 0);
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return res.status(400).json({
+        error: {
+          message: "Invalid user ID",
+          code: "INVALID_ID",
+        },
+      });
+    }
+
+    // Find enrollments for courses taught by this instructor
+    const enrollments = await prisma.enrollment.findMany({
+      where: {
+        course: {
+          instructorId: userId,
+        },
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            secondName: true,
+            email: true,
+            role: true,
+            comments: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    // Extract unique users
+    const studentsById: Record<number, any> = {};
+    for (const e of enrollments) {
+      if (e.user && !studentsById[e.user.id]) {
+        studentsById[e.user.id] = e.user;
+      }
+    }
+
+    const students = Object.values(studentsById);
+
+    return res.status(200).json({ data: students });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch students",
+        code: "FETCH_STUDENTS_ERROR",
+      },
+    });
+  }
+});
+
 // GET /users/:id
 router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
   try {
