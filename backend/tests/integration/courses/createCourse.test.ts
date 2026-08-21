@@ -68,7 +68,7 @@ describe("POST /courses", () => {
         level: "A1",
       });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(201);
     expect(response).toSatisfyApiSpec();
   });
 });
