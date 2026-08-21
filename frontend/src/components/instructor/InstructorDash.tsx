@@ -1,15 +1,23 @@
 import { useAuth } from "../../context/AuthContext";
 import type { Course, Session } from "../../types";
 import { useState, useEffect } from "react";
-import { getUserCourses, getUserSessions } from "../../services/userService";
+import { getUserCourses, getUserSessions, getUserStudents } from "../../services/userService";
 import MyCourses from "./MyCourses";
 import MyCalendar from "./MyCalendar";
 import MyLessons from "./MyLessons";
+import MyStudents from "./MyStudents";
 
 export default function InstructorDash() {
   const { token } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
+
+  const fetchStudents = async () => {
+    if (!token) return;
+    const data = await getUserStudents(token);
+    setUsers(data.data);
+  };
 
   const fetchCourses = async () => {
     if (!token) return;
@@ -34,7 +42,7 @@ export default function InstructorDash() {
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <h1 className="text-xl font-bold">My Students STUDENTS NEED TO BE LISTED HERE</h1>
+          <MyStudents token={token} users={users} courses={courses} refreshUsers={fetchStudents} />
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
