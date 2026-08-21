@@ -3,6 +3,7 @@ import app from "../../../src/app.js";
 import { describe, it, expect, afterEach } from "vitest";
 import { loginAsAdmin, loginAsStudent } from "../helpers/auth.js";
 import { cleanupTestData } from "../helpers/cleanup.js";
+import { createUser } from "../factories/userFactory.js";
 
 describe("POST /courses", () => {
   afterEach(async () => {
@@ -11,6 +12,7 @@ describe("POST /courses", () => {
 
   it("should create course", async () => {
     const token = await loginAsAdmin();
+    const instructor = await createUser({ role: "instructor" });
 
     const response = await request(app)
       .post("/courses")
@@ -20,6 +22,7 @@ describe("POST /courses", () => {
         language: "Finnish",
         level: "A1",
         material: "https://example.com/materials/finnish-a1",
+        instructorId: instructor.id,
       });
 
     expect(response.status).toBe(201);
@@ -68,7 +71,7 @@ describe("POST /courses", () => {
         level: "A1",
       });
 
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(400);
     expect(response).toSatisfyApiSpec();
   });
 });
