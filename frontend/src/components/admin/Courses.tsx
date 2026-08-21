@@ -80,15 +80,18 @@ export default function Courses({ token, users, courses, refreshCourses }) {
 
     async function handleDeleteCourse(courseId: number) {
         if (!token) return;
-
-        try {
-            await deleteItem(courseId);
-            //console.log(data);
-            await refreshCourses();
-        } catch (err) {
-            console.error(err);
-            alert(err);
+        if (confirm("Are you sure you want to delete this course?")) {
+            try {
+                await deleteItem(courseId);
+                //console.log(data);
+                await refreshCourses();
+            } catch (err) {
+                console.error(err);
+                alert(err);
+            }
         }
+        else
+            return;
     }
 
     async function handleUpdateCourse(courseId: number) {

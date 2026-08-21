@@ -75,14 +75,17 @@ export default function Instructors({ token, users, courses, refreshUsers }) {
 
     async function handleDeleteUser(userId: number) {
         if (!token) return;
-
-        try {
-            await deleteItem(userId);
-            await refreshUsers();
-        } catch (err) {
-            console.error(err);
-            alert(err);
+        if (confirm("Are you sure you want to delete this instructor?")) {
+            try {
+                await deleteItem(userId);
+                await refreshUsers();
+            } catch (err) {
+                console.error(err);
+                alert(err);
+            }
         }
+        else
+            return;
     }
 
     async function handleUpdateUser(userId: number) {
