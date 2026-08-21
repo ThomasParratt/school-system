@@ -5,7 +5,8 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { EventContentArg, EventInput, EventClickArg } from "@fullcalendar/core";
 import type { Course, Session } from "../../types";
-import { getSession } from "../../services/sessionService";
+import { getSession, updateSession } from "../../services/sessionService";
+import CrudModal from "../admin/CrudModal";
 
 type CalendarSession = {
   id: number;
@@ -21,12 +22,37 @@ type CalendarProps = {
   courses: Course[];
 };
 
-export default function MyCalendar({ token, courses, sessions }: CalendarProps) {
+export default function MyCalendar({ token, courses, sessions, refreshSessions }: CalendarProps) {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [clickedSession, setClickedSession] = useState<Session | null>(null)
+  const [editForm, setEditForm] = useState<Partial<Session>>({});
 
-  const getCourseTitle = (courseId: number) =>
-    courses.find((course: Course) => course.id === courseId)?.title ?? "";
+  useEffect(() => {
+      if (clickedSession) {
+          setEditForm({
+              location: clickedSession.location,
+              content: clickedSession.content ?? "",
+              homework: clickedSession.homework ?? ""
+          });
+      }
+  }, [clickedSession]);
+
+  const getCourseTitle = (courseId?: number) =>
+    courseId === undefined
+      ? ""
+      : courses.find((course: Course) => course.id === courseId)?.title ?? "";
+
+  async function handleUpdateSession(sessionId: number) {
+      if (!token || !editForm) return;
+
+      try {
+          await updateSession(token, sessionId, editForm);
+          setClickedSession(null);
+      } catch (err) {
+          console.error(err);
+          alert(err);
+      }
+  }
 
   const loadSessions = useCallback(async () => {
     if (!token) return;
@@ -105,35 +131,50 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
           eventClick={handleEventClick}
           eventContent={eventContent}
         />
-        {clickedSession && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setSelectedSession(null)}>
-              <div className="bg-white p-6 rounded shadow-lg w-[420px] relative" onClick={(e) => e.stopPropagation()}>
-              
-                  <button
-                      onClick={() => setClickedSession(null)}
-                      className="absolute top-2 right-3 text-gray-500 hover:text-black"
-                  >
-                      ✕
-                  </button>
-
-                  <h2 className="text-lg font-bold mb-4">
-                      {getCourseTitle(clickedSession.courseId)}
-                  </h2>
-                  <div className="flex justify-between items-center mb-2">
-                      <strong>Location</strong>
-                      <div>{clickedSession.location}</div>
-                  </div>
-                  <div className="flex justify-between items-center mb-2">
-                      <strong>Content</strong>
-                      <div>{clickedSession.content}</div>
-                  </div>
-                  <div className="flex justify-between items-center mb-2">
-                      <strong>Homework</strong>
-                      <div>{clickedSession.homework}</div>
-                  </div>
-              </div>
-          </div>
-      )}
+        <CrudModal
+            open={!!clickedSession}
+            onClose={() => setClickedSession(null)}
+            onSave={() =>
+                handleUpdateSession(clickedSession!.id)
+            }
+        >
+            <h2 className="text-lg font-bold mb-4">
+                {`${getCourseTitle(clickedSession?.courseId)}`}
+            </h2>
+            <p className="flex justify-between items-center mb-2">
+                <strong>Location</strong>
+                <input
+                    value={editForm.location || ""}
+                    onChange={(e) =>
+                        setEditForm(prev => ({
+                            ...prev!,
+                            location: e.target.value
+                        }))
+                    }
+                    className="border border-gray-200 rounded p-1 w-64"
+                />
+            </p>
+            <p className="flex justify-between items-center mb-2">
+                <strong>Content</strong>
+                <textarea
+                    value={editForm.content || ""}
+                    onChange={(e) =>
+                        setEditForm(prev => ({ ...prev, content: e.target.value }))
+                    }
+                    className="border border-gray-200 rounded p-1 w-64"
+                />
+            </p>
+            <p className="flex justify-between items-center mb-3">
+                <strong>Homework</strong>
+                <textarea
+                    value={editForm.homework || ""}
+                    onChange={(e) =>
+                        setEditForm(prev => ({ ...prev, homework: e.target.value }))
+                    }
+                    className="border border-gray-200 rounded p-1 w-64"
+                />
+            </p>
+        </CrudModal>
       </div>
     </div>
   );
