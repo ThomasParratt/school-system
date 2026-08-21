@@ -1,15 +1,17 @@
 # School Management System
 
-School Management System is a full-stack app for managing instructors, students, courses, and class sessions. It combines an Express + Prisma backend with a React + Vite frontend and supports role-based access for instructors and students.
+School Management System is a full-stack app for managing instructors, students, courses, and class sessions. It combines an Express + Prisma backend with a React + Vite frontend and supports role-based access for administrators, instructors, and students.
 
 ## What It Does
 
 - Login with JWT authentication
-- Instructor CRUD for users, courses, and class sessions
+- Administrator CRUD for users, courses, and class sessions
+- Instructor dashboard with taught courses, enrolled students, lessons, and a weekly calendar
+- Instructor editing of session location, content, and homework from the lessons list or calendar
 - Enrollment management between students and courses
-- Student dashboard for enrolled courses and lessons
+- Student dashboard for enrolled courses, lessons, and calendar events
 - Swagger/OpenAPI docs served by the backend at `/docs`
-- Bruno API collections in `bruno/`
+- Bruno API collections in `backend/bruno/`
 
 ## Tech Stack
 
@@ -22,8 +24,12 @@ School Management System is a full-stack app for managing instructors, students,
 ```text
 school-system/
 ├── backend/
+│   └── bruno/
 ├── frontend/
-├── bruno/
+│   └── src/components/
+│       ├── admin/
+│       ├── instructor/
+│       └── student/
 ├── docker-compose.yml
 └── README.md
 ```
@@ -36,12 +42,13 @@ From the repository root:
 docker compose up --build
 ```
 
-This starts:
+This starts the following services:
 
 - Frontend at `http://localhost:5173`
 - Backend at `http://localhost:3000`
 - Swagger UI at `http://localhost:3000/docs`
 - PostgreSQL at `localhost:5432`
+- Test PostgreSQL at `localhost:5433`
 
 ## Run Locally
 
@@ -71,9 +78,9 @@ npm run dev
 
 ## Seeded Account
 
-The backend seed script creates an instructor account:
+The backend seed script creates an administrator account:
 
-- Email: `instructor@school.local`
+- Email: `admin@school.local`
 - Password: `password123`
 
 ## API Overview
@@ -86,33 +93,35 @@ Base URL: `http://localhost:3000`
 
 ### Users
 
-- `GET /users` - list all users (instructor only)
-- `POST /users` - create a student user (instructor only)
+- `GET /users` - list all users (admin only)
+- `POST /users` - create a student user (admin only)
 - `GET /users/me` - get the authenticated user's profile
 - `GET /users/me/courses` - get the authenticated user's enrolled courses
 - `GET /users/me/sessions` - get the authenticated user's sessions
-- `GET /users/:id` - get a user by ID (instructor only)
-- `PATCH /users/:id` - update a user (instructor only)
-- `DELETE /users/:id` - delete a user (instructor only)
-- `GET /users/:id/enrollments` - list enrollments for a user (instructor only)
+- `GET /users/me/students` - list students enrolled in the instructor's courses (instructor only)
+- `GET /users/:id` - get a user by ID (admin only)
+- `PATCH /users/:id` - update a user (admin only)
+- `DELETE /users/:id` - delete a user (admin only)
+- `GET /users/:id/enrollments` - list enrollments for a user (admin only)
 
 ### Courses
 
-- `GET /courses` - list all courses (instructor only)
-- `POST /courses` - create a course (instructor only)
-- `GET /courses/:id` - get a course by ID (instructor only)
-- `PATCH /courses/:id` - update a course (instructor only)
-- `DELETE /courses/:id` - delete a course (instructor only)
-- `POST /courses/:id/enroll` - enroll a student in a course (instructor only)
-- `DELETE /courses/:courseId/enrollments/:studentId` - remove an enrollment (instructor only)
+- `GET /courses` - list all courses (admin only)
+- `POST /courses` - create a course (admin only)
+- `GET /courses/:id` - get a course by ID (admin only)
+- `PATCH /courses/:id` - update a course (admin only)
+- `DELETE /courses/:id` - delete a course (admin only)
+- `POST /courses/:id/enroll` - enroll a student in a course (admin only)
+- `DELETE /courses/:courseId/enrollments/:studentId` - remove an enrollment (admin only)
 - `GET /courses/:id/sessions` - list sessions for a course
-- `POST /courses/:id/sessions` - create a session for a course (instructor only)
+- `POST /courses/:id/sessions` - create a session for a course (admin only)
 
 ### Sessions
 
-- `GET /sessions/:id` - get a session by ID (instructor only)
-- `PATCH /sessions/:id` - update a session (instructor only)
-- `DELETE /sessions/:id` - delete a session (instructor only)
+- `GET /sessions` - list all sessions (admin only)
+- `GET /sessions/:id` - get a session by ID (authenticated users)
+- `PATCH /sessions/:id` - update a session (admin or instructor)
+- `DELETE /sessions/:id` - delete a session (admin only)
 
 ## Testing
 
@@ -126,6 +135,7 @@ npm test
 ## Notes
 
 - The backend OpenAPI definition lives in `backend/openapi.yaml`.
-- The frontend login screen routes users into the instructor or student dashboard based on their role.
+- The frontend login screen routes users into the admin, instructor, or student dashboard based on their role.
+- Docker Compose uses the `DATABASE_URL` and `JWT_SECRET` values defined for the backend service; override them with a root `.env` file when needed.
 
 

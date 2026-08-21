@@ -2,9 +2,9 @@ import request from "supertest";
 import app from "../../../src/app.js";
 import { createUser } from '../factories/userFactory.js';
 
-export async function loginAsInstructor() {
+export async function loginAsAdmin() {
   const user = await createUser({
-    role: "instructor",
+    role: "admin",
   });
 
   const response = await request(app)
@@ -19,6 +19,19 @@ export async function loginAsInstructor() {
 
 export async function loginAsStudent() {
   const user = await createUser();
+
+  const response = await request(app)
+    .post("/auth/login")
+    .send({
+      email: user.email,
+      password: "password",
+    });
+
+  return response.body.data.token;
+}
+
+export async function loginAsInstructor() {
+  const user = await createUser({ role: "instructor" });
 
   const response = await request(app)
     .post("/auth/login")

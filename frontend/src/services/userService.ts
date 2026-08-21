@@ -17,7 +17,7 @@ export async function getUsers(token: string | null) {
 
 export async function addUser(
     token: string | null,
-    user: { firstName: string; secondName: string; email: string; password: string; comments: string }
+    user: { firstName: string; secondName: string; email: string; password: string; role: string; comments: string }
 ) {
     const res = await fetch("http://localhost:3000/users", {
         method: "POST",
@@ -126,6 +126,20 @@ export async function getUserSessions(token: string | null) {
         headers: { Authorization: `Bearer ${token}` },
     });
 
+    if (!res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        const errorMessage = contentType.includes("application/json")
+            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
+            : await res.text();
+        throw new Error(errorMessage);
+    }
+    return res.json();
+}
+
+export async function getUserStudents(token: string | null) {
+    const res = await fetch("http://localhost:3000/users/me/students", {
+        headers: { Authorization: `Bearer ${token}` },
+    });
     if (!res.ok) {
         const contentType = res.headers.get("content-type") ?? "";
         const errorMessage = contentType.includes("application/json")

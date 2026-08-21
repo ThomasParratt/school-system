@@ -16,6 +16,7 @@ export type Course = {
     language: string;
     level: string;
     material: string;
+    instructorId: number;
     enrollments: User[];
 };
 

@@ -5,7 +5,7 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 const router = Router();
 
 // GET /sessions
-router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const sessions = await prisma.classSession.findMany({
       select: {
@@ -80,7 +80,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 router.patch(
   "/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin", "instructor"),
   async (req, res) => {
     try {
       const sessionId = Number(req.params.id);
@@ -157,7 +157,7 @@ router.patch(
 router.delete(
   "/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const sessionId = Number(req.params.id);

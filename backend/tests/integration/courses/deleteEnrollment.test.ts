@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../../../src/app.js";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { loginAsInstructor, loginAsStudent } from "../helpers/auth.js";
+import { loginAsAdmin, loginAsStudent } from "../helpers/auth.js";
 import { cleanupTestData } from "../helpers/cleanup.js";
 import { createCourse } from "../factories/courseFactory.js";
 import { createEnrollment } from "../factories/enrollmentFactory.js";
@@ -29,7 +29,7 @@ describe("DELETE /courses/:courseId/enrollments/:studentId", () => {
   });
 
   it("should delete enrollment", async () => {
-    const token = await loginAsInstructor();
+    const token = await loginAsAdmin();
 
     const response = await request(app)
       .delete(`/courses/${courseId}/enrollments/${studentId}`)
@@ -61,7 +61,7 @@ describe("DELETE /courses/:courseId/enrollments/:studentId", () => {
   });
 
   it("should return 404 when enrollment does not exist", async () => {
-    const token = await loginAsInstructor();
+    const token = await loginAsAdmin();
 
     await request(app)
       .delete(`/courses/${courseId}/enrollments/${studentId}`)

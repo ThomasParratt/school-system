@@ -29,7 +29,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     }
 }
 
-export function requireRole(allowedRole: AuthTokenPayload["role"]) {
+export function requireRole(...allowedRoles: AuthTokenPayload["role"][]) {
     return (req: Request, res: Response, next: NextFunction) => {
         if (!req.user) {
             return res.status(401).json({
@@ -40,7 +40,7 @@ export function requireRole(allowedRole: AuthTokenPayload["role"]) {
             });
         }
 
-        if (req.user.role !== allowedRole) {
+        if (!allowedRoles.includes(req.user.role)) {
             return res.status(403).json({
                 error: {
                     message: "Forbidden",

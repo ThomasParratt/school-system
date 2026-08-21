@@ -17,7 +17,7 @@ describe("POST /auth/login", () => {
             secondName: "Parratt",
             email: "test@example.com",
             password: hashedPassword,
-            role: "instructor",
+            role: "admin",
         },
     });
   });

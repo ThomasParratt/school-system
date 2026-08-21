@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../../../src/app.js";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { loginAsInstructor, loginAsStudent } from "../helpers/auth.js";
+import { loginAsAdmin, loginAsStudent } from "../helpers/auth.js";
 import { createSession } from "../factories/sessionFactory.js";
 import { cleanupTestData } from "../helpers/cleanup.js";
 
@@ -18,7 +18,7 @@ describe("PATCH /sessions/:id", () => {
   });
 
   it("should update session location", async () => {
-    const token = await loginAsInstructor();
+    const token = await loginAsAdmin();
 
     const response = await request(app)
       .patch(`/sessions/${sessionId}`)
@@ -51,7 +51,7 @@ describe("PATCH /sessions/:id", () => {
   });
 
   it("should reject empty update", async () => {
-    const token = await loginAsInstructor();
+    const token = await loginAsAdmin();
 
     const response = await request(app)
       .patch(`/sessions/${sessionId}`)

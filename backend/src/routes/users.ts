@@ -7,7 +7,7 @@ const router = Router();
 const SALT_ROUNDS = 10;
 
 // GET /users
-router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -40,10 +40,10 @@ router.get("/", requireAuth, requireRole("instructor"), async (req, res) => {
 router.post(
   "/",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
-      const { firstName, secondName, email, password, comments } = req.body;
+      const { firstName, secondName, email, password, role, comments } = req.body;
 
       // Validation
       if (!firstName || !secondName || !email || !password ) {
@@ -63,7 +63,7 @@ router.post(
           secondName,
           email,
           password: hashedPassword,
-          role: "student",
+          role: role,
           comments
         },
         select: {
@@ -105,7 +105,7 @@ router.post(
 // GET /users/me
 router.get("/me", requireAuth, async (req, res) => {
   try {
-    const userId = Number(req.user.id);
+    const userId = Number(req.user?.id ?? 0);
 
       if (!Number.isInteger(userId) || userId <= 0) {
         return res.status(400).json({
@@ -147,7 +147,7 @@ router.get("/me", requireAuth, async (req, res) => {
 // GET /users/me/courses
 router.get("/me/courses", requireAuth, async (req, res) => {
   try {
-    const userId = Number(req.user.id);
+    const userId = Number(req.user?.id ?? 0);
 
       if (!Number.isInteger(userId) || userId <= 0) {
         return res.status(400).json({
@@ -157,7 +157,32 @@ router.get("/me/courses", requireAuth, async (req, res) => {
           },
         });
       }
+    // If the authenticated user is an instructor, return courses they teach
+    if (req.user?.role === "instructor") {
+      const taughtCourses = await prisma.course.findMany({
+        where: { instructorId: userId },
+        select: {
+          id: true,
+          title: true,
+          language: true,
+          level: true,
+          material: true,
+          instructor: {
+            select: {
+              id: true,
+              firstName: true,
+              secondName: true,
+            },
+          },
+        },
+      });
 
+      return res.status(200).json({
+        data: taughtCourses,
+      });
+    }
+
+    // Otherwise return courses the user is enrolled in
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -203,7 +228,7 @@ router.get("/me/courses", requireAuth, async (req, res) => {
 // GET /users/me/sessions
 router.get("/me/sessions", requireAuth, async (req, res) => {
   try {
-    const userId = Number(req.user.id);
+    const userId = Number(req.user?.id ?? 0);
 
       if (!Number.isInteger(userId) || userId <= 0) {
         return res.status(400).json({
@@ -213,6 +238,33 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
           },
         });
       }
+
+
+    // If instructor, return sessions for courses they teach
+    if (req.user?.role === "instructor") {
+      const taughtCoursesWithSessions = await prisma.course.findMany({
+        where: { instructorId: userId },
+        select: {
+          sessions: {
+            select: {
+              id: true,
+              courseId: true,
+              location: true,
+              startsAt: true,
+              endsAt: true,
+              content: true,
+              homework: true,
+            },
+          },
+        },
+      });
+
+      const sessions = taughtCoursesWithSessions.flatMap(c => c.sessions);
+
+      return res.status(200).json({
+        data: sessions,
+      });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -255,8 +307,67 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
   }
 });
 
+// GET /users/me/students (instructors only)
+router.get("/me/students", requireAuth, requireRole("instructor"), async (req, res) => {
+  try {
+    const userId = Number(req.user?.id ?? 0);
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+      return res.status(400).json({
+        error: {
+          message: "Invalid user ID",
+          code: "INVALID_ID",
+        },
+      });
+    }
+
+    // Find enrollments for courses taught by this instructor
+    const enrollments = await prisma.enrollment.findMany({
+      where: {
+        course: {
+          instructorId: userId,
+        },
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            secondName: true,
+            email: true,
+            role: true,
+            comments: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    // Extract unique users
+    const studentsById: Record<number, any> = {};
+    for (const e of enrollments) {
+      if (e.user && !studentsById[e.user.id]) {
+        studentsById[e.user.id] = e.user;
+      }
+    }
+
+    const students = Object.values(studentsById);
+
+    return res.status(200).json({ data: students });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      error: {
+        message: "Failed to fetch students",
+        code: "FETCH_STUDENTS_ERROR",
+      },
+    });
+  }
+});
+
 // GET /users/:id
-router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const userId = Number(req.params.id);
 
@@ -301,7 +412,7 @@ router.get("/:id", requireAuth, requireRole("instructor"), async (req, res) => {
 router.patch(
   "/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const userId = Number(req.params.id);
@@ -377,7 +488,7 @@ router.patch(
 router.delete(
   "/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("admin"),
   async (req, res) => {
     try {
       const userId = Number(req.params.id);
@@ -414,7 +525,7 @@ router.delete(
 );
 
 // GET /users/:id/enrollments
-router.get("/:id/enrollments", requireAuth, requireRole("instructor"), async (req, res) => {
+router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const userId = Number(req.params.id);
 

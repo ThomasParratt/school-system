@@ -30,7 +30,8 @@ export default function Courses({ token, users, courses, refreshCourses }) {
         title: "",
         language: "",
         level: "",
-        material: ""
+        material: "",
+        instructorId: 0
     }
 
     useEffect(() => {
@@ -41,6 +42,7 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                 language: selectedCourse.language,
                 level: selectedCourse.level,
                 material: selectedCourse.material,
+                instructorId: selectedCourse.instructorId,
                 enrollments: selectedCourse.enrollments ?? []
             });
         }
@@ -52,7 +54,8 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                 title: emptyCourse.title,
                 language: emptyCourse.language,
                 level: emptyCourse.level,
-                material: emptyCourse.material
+                material: emptyCourse.material,
+                instructorId: emptyCourse.instructorId
             });
         }
     }, [add]);
@@ -233,6 +236,29 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                         className="border border-gray-200 rounded p-1 w-64"
                     />
                 </p>
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Instructor</strong>
+                    <select
+                        value={addForm.instructorId || ""}
+                        onChange={(e) =>
+                            setAddForm(prev => ({
+                                ...prev,
+                                instructorId: Number(e.target.value),
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    >
+                        <option value="">Select an instructor</option>
+
+                        {users
+                            .filter(user => user.role === "instructor")
+                            .map(user => (
+                                <option key={user.id} value={user.id}>
+                                    {user.firstName} {user.secondName}
+                                </option>
+                            ))}
+                    </select>
+                </p>
             </CrudModal>
             <CrudModal
                 open={!!selectedCourse}
@@ -297,6 +323,29 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     />
+                </p>
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Instructor</strong>
+                    <select
+                        value={editForm.instructorId || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({
+                                ...prev,
+                                instructorId: Number(e.target.value),
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    >
+                        <option value="">Select an instructor</option>
+
+                        {users
+                            .filter(user => user.role === "instructor")
+                            .map(user => (
+                                <option key={user.id} value={user.id}>
+                                    {user.firstName} {user.secondName}
+                                </option>
+                            ))}
+                    </select>
                 </p>
 
                 <div className="mb-2">
