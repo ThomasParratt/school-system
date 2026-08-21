@@ -1,17 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import edit from "../../../dist/edit.svg";
 import type { Course, Session } from "../../types";
+import CrudModal from "../admin/CrudModal";
+import { updateSession } from "../../services/sessionService";
 
-export default function MyLessons({ token, courses, sessions }) {
+export default function MyLessons({ token, courses, sessions, refreshSessions }) {
     const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+    const [editForm, setEditForm] = useState<Partial<Session>>({});
 
-    const getCourseTitle = (courseId: number) =>
-        courses.find((course: Course) => course.id === courseId)?.title ?? "";
+    useEffect(() => {
+        if (selectedSession) {
+            setEditForm({
+                location: selectedSession.location,
+                content: selectedSession.content ?? "",
+                homework: selectedSession.homework ?? ""
+            });
+        }
+    }, [selectedSession]);
+
+    const getCourseTitle = (courseId?: number) =>
+        courseId === undefined
+        ? ""
+        : courses.find((course: Course) => course.id === courseId)?.title ?? "";
+
+    async function handleUpdateSession(sessionId: number) {
+        if (!token || !editForm) return;
+
+        try {
+            await updateSession(token, sessionId, editForm);
+            await refreshSessions();
+            setSelectedSession(null);
+        } catch (err) {
+            console.error(err);
+            alert(err);
+        }
+    }
 
     return (
         <div className="flex flex-col flex-1 min-h-0">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-xl font-bold">My Lessons NEED TO BE ABLE TO EDIT</h1>
+                <h1 className="text-xl font-bold">My Lessons NEED TO BE ABLE TO EDIT ON CALENDAR CLICK</h1>
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <ol>
@@ -45,35 +73,50 @@ export default function MyLessons({ token, courses, sessions }) {
                     ))}
                 </ol>
             </div>
-            {selectedSession && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setSelectedSession(null)}>
-                    <div className="bg-white p-6 rounded shadow-lg w-[420px] relative" onClick={(e) => e.stopPropagation()}>
-                    
-                        <button
-                            onClick={() => setSelectedSession(null)}
-                            className="absolute top-2 right-3 text-gray-500 hover:text-black"
-                        >
-                            ✕
-                        </button>
-
-                        <h2 className="text-lg font-bold mb-4">
-                            {getCourseTitle(selectedSession.courseId)}
-                        </h2>
-                        <div className="flex justify-between items-center mb-2">
-                            <strong>Location</strong>
-                            <div>{selectedSession.location}</div>
-                        </div>
-                        <div className="flex justify-between items-center mb-2">
-                            <strong>Content</strong>
-                            <div>{selectedSession.content}</div>
-                        </div>
-                        <div className="flex justify-between items-center mb-2">
-                            <strong>Homework</strong>
-                            <div>{selectedSession.homework}</div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <CrudModal
+                open={!!selectedSession}
+                onClose={() => setSelectedSession(null)}
+                onSave={() =>
+                    handleUpdateSession(selectedSession!.id)
+                }
+            >
+                <h2 className="text-lg font-bold mb-4">
+                    {`${getCourseTitle(selectedSession?.courseId)}`}
+                </h2>
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Location</strong>
+                    <input
+                        value={editForm.location || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({
+                                ...prev!,
+                                location: e.target.value
+                            }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+                <p className="flex justify-between items-center mb-2">
+                    <strong>Content</strong>
+                    <textarea
+                        value={editForm.content || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({ ...prev, content: e.target.value }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+                <p className="flex justify-between items-center mb-3">
+                    <strong>Homework</strong>
+                    <textarea
+                        value={editForm.homework || ""}
+                        onChange={(e) =>
+                            setEditForm(prev => ({ ...prev, homework: e.target.value }))
+                        }
+                        className="border border-gray-200 rounded p-1 w-64"
+                    />
+                </p>
+            </CrudModal>
         </div>
     );
 }

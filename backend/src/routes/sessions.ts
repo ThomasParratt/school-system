@@ -80,7 +80,7 @@ router.get("/:id", requireAuth, async (req, res) => {
 router.patch(
   "/:id",
   requireAuth,
-  requireRole("admin"),
+  requireRole("admin", "instructor"),
   async (req, res) => {
     try {
       const sessionId = Number(req.params.id);

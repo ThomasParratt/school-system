@@ -53,7 +53,7 @@ export default function InstructorDash() {
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <MyLessons token={token} courses={courses} sessions={sessions} />
+          <MyLessons token={token} courses={courses} sessions={sessions} refreshSessions={fetchSessions} />
         </div>
       </div>
 
