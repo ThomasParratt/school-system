@@ -1,5 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-import type { Course, Session } from "../../types";
+import type { User, Course, Session } from "../../types";
 import { useState, useEffect } from "react";
 import { getUserCourses, getUserSessions, getUserStudents } from "../../services/userService";
 import MyCourses from "./MyCourses";
@@ -16,12 +16,14 @@ export default function InstructorDash() {
   const fetchStudents = async () => {
     if (!token) return;
     const data = await getUserStudents(token);
+    //console.log(data.data);
     setUsers(data.data);
   };
 
   const fetchCourses = async () => {
     if (!token) return;
     const data = await getUserCourses(token);
+    //console.log(data.data);
     setCourses(data.data);
   };
 
@@ -32,6 +34,7 @@ export default function InstructorDash() {
   };
 
   useEffect(() => {
+    fetchStudents();
     fetchCourses();
     fetchSessions();
   }, [token]);
@@ -42,7 +45,7 @@ export default function InstructorDash() {
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <MyStudents token={token} users={users} courses={courses} refreshUsers={fetchStudents} />
+          <MyStudents token={token} users={users} courses={courses} />
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">

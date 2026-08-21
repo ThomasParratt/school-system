@@ -16,6 +16,7 @@ export default function AdminDash() {
   const fetchUsers = async () => {
     if (!token) return;
     const data = await getUsers(token);
+    console.log(data.data);
     setUsers(data.data);
   };
 
