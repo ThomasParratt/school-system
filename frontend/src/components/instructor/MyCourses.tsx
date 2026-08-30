@@ -1,8 +1,8 @@
 import { useState } from "react";
 import edit from "../../../dist/edit.svg";
-import type { Course } from "../../types";
+import type { Course, MyCoursesProps } from "../../types";
 
-export default function MyCourses({ token, courses }) {
+export default function MyCourses({ courses }: MyCoursesProps) {
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
     return (

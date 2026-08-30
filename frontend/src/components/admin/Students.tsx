@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getUserEnrollments } from "../../services/userService";
 import { enroll, unenroll } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
-import type { User } from "../../types";
+import type { User, UsersProps, Course, Enrollment } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../../dist/bin.svg";
 
-export default function Students({ token, users, courses, refreshUsers }) {
+export default function Students({ token, users, courses, refreshUsers }: UsersProps) {
     const [editForm, setEditForm] = useState<Partial<User>>({});
     const [selectedCourseId, setSelectedCourseId] = useState("");
     const [addForm, setAddForm] = useState<Partial<User>>({});
@@ -119,7 +119,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
             const result = await getUserEnrollments(token, userId);
             setEditForm(prev => ({
                 ...prev!,
-                enrollments: result.data.map(e => e.course)
+                enrollments: result.data.map((e: Enrollment) => e.course)
             }));
         } catch (err) {
             console.error(err);
@@ -341,8 +341,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
                             type="button"
                             onClick={() => {
                                 const course = courses.find(
-                                    c =>
-                                        c.id === Number(selectedCourseId)
+                                    (c: Course) => c.id === Number(selectedCourseId)
                                 );
 
                                 if (!course) return;
@@ -357,7 +356,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
 
                                 handleEnroll(
                                     Number(selectedCourseId),
-                                    selectedUser.id
+                                    selectedUser!.id
                                 );
 
                                 setSelectedCourseId("");
@@ -385,7 +384,7 @@ export default function Students({ token, users, courses, refreshUsers }) {
                                             ) ?? [],
                                     }));
 
-                                    handleUnenroll(course.id, selectedUser.id);
+                                    handleUnenroll(course.id, selectedUser!.id);
                                 }}
                             >
                                 <img

@@ -1,4 +1,4 @@
-import type { ApiErrorResponse } from "../types";
+import type { ApiErrorResponse, User } from "../types";
 
 export async function getUsers(token: string | null) {
     const res = await fetch("http://api/users", {
@@ -17,7 +17,7 @@ export async function getUsers(token: string | null) {
 
 export async function addUser(
     token: string | null,
-    user: { firstName: string; secondName: string; email: string; password: string; role: string; comments: string }
+    user: Partial<User>
 ) {
     const res = await fetch("http://api/users", {
         method: "POST",
@@ -63,7 +63,7 @@ export async function deleteUser(
 export async function updateUser(
     token: string | null,
     userId: number,
-    user: { firstName: string; secondName: string; email: string; comments: string }
+    user: Partial<User>
 ) {
     const res = await fetch(`http://api/users/${userId}`, {
         method: "PATCH",

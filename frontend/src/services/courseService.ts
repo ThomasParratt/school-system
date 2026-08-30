@@ -1,4 +1,4 @@
-import type { ApiErrorResponse, User } from "../types";
+import type { ApiErrorResponse, Course } from "../types";
 
 export async function getCourses(token: string | null) {
     const res = await fetch("http://api/courses", {
@@ -17,7 +17,7 @@ export async function getCourses(token: string | null) {
 
 export async function addCourse(
     token: string | null,
-    user: { title: string; language: string; level: string; instructorId: number; material: string }
+    course: Partial<Course>
 ) {
     const res = await fetch("http://api/courses", {
         method: "POST",
@@ -25,7 +25,7 @@ export async function addCourse(
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(user),
+        body: JSON.stringify(course),
     });
 
     if (!res.ok) {
@@ -63,7 +63,7 @@ export async function deleteCourse(
 export async function updateCourse(
     token: string | null,
     courseId: number,
-    course: { title: string; language: string; level: string; instructorId: number; material: string }
+    course: Partial<Course>
 ) {
     const res = await fetch(`http://api/courses/${courseId}`, {
         method: "PATCH",

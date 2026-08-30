@@ -1,8 +1,8 @@
 import { useState } from "react";
 import edit from "../../../dist/edit.svg";
-import type { Course, Session } from "../../types";
+import type { Course, MyLessonsProps, Session } from "../../types";
 
-export default function MyLessons({ token, courses, sessions }) {
+export default function MyLessons({ courses, sessions }: MyLessonsProps) {
     const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
     const getCourseTitle = (courseId: number) =>
@@ -16,7 +16,7 @@ export default function MyLessons({ token, courses, sessions }) {
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <ol>
                     {[...sessions]
-                        .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
+                        .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
                         .map(session => (
                             <li
                             key={session.id}

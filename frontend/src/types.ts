@@ -1,4 +1,3 @@
-
 export type User = {
     id: number;
     firstName: string;
@@ -35,6 +34,8 @@ export type Enrollment = {
     id: number;
     courseId: number;
     userId: number;
+    user: User;
+    course: Course;
 };
 
 export type UserEnrollment = {
@@ -56,4 +57,42 @@ export type ApiErrorResponse = {
         message?: string;
         code?: string;
     };
+};
+
+export type CoursesProps = {
+    token: string | null;
+    users: User[];
+    courses: Course[];
+    refreshCourses: () => Promise<void>;
+}
+
+export type MyCoursesProps = {
+    token: string | null;
+    courses: Course[];
+}
+
+export type UsersProps = {
+    token: string | null;
+    users: User[];
+    courses: Course[];
+    refreshUsers: () => Promise<void>;
+}
+
+export type MyStudentsProps = {
+    token: string | null;
+    users: User[];
+    courses: Course[];
+}
+
+export type CalendarProps = {
+    token: string | null;
+    courses: Course[];
+    sessions: Session[];
+    refreshSessions: () => Promise<void>;
+};
+
+export type MyLessonsProps = {
+    token: string | null;
+    courses: Course[];
+    sessions: Session[];
 };

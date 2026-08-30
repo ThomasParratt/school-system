@@ -1,8 +1,8 @@
 import { useState } from "react";
 import edit from "../../../dist/edit.svg";
-import type { User } from "../../types";
+import type { MyStudentsProps, User } from "../../types";
 
-export default function MyStudents({ token, users, courses }) {
+export default function MyStudents({ users }: MyStudentsProps) {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     return (
@@ -31,7 +31,7 @@ export default function MyStudents({ token, users, courses }) {
                 </ol>
             </div>
             {selectedUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setSelectedCourse(null)}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setSelectedUser(null)}>
                     <div className="bg-white p-6 rounded shadow-lg w-[420px] relative" onClick={(e) => e.stopPropagation()}>
                     
                         <button
