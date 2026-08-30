@@ -1,5 +1,5 @@
-import bin from "../../../dist/bin.svg";
-import edit from "../../../dist/edit.svg";
+import bin from "../../../assets/bin.png";
+import edit from "../../../assets/edit.png";
 
 type CrudListProps<T> = {
     items: T[];
