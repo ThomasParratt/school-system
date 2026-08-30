@@ -1,7 +1,7 @@
 import type { ApiErrorResponse } from "../types";
 
 export async function getUsers(token: string | null) {
-    const res = await fetch("http://localhost:3000/users", {
+    const res = await fetch("http://api/users", {
         headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -19,7 +19,7 @@ export async function addUser(
     token: string | null,
     user: { firstName: string; secondName: string; email: string; password: string; role: string; comments: string }
 ) {
-    const res = await fetch("http://localhost:3000/users", {
+    const res = await fetch("http://api/users", {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -42,7 +42,7 @@ export async function deleteUser(
     token: string | null,
     userId: number
 ) {
-    const res = await fetch(`http://localhost:3000/users/${userId}`, {
+    const res = await fetch(`http://api/users/${userId}`, {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ export async function updateUser(
     userId: number,
     user: { firstName: string; secondName: string; email: string; comments: string }
 ) {
-    const res = await fetch(`http://localhost:3000/users/${userId}`, {
+    const res = await fetch(`http://api/users/${userId}`, {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -88,7 +88,7 @@ export async function getUserEnrollments(
     token: string | null,
     userId: number,
 ) {
-    const res = await fetch(`http://localhost:3000/users/${userId}/enrollments`, {
+    const res = await fetch(`http://api/users/${userId}/enrollments`, {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ export async function getUserEnrollments(
 }
 
 export async function getUserCourses(token: string | null) {
-    const res = await fetch("http://localhost:3000/users/me/courses", {
+    const res = await fetch("http://api/users/me/courses", {
         headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -122,7 +122,7 @@ export async function getUserCourses(token: string | null) {
 }
 
 export async function getUserSessions(token: string | null) {
-    const res = await fetch("http://localhost:3000/users/me/sessions", {
+    const res = await fetch("http://api/users/me/sessions", {
         headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -137,7 +137,7 @@ export async function getUserSessions(token: string | null) {
 }
 
 export async function getUserStudents(token: string | null) {
-    const res = await fetch("http://localhost:3000/users/me/students", {
+    const res = await fetch("http://api/users/me/students", {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {
