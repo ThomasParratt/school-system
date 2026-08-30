@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import edit from "../../../dist/edit.svg";
+import edit from "../../../assets/edit.png";
 import type { CalendarProps, Course, Session } from "../../types";
 import CrudModal from "../admin/CrudModal";
 import { updateSession } from "../../services/sessionService";

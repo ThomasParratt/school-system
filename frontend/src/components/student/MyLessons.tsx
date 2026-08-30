@@ -1,5 +1,5 @@
 import { useState } from "react";
-import edit from "../../../dist/edit.svg";
+import edit from "../../../assets/edit.png";
 import type { Course, MyLessonsProps, Session } from "../../types";
 
 export default function MyLessons({ courses, sessions }: MyLessonsProps) {

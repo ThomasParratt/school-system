@@ -1,5 +1,5 @@
 import { useState } from "react";
-import edit from "../../../dist/edit.svg";
+import edit from "../../../assets/edit.png";
 import type { MyStudentsProps, User } from "../../types";
 
 export default function MyStudents({ users }: MyStudentsProps) {

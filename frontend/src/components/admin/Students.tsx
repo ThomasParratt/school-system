@@ -5,7 +5,7 @@ import { useCrud } from "../../hooks/useCrud";
 import type { User, UsersProps, Course, Enrollment } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
-import bin from "../../../dist/bin.svg";
+import bin from "../../../assets/bin.png";
 
 export default function Students({ token, users, courses, refreshUsers }: UsersProps) {
     const [editForm, setEditForm] = useState<Partial<User>>({});
