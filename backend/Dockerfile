@@ -2,6 +2,7 @@
 FROM node:20-slim AS build
 # Set working directory inside container
 WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 # Copy package files first (for caching)
 COPY package*.json ./
 # Install dependencies
@@ -13,6 +14,7 @@ RUN npm run build
 
 FROM node:20-slim AS runtime
 WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev
