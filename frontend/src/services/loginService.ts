@@ -1,7 +1,7 @@
 import type { LoginResponse, ApiErrorResponse } from "../types.ts";
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const res = await fetch("http://localhost:3000/auth/login", {
+  const res = await fetch("http://api/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
