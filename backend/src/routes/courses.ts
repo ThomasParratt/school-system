@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
-import type { User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 const router = Router();
 
@@ -155,19 +155,20 @@ router.patch(
       
       const { title, language, level, material, instructorId } = req.body;
 
-      const updateData: {
-        title?: string;
-        language?: string;
-        level?: string;
-        material?: string;
-        instructorId?: number;
-      } = {};
+      const updateData: Prisma.CourseUpdateInput = {};
 
       if (title !== undefined) updateData.title = title;
       if (language !== undefined) updateData.language = language;
       if (level !== undefined) updateData.level = level;
       if (material !== undefined) updateData.material = material;
-      if (instructorId !== undefined) updateData.instructorId = instructorId;
+
+      if (instructorId !== undefined) {
+        updateData.instructor = {
+          connect: {
+            id: instructorId,
+          },
+        };
+      }
     
       if (Object.keys(updateData).length === 0) {
         return res.status(400).json({
