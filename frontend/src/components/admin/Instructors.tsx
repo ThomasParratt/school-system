@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getUserEnrollments } from "../../services/userService";
-import { enroll, unenroll } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
-import type { User } from "../../types";
+import type { Enrollment, User, UsersProps } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
-import bin from "../../../dist/bin.svg";
 
-export default function Instructors({ token, users, courses, refreshUsers }) {
+export default function Instructors({ token, users, refreshUsers }: UsersProps) {
     const [editForm, setEditForm] = useState<Partial<User>>({});
-    const [selectedCourseId, setSelectedCourseId] = useState("");
     const [addForm, setAddForm] = useState<Partial<User>>({});
     const [add, setAdd] = useState(false);
 
@@ -101,18 +98,6 @@ export default function Instructors({ token, users, courses, refreshUsers }) {
         }
     }
 
-    async function handleEnroll(courseId: number, userId: number) {
-        if (!token) return;
-
-        try {
-            await enroll(token, courseId, userId);
-
-        } catch (err) {
-            console.error(err);
-            alert(err);
-        }
-    }
-
     async function handleGetEnrollments(userId: number) {
         if (!token) return;
 
@@ -120,20 +105,8 @@ export default function Instructors({ token, users, courses, refreshUsers }) {
             const result = await getUserEnrollments(token, userId);
             setEditForm(prev => ({
                 ...prev!,
-                enrollments: result.data.map(e => e.course)
+                enrollments: result.data.map((e: Enrollment) => e.course)
             }));
-        } catch (err) {
-            console.error(err);
-            alert(err);
-        }
-    }
-
-    async function handleUnenroll(courseId: number, studentId: number) {
-        if (!token) return;
-
-        try {
-            await unenroll(token, courseId, studentId);
-
         } catch (err) {
             console.error(err);
             alert(err);

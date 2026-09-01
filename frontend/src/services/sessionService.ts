@@ -4,7 +4,7 @@ export async function deleteSession(
     token: string | null,
     sessionId: number
 ) {
-    const res = await fetch(`http://localhost:3000/sessions/${sessionId}`, {
+    const res = await fetch(`/api/sessions/${sessionId}`, {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -25,7 +25,7 @@ export async function deleteSession(
 export async function getAllSessions(
     token: string | null,
 ) {
-    const res = await fetch(`http://localhost:3000/sessions/`, {
+    const res = await fetch(`/api/sessions/`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {
@@ -44,7 +44,7 @@ export async function getSession(
     token: string | null,
     sessionId: number
 ) {
-    const res = await fetch(`http://localhost:3000/sessions/${sessionId}`, {
+    const res = await fetch(`/api/sessions/${sessionId}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {
@@ -68,7 +68,7 @@ export async function updateSession(
         homework?: string | null;
     }
 ) {
-    const res = await fetch(`http://localhost:3000/sessions/${sessionId}`, {
+    const res = await fetch(`/api/sessions/${sessionId}`, {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${token}`,

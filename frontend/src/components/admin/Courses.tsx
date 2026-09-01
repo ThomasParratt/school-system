@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
-import type { Course } from "../../types";
+import type { Course, CoursesProps, Enrollment } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
-import bin from "../../../dist/bin.svg";
+import bin from "../../../assets/bin.png";
 
-export default function Courses({ token, users, courses, refreshCourses }) {
+export default function Courses({ token, users, courses, refreshCourses }: CoursesProps) {
     const [editForm, setEditForm] = useState<Partial<Course>>({});
     const [selectedUserId, setSelectedUserId] = useState("");
     const [addForm, setAddForm] = useState<Partial<Course>>({});
@@ -30,8 +30,8 @@ export default function Courses({ token, users, courses, refreshCourses }) {
         title: "",
         language: "",
         level: "",
-        material: "",
-        instructorId: 0
+        instructorId: 0,
+        material: ""
     }
 
     useEffect(() => {
@@ -126,7 +126,7 @@ export default function Courses({ token, users, courses, refreshCourses }) {
             const result = await getCourseEnrollments(token, courseId);
             setEditForm(prev => ({
                 ...prev!,
-                enrollments: result.data.map(e => e.user)
+                enrollments: result.data.map((e: Enrollment) => e.user)
             }));
         } catch (err) {
             console.error(err);
@@ -396,7 +396,7 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                                 }));
 
                                 handleEnroll(
-                                    selectedCourse.id,
+                                    selectedCourse!.id,
                                     Number(selectedUserId)
                                 );
 
@@ -425,7 +425,7 @@ export default function Courses({ token, users, courses, refreshCourses }) {
                                             ) ?? [],
                                     }));
 
-                                    handleUnenroll(selectedCourse.id, user.id);
+                                    handleUnenroll(selectedCourse!.id, user.id);
                                 }}
                             >
                                 <img

@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { EventContentArg, EventInput, EventClickArg } from "@fullcalendar/core";
-import type { Course, Session } from "../../types";
+import type { Course, Session, MyLessonsProps } from "../../types";
 import { getSession } from "../../services/sessionService";
 
 type CalendarSession = {
@@ -16,12 +16,7 @@ type CalendarSession = {
   title?: string;
 };
 
-type CalendarProps = {
-  token: string | null;
-  courses: Course[];
-};
-
-export default function MyCalendar({ token, courses, sessions }: CalendarProps) {
+export default function MyStudentCalendar({ token, courses, sessions }: MyLessonsProps) {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [clickedSession, setClickedSession] = useState<Session | null>(null)
 
@@ -106,7 +101,7 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
           eventContent={eventContent}
         />
         {clickedSession && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setSelectedSession(null)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setClickedSession(null)}>
               <div className="bg-white p-6 rounded shadow-lg w-[420px] relative" onClick={(e) => e.stopPropagation()}>
               
                   <button

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import edit from "../../../dist/edit.svg";
-import type { Course, Session } from "../../types";
+import edit from "../../../assets/edit.png";
+import type { CalendarProps, Course, Session } from "../../types";
 import CrudModal from "../admin/CrudModal";
 import { updateSession } from "../../services/sessionService";
 
-export default function MyLessons({ token, courses, sessions, refreshSessions }) {
+export default function MyLessons({ token, courses, sessions, refreshSessions }: CalendarProps) {
     const [selectedSession, setSelectedSession] = useState<Session | null>(null);
     const [editForm, setEditForm] = useState<Partial<Session>>({});
 
@@ -44,7 +44,7 @@ export default function MyLessons({ token, courses, sessions, refreshSessions })
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <ol>
                     {[...sessions]
-                        .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
+                        .sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime())
                         .map(session => (
                             <li
                             key={session.id}

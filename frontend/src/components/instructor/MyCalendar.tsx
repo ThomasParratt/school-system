@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { EventContentArg, EventInput, EventClickArg } from "@fullcalendar/core";
-import type { Course, Session } from "../../types";
+import type { Course, Session, CalendarProps } from "../../types";
 import { getSession, updateSession } from "../../services/sessionService";
 import CrudModal from "../admin/CrudModal";
 
@@ -17,12 +17,8 @@ type CalendarSession = {
   title?: string;
 };
 
-type CalendarProps = {
-  token: string | null;
-  courses: Course[];
-};
-
-export default function MyCalendar({ token, courses, sessions, refreshSessions }: CalendarProps) {
+// Add refreshSessions to props??
+export default function MyCalendar({ token, courses, sessions }: CalendarProps) {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [clickedSession, setClickedSession] = useState<Session | null>(null)
   const [editForm, setEditForm] = useState<Partial<Session>>({});

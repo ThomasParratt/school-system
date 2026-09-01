@@ -1,7 +1,7 @@
-import type { ApiErrorResponse, User } from "../types";
+import type { ApiErrorResponse, Course } from "../types";
 
 export async function getCourses(token: string | null) {
-    const res = await fetch("http://localhost:3000/courses", {
+    const res = await fetch("/api/courses", {
         headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -17,15 +17,15 @@ export async function getCourses(token: string | null) {
 
 export async function addCourse(
     token: string | null,
-    user: { title: string; language: string; level: string; instructorId: number; material: string }
+    course: Partial<Course>
 ) {
-    const res = await fetch("http://localhost:3000/courses", {
+    const res = await fetch("/api/courses", {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(user),
+        body: JSON.stringify(course),
     });
 
     if (!res.ok) {
@@ -42,7 +42,7 @@ export async function deleteCourse(
     token: string | null,
     courseId: number
 ) {
-    const res = await fetch(`http://localhost:3000/courses/${courseId}`, {
+    const res = await fetch(`/api/courses/${courseId}`, {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -63,9 +63,9 @@ export async function deleteCourse(
 export async function updateCourse(
     token: string | null,
     courseId: number,
-    course: { title: string; language: string; level: string; instructorId: number; material: string }
+    course: Partial<Course>
 ) {
-    const res = await fetch(`http://localhost:3000/courses/${courseId}`, {
+    const res = await fetch(`/api/courses/${courseId}`, {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -89,7 +89,7 @@ export async function enroll(
     courseId: number,
     userId: number
 ) {
-    const res = await fetch(`http://localhost:3000/courses/${courseId}/enroll`, {
+    const res = await fetch(`/api/courses/${courseId}/enroll`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -113,7 +113,7 @@ export async function unenroll(
     courseId: number,
     studentId: number
 ) {
-    const res = await fetch(`http://localhost:3000/courses/${courseId}/enrollments/${studentId}`, {
+    const res = await fetch(`/api/courses/${courseId}/enrollments/${studentId}`, {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -135,7 +135,7 @@ export async function getCourseEnrollments(
     token: string | null,
     courseId: number,
 ) {
-    const res = await fetch(`http://localhost:3000/courses/${courseId}/enrollments`, {
+    const res = await fetch(`/api/courses/${courseId}/enrollments`, {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -157,7 +157,7 @@ export async function getCourseSessions(
     token: string | null,
     courseId: number,
 ) {
-    const res = await fetch(`http://localhost:3000/courses/${courseId}/sessions`, {
+    const res = await fetch(`/api/courses/${courseId}/sessions`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {
@@ -177,7 +177,7 @@ export async function addCourseSession(
     courseId: number,
     session: { location: string; startsAt: string; endsAt?: string }
 ) {
-    const res = await fetch(`http://localhost:3000/courses/${courseId}/sessions`, {
+    const res = await fetch(`/api/courses/${courseId}/sessions`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
