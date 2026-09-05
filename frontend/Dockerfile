@@ -1,12 +1,15 @@
-# Use Node
-FROM node:20-slim AS build
-# Set working directory
+FROM node:20-slim AS base
 WORKDIR /app
-# Copy package files
 COPY package*.json ./
-# Install dependencies
+
+FROM base as development
+RUN npm install
+COPY . .
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host"]
+
+FROM base as builder
 RUN npm ci
-# Copy rest of app
 COPY . .
 RUN npm run build
 
