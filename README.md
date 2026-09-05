@@ -24,22 +24,30 @@ School Management System is a full-stack app for managing instructors, students,
 ```text
 school-system/
 ├── backend/
-│   └── bruno/
+│   ├── bruno/
+│   ├── prisma/
+│   └── src/
 ├── frontend/
-│   └── src/components/
-│       ├── admin/
-│       ├── instructor/
-│       └── student/
-├── docker-compose.yml
+│   └── src/
+│       └── components/
+│           ├── admin/
+│           ├── instructor/
+│           └── student/
+├── docker-compose.dev.yml
+├── docker-compose.prod.yml
 └── README.md
 ```
 
 ## Run With Docker
 
-From the repository root:
+Create a `.env` file in the repository root before starting Compose.
+
+### Development
+
+From the repository root, start the development stack with:
 
 ```bash
-docker compose up --build
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 This starts the following services:
@@ -50,30 +58,24 @@ This starts the following services:
 - PostgreSQL at `localhost:5432`
 - Test PostgreSQL at `localhost:5433`
 
-## Run Locally
-
-### Backend
-
-The backend expects a `DATABASE_URL` environment variable. `JWT_SECRET` is optional and defaults to `supersecretkey`.
+Stop the development stack with:
 
 ```bash
-cd backend
-npm install
-npm run dev
+docker compose -f docker-compose.dev.yml down
 ```
 
-If you want to generate Prisma client code, apply migrations, seed the database, and then start the server, use:
+### Production
+
+Build and start the production stack with:
 
 ```bash
-npm run dev:docker
+docker compose -f docker-compose.prod.yml up --build -d
 ```
 
-### Frontend
+Stop it with:
 
 ```bash
-cd frontend
-npm install
-npm run dev
+docker compose -f docker-compose.prod.yml down
 ```
 
 ## Seeded Account
@@ -84,8 +86,6 @@ The backend seed script creates an administrator account:
 - Password: `password123`
 
 ## API Overview
-
-Base URL: `http://localhost:3000`
 
 ### Authentication
 
@@ -131,6 +131,24 @@ Backend tests run with Vitest:
 cd backend
 npm test
 ```
+
+The test suite uses the test PostgreSQL service on port `5433` when running through the development Compose setup.
+
+## GitHub Actions
+
+The workflow in `.github/workflows/ci.yml` runs on every pull request and on pushes to `main`.
+
+### Backend Tests
+
+The `backend-tests` job runs on Ubuntu with PostgreSQL 15 and:
+
+1. Installs Node.js 20 and backend dependencies.
+2. Generates the Prisma client.
+3. Runs the backend Vitest test suite.
+
+### Deployment
+
+After backend tests pass, a push to `main` deploys the application to EC2 over SSH. The deployment pulls the latest `main` branch, rebuilds and starts the production Compose stack, and applies pending Prisma migrations.
 
 ## Notes
 
