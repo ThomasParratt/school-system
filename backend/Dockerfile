@@ -19,10 +19,10 @@ FROM node:20-slim AS runtime
 ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev && npm install tsx
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=build /app/prisma ./prisma
-COPY --from=build /app/openapi.yaml ./openapi.yaml
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/openapi.yaml ./openapi.yaml
 EXPOSE 3000
 CMD ["npm", "start"]
 
