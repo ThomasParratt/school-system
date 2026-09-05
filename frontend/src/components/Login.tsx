@@ -46,7 +46,7 @@ function Login() {
             {!user ? (
                 <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
                     <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
-                        Frog Management System
+                        Newt Management System
                     </h1>
                     <h2 className="text-2xl font-semibold mb-4 text-gray-700">
                         Login

@@ -15,7 +15,7 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
-FROM node:20-slim AS runtime
+FROM base AS production
 ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev && npm install tsx
