@@ -8,7 +8,13 @@ export type AuthTokenPayload = {
 	role: Role;
 };
 
-export const JWT_SECRET = process.env.JWT_SECRET ?? "supersecretkey";
+const jwtSecret = process.env.JWT_SECRET;
+
+if (!jwtSecret) {
+	throw new Error("JWT_SECRET must be set");
+}
+
+export const JWT_SECRET = jwtSecret;
 
 export function signAuthToken(payload: AuthTokenPayload) {
 	return jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
