@@ -5,7 +5,6 @@ import { Client } from "pg";
 import dotenv from "dotenv";
 
 const backendDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const composeFile = path.resolve(backendDir, "../docker-compose.yml");
 
 async function waitForDatabase(connectionString: string) {
   for (let attempt = 0; attempt < 60; attempt += 1) {
