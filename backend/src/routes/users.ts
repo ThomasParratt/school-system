@@ -668,7 +668,7 @@ router.patch(
 router.get(
   "/me/sessions/:id",
   requireAuth,
-  requireRole("instructor"),
+  requireRole("instructor", "student"),
   async (req, res) => {
     try {
       const userId = Number(req.user?.id ?? 0);
@@ -696,9 +696,9 @@ router.get(
       const session = await prisma.classSession.findFirst({
         where: {
           id: sessionId,
-          course: {
-            instructorId: userId,
-          },
+          course: req.user?.role === "instructor"
+            ? { instructorId: userId }
+            : { enrollments: { some: { userId } } },
         },
       });
 

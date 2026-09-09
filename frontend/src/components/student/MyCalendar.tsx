@@ -5,7 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { EventContentArg, EventInput, EventClickArg } from "@fullcalendar/core";
 import type { Course, Session, MyLessonsProps } from "../../types";
-import { getSession } from "../../services/sessionService";
+import { getMySession } from "../../services/sessionService";
 
 type CalendarSession = {
   id: number;
@@ -63,7 +63,7 @@ export default function MyStudentCalendar({ token, courses, sessions }: MyLesson
 
   const handleEventClick = async (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
-    const session = await getSession(token, Number(event.id));
+    const session = await getMySession(token, Number(event.id));
     setClickedSession(session.data);
   };
 
