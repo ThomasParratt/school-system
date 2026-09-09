@@ -664,5 +664,70 @@ router.patch(
   }
 );
 
+// GET /users/me/sessions/:id
+router.get(
+  "/me/sessions/:id",
+  requireAuth,
+  requireRole("instructor"),
+  async (req, res) => {
+    try {
+      const userId = Number(req.user?.id ?? 0);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid user ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+      
+      const sessionId = Number(req.params.id);
+
+      if (!Number.isInteger(sessionId) || sessionId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid session ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+      const session = await prisma.classSession.findFirst({
+        where: {
+          id: sessionId,
+          course: {
+            instructorId: userId,
+          },
+        },
+      });
+
+      if (!session) {
+        return res.status(404).json({
+          error: {
+            message: "Session not found",
+            code: "SESSION_NOT_FOUND",
+          },
+        });
+      }
+
+      return res.status(200).json({
+        data: session,
+      });
+    } catch (err: unknown) {
+      console.error(err);
+
+      return res.status(500).json({
+        error: {
+          message:
+            err instanceof Error
+              ? err.message
+              : "Unexpected server error",
+          code: "SERVER_ERROR",
+        },
+      });
+    }
+  }
+);
 
 export default router;

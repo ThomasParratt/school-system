@@ -57,6 +57,23 @@ export async function getSession(
     return res.json();
 }
 
+export async function getMySession(
+    token: string | null,
+    sessionId: number
+) {
+    const res = await fetch(`/api/users/me/sessions/${sessionId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        const errorMessage = contentType.includes("application/json")
+            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
+            : await res.text();
+        throw new Error(errorMessage);
+    }
+    return res.json();
+}
+
 export async function updateSession(
     token: string | null,
     sessionId: number,
@@ -68,7 +85,7 @@ export async function updateSession(
         homework?: string | null;
     }
 ) {
-    const res = await fetch(`/api/sessions/${sessionId}`, {
+    const res = await fetch(`/api/users/me/sessions/${sessionId}`, {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${token}`,
