@@ -558,5 +558,111 @@ router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, re
     }
   });
 
+// PATCH /users/me/sessions/:id
+router.patch(
+  "/me/sessions/:id",
+  requireAuth,
+  requireRole("instructor"),
+  async (req, res) => {
+    try {
+      const userId = Number(req.user?.id ?? 0);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid user ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+      
+      const sessionId = Number(req.params.id);
+
+      if (!Number.isInteger(sessionId) || sessionId <= 0) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid session ID",
+            code: "INVALID_ID",
+          },
+        });
+      }
+
+      const { location, startsAt, endsAt, content, homework } = req.body;
+
+      const updateData: {
+        location?: string;
+        startsAt?: string;
+        endsAt?: string | null;
+        content?: string;
+        homework?: string;
+      } = {};
+
+      if (location !== undefined) updateData.location = location;
+      if (startsAt !== undefined) updateData.startsAt = startsAt;
+      if (endsAt !== undefined) updateData.endsAt = endsAt;
+      if (content !== undefined) updateData.content = content;
+      if (homework !== undefined) updateData.homework = homework;
+
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({
+          error: {
+            message: "No valid fields provided",
+            code: "EMPTY_UPDATE",
+          },
+        });
+      }
+
+      const session = await prisma.classSession.findFirst({
+        where: {
+          id: sessionId,
+          course: {
+            instructorId: userId,
+          },
+        },
+      });
+
+      if (!session) {
+        return res.status(404).json({
+          error: {
+            message: "Session not found",
+            code: "SESSION_NOT_FOUND",
+          },
+        });
+      }
+
+      const updatedSession = await prisma.classSession.update({
+        where: { id: sessionId },
+        data: updateData,
+        select: {
+          id: true,
+          courseId: true,
+          location: true,
+          startsAt: true,
+          endsAt: true,
+          content: true,
+          homework: true,
+          createdAt: true,
+        },
+      });
+
+      return res.status(200).json({
+        data: updatedSession,
+      });
+    } catch (err: unknown) {
+      console.error(err);
+
+      return res.status(500).json({
+        error: {
+          message:
+            err instanceof Error
+              ? err.message
+              : "Unexpected server error",
+          code: "SERVER_ERROR",
+        },
+      });
+    }
+  }
+);
+
 
 export default router;
