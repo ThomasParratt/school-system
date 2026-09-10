@@ -150,6 +150,13 @@ paths:
                         $ref: "#/components/schemas/User"
                       token:
                         type: string
+        
+        "400":
+          description: Invalid body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "401":
           description: Invalid credentials
@@ -297,9 +304,17 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   
   /users/me/courses:
     get:
@@ -321,9 +336,17 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /users/me/sessions:
     get:
@@ -345,9 +368,17 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /users/me/sessions/{id}:
     patch:
@@ -392,7 +423,7 @@ paths:
                     $ref: "#/components/schemas/ClassSession"
 
         "400":
-          description: Invalid request
+          description: Invalid ID/body
           content:
             application/json:
               schema:
@@ -400,12 +431,20 @@ paths:
 
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "403":
           description: Forbidden - requires instructor role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "404":
-          description: Session not found or not taught by the instructor
+          description: Inaccessible session
           content:
             application/json:
               schema:
@@ -413,6 +452,10 @@ paths:
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   
   /users/me/students:
     get:
@@ -472,9 +515,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: User missing
           content:
             application/json:
               schema:
@@ -553,6 +617,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+        "409":
+          description: Duplicate email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "500":
           description: Server error
           content:
@@ -607,6 +678,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+        "404":
+          description: User missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "500":
           description: Server error
           content:
@@ -640,6 +718,20 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: User missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "500":
           description: Server error
           content:
@@ -668,9 +760,24 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     
     post:
       summary: Create course (admin only)
@@ -725,6 +832,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+        "404":
+          description: Instructor missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "500":
           description: Server error
           content:
@@ -756,9 +870,38 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 
     patch:
@@ -880,6 +1023,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+        "404":
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "500":
           description: Server error
           content:
@@ -908,6 +1058,20 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: Course not found
           content:
             application/json:
               schema:
@@ -946,9 +1110,24 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
     
     post:
       summary: Create a new session for a course
@@ -1006,6 +1185,13 @@ paths:
 
         "403":
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: Course not found
           content:
             application/json:
               schema:
@@ -1136,6 +1322,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+        "404":
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "409":
           description: Student already enrolled in this course
           content:
@@ -1187,6 +1380,10 @@ paths:
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /sessions/{id}:
     get:
@@ -1212,9 +1409,31 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
         "500":
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
     patch:
       summary: Update session information (admin or instructor only)
@@ -1337,6 +1556,13 @@ paths:
 
         "403":
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: Session not found
           content:
             application/json:
               schema:
