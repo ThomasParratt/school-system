@@ -5,6 +5,10 @@ import { signAuthToken } from "../lib/auth.js";
 
 const router = Router();
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // POST /auth/login
 router.post("/login", async (req, res) => {
   try {
@@ -15,6 +19,24 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({
         error: {
           message: "Missing email or password",
+          code: "VALIDATION_ERROR",
+        },
+      });
+    }
+
+    if (typeof email !== "string" || typeof password !== "string") {
+      return res.status(400).json({
+        error: {
+          message: "Invalid email or password format",
+          code: "VALIDATION_ERROR",
+        },
+      });
+    }
+
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        error: {
+          message: "Invalid email format",
           code: "VALIDATION_ERROR",
         },
       });
