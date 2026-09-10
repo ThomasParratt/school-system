@@ -6,6 +6,10 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 const router = Router();
 const SALT_ROUNDS = 10;
 
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // GET /users
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
@@ -50,6 +54,33 @@ router.post(
         return res.status(400).json({
           error: {
             message: "Missing required fields",
+            code: "VALIDATION_ERROR",
+          },
+        });
+      }
+
+      if (!isValidEmail(email)) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid email format",
+            code: "VALIDATION_ERROR",
+          },
+        });
+      }
+
+      if (role !== "admin" || role !== "instructor" || role !== "student") {
+        return res.status(400).json({
+          error: {
+            message: "Invalid role",
+            code: "VALIDATION_ERROR",
+          },
+        });
+      }
+
+      if (typeof firstName !== "string" || typeof secondName !== "string" || typeof password !== "string" || typeof comments !== "string") {
+        return res.status(400).json({
+          error: {
+            message: "Invalid format",
             code: "VALIDATION_ERROR",
           },
         });
