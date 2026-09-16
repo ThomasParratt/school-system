@@ -1,159 +1,130 @@
-# School Management System
+# School Management System (MVP)
 
-School Management System is a full-stack app for managing instructors, students, courses, and class sessions. It combines an Express + Prisma backend with a React + Vite frontend and supports role-based access for administrators, instructors, and students.
+This is a full-stack enterprise web application designed to simplify how a school manages its courses, class sessions, and student enrollments. The project was inspired by direct feedback from students and staff at a local language school to fix real administrative headaches. 
 
-## What It Does
+The platform supports strict role-based access control (RBAC) with completely separate dashboards and permissions for Administrators, Instructors, and Students.
 
-- Login with JWT authentication
-- Administrator CRUD for users, courses, and class sessions
-- Instructor dashboard with taught courses, enrolled students, lessons, and a weekly calendar
-- Instructor editing of session location, content, and homework from the lessons list or calendar
-- Enrollment management between students and courses
-- Student dashboard for enrolled courses, lessons, and calendar events
-- Swagger/OpenAPI docs served by the backend at `/docs`
-- Bruno API collections in `backend/bruno/`
+> 💡 **A Note on Deployment:** To save my AWS credits and avoid unnecessary hosting fees, the live AWS instance is currently spun down. You can see how the application works by checking out the OpenAPI/Swagger docs or running the entire stack locally with a single Docker command.
 
-## Tech Stack
+---
 
-- Backend: Node.js, Express, Prisma, PostgreSQL, JWT, bcrypt
-- Frontend: React, TypeScript, Vite, React Router
-- Tooling: Docker Compose, Vitest, ESLint
+## 🛠️ The Tech Stack
 
-## Project Structure
+* **Frontend:** React, TypeScript, Vite, React Router, Tailwind CSS
+* **Backend:** Node.js, Express, Prisma ORM
+* **Database:** PostgreSQL (with a separate PostgreSQL instance for isolated testing)
+* **DevOps & Tooling:** Docker, Docker Compose, GitHub Actions, Vitest, OpenAPI/Swagger
+
+---
+
+## 🚦 Key Features & Roles
+
+### 1. Authentication
+* Users log in via a secure screen using JWT. The frontend parses the token and automatically routes the user to the correct dashboard based on their role (Admin, Instructor, or Student).
+
+### 2. Administrator Dashboard
+* Full CRUD operations for managing users, creating courses, and scheduling class sessions.
+* Handles student-to-course enrollments via database join tables.
+
+### 3. Instructor Dashboard
+* A personal dashboard featuring a weekly calendar of their taught courses, lessons, and assigned students.
+* Instructors can click on any calendar session to edit the location, lesson content, or homework payloads without needing admin permissions.
+
+### 4. Student Dashboard
+* A read-only interface displaying enrolled courses, upcoming lessons, and homework tasks in a clean chronological timeline.
+
+---
+
+## 📦 Project Structure
 
 ```text
 school-system/
 ├── backend/
-│   ├── bruno/
-│   ├── prisma/
-│   └── src/
+│   ├── bruno/                 # Bruno collections for testing API endpoints
+│   ├── prisma/                # Database schema and seed scripts
+│   └── src/                   # Express routes, controllers, and middleware
 ├── frontend/
 │   └── src/
-│       └── components/
-│           ├── admin/
-│           ├── instructor/
-│           └── student/
-├── docker-compose.dev.yml
-├── docker-compose.prod.yml
+│       └── components/        # Separate UI folders for Admin, Instructor, and Student
+├── docker-compose.dev.yml     # Docker setup for local development
+├── docker-compose.prod.yml    # Hardened Docker setup for production
 └── README.md
 ```
 
-## Run With Docker
+---
 
-Create a `.env` file in the repository root before starting Compose.
+## 🚀 How to Run the App Locally
 
-### Development
+### 1. Environment Files
+Before running the project, make sure to create a `.env` file in the root directory to store your database URLs and JWT secrets.
 
-From the repository root, start the development stack with:
+### 2. Run with Docker Compose
+To build the images and spin up the frontend, backend, and databases all at once, run:
 
 ```bash
 docker compose -f docker-compose.dev.yml up --build
 ```
 
-This starts the following services:
+This will automatically initialize the following local URLs:
+* **Frontend client:** `http://localhost:5173`
+* **Backend API engine:** `http://localhost:3000`
+* **Swagger/OpenAPI UI:** `http://localhost:3000/docs`
+* **Main PostgreSQL Database:** `localhost:5432`
+* **Test PostgreSQL Database:** `localhost:5433`
 
-- Frontend at `http://localhost:5173`
-- Backend at `http://localhost:3000`
-- Swagger UI at `http://localhost:3000/docs`
-- PostgreSQL at `localhost:5432`
-- Test PostgreSQL at `localhost:5433`
-
-Stop the development stack with:
-
+To stop the containers and shut down the network safely, run:
 ```bash
 docker compose -f docker-compose.dev.yml down
 ```
 
-### Production
-
-Build and start the production stack with:
-
+### 3. Simulating Production
+To run the production-optimized build as a background process, run:
 ```bash
 docker compose -f docker-compose.prod.yml up --build -d
 ```
 
-Stop it with:
+---
 
-```bash
-docker compose -f docker-compose.prod.yml down
-```
+## 🛡️ Testing & CI/CD Pipeline
 
-## Seeded Account
+### Automated Backend Tests
+Backend unit and integration tests are written using **Vitest**. To keep your development data safe from pollution, the test suite automatically directs its queries to a completely separate test database running on port `5433`.
 
-The backend seed script creates an administrator account:
-
-- Email: `admin@school.local`
-- Password: `password123`
-
-## API Overview
-
-### Authentication
-
-- `POST /auth/login` - login and receive a JWT plus user data
-
-### Users
-
-- `GET /users` - list all users (admin only)
-- `POST /users` - create a student user (admin only)
-- `GET /users/me` - get the authenticated user's profile
-- `GET /users/me/courses` - get the authenticated user's enrolled courses
-- `GET /users/me/sessions` - get the authenticated user's sessions
-- `GET /users/me/students` - list students enrolled in the instructor's courses (instructor only)
-- `GET /users/:id` - get a user by ID (admin only)
-- `PATCH /users/:id` - update a user (admin only)
-- `DELETE /users/:id` - delete a user (admin only)
-- `GET /users/:id/enrollments` - list enrollments for a user (admin only)
-
-### Courses
-
-- `GET /courses` - list all courses (admin only)
-- `POST /courses` - create a course (admin only)
-- `GET /courses/:id` - get a course by ID (admin only)
-- `PATCH /courses/:id` - update a course (admin only)
-- `DELETE /courses/:id` - delete a course (admin only)
-- `POST /courses/:id/enroll` - enroll a student in a course (admin only)
-- `DELETE /courses/:courseId/enrollments/:studentId` - remove an enrollment (admin only)
-- `GET /courses/:id/sessions` - list sessions for a course
-- `POST /courses/:id/sessions` - create a session for a course (admin only)
-
-### Sessions
-
-- `GET /sessions` - list all sessions (admin only)
-- `GET /sessions/:id` - get a session by ID (authenticated users)
-- `PATCH /sessions/:id` - update a session (admin or instructor)
-- `DELETE /sessions/:id` - delete a session (admin only)
-
-## Testing
-
-Backend tests run with Vitest:
-
+To run the tests manually, go to the backend directory and execute:
 ```bash
 cd backend
-npm test
+npm run test
 ```
 
-The test suite uses the test PostgreSQL service on port `5433` when running through the development Compose setup.
+### GitHub Actions (CI)
+The workflow script inside `.github/workflows/ci.yml` runs automatically on every pull request and push to the `main` branch. It spins up an isolated Ubuntu container with PostgreSQL 15, installs Node modules, generates the Prisma client, and runs the Vitest test suite to make sure no broken code gets merged.
 
-## GitHub Actions
+---
 
-The workflow in `.github/workflows/ci.yml` runs on every pull request and on pushes to `main`.
+## ☁️ AWS Production Deployment (CD)
 
-### Backend Tests
+Once the GitHub Actions test suite passes, any push or merge to the `main` branch triggers an automated deployment to **AWS EC2** over a secure SSH channel:
 
-The `backend-tests` job runs on Ubuntu with PostgreSQL 15 and:
+1. **Code Sync:** The runner securely logs into the EC2 instance and pulls the latest code from the `main` branch.
+2. **Database Migrations:** Prisma automatically runs any pending database migrations to safely update the production PostgreSQL schema.
+3. **Production Rebuild:** The script triggers a rebuild of the production container stack (`docker-compose.prod.yml`) in the background, minimizing downtime.
 
-1. Installs Node.js 20 and backend dependencies.
-2. Generates the Prisma client.
-3. Runs the backend Vitest test suite.
+> 💡 **Reminder on Infrastructure Costs:** To save my AWS credits and avoid unnecessary idle hosting fees, the live AWS EC2 instance is currently kept spun down. The production-ready setup can be completely simulated locally using the production Docker Compose instructions above.
 
-### Deployment
 
-After backend tests pass, a push to `main` deploys the application to EC2 over SSH. The deployment pulls the latest `main` branch, rebuilds and starts the production Compose stack, and applies pending Prisma migrations.
+## 🗺️ Future Roadmap
 
-## Notes
+Now that the core MVP architecture is fully operational, I am actively working on the following iterations to make the platform production-hardened and scalable:
 
-- The backend OpenAPI definition lives in `backend/openapi.yaml`.
-- The frontend login screen routes users into the admin, instructor, or student dashboard based on their role.
-- Docker Compose uses the `DATABASE_URL` and `JWT_SECRET` values defined for the backend service; override them with a root `.env` file when needed.
+### 🔒 Security & Authentication Upgrades
+- [ ] **Secure Token Storage:** Migrate JWT storage away from localStorage to HttpOnly, SameSite cookies to mitigate Cross-Site Scripting (XSS) vulnerability vectors.
+- [ ] **Credentials Lifecycle:** Implement a mandatory first-login password change flow and a secure password-reset mechanism.
 
+### 📈 Scalability & Performance
+- [ ] **Data Pagination & Search:** Implement cursor or offset pagination alongside query search filters for the `/users`, `/courses`, and `/sessions` administrative grids to prevent bottleneck queries as the database scales.
+- [ ] **Code Cleanup:** Conduct a full optimization sweep to strip duplicate middleware definitions (e.g., `express.json()`) and remove stray debugging `console.log` statements from production execution paths.
+
+### 🛡️ Enhanced Test Coverage & DevOps Resilience
+- [ ] **Infrastructure Health Monitoring:** Integrate declarative `healthcheck` keys into the production `docker-compose.prod.yml` services to track container health natively.
+- [ ] **Targeted Backend Testing:** Expand the Vitest testing suite to include explicit edge-case tests proving strict instructor data ownership boundaries and uniform invalid-input exception behaviors.
 
