@@ -10,6 +10,10 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function isEmptyOrWhitespace(str: string): boolean {
+  return str.trim() === "";
+}
+
 // GET /users
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
@@ -51,7 +55,7 @@ router.post(
       const userRole = role ?? "student";
 
       // Validation
-      if (!firstName || !secondName || !email || !password ) {
+      if (!firstName || !secondName || !email || !password) {
         return res.status(400).json({
           error: {
             message: "Missing required fields",
@@ -92,6 +96,20 @@ router.post(
         });
       }
 
+      if (
+        isEmptyOrWhitespace(firstName) ||
+        isEmptyOrWhitespace(secondName) ||
+        isEmptyOrWhitespace(password) ||
+        (comments !== undefined && isEmptyOrWhitespace(comments))
+      ) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid format",
+            code: "VALIDATION_ERROR",
+          },
+        });
+      }
+
       const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
       const user = await prisma.user.create({
@@ -119,7 +137,6 @@ router.post(
     } catch (err: unknown) {
       console.error(err);
 
-      // Optional: handle duplicate email nicely
       if (err && typeof err === "object" && "code" in err && err.code === "P2002") {
         return res.status(409).json({
           error: {

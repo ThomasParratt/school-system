@@ -18,11 +18,11 @@ describe("POST /users", () => {
         .post('/users')
         .set("Authorization", `Bearer ${token}`)
         .send({ 
-                firstName: 'John',
-                secondName: 'Smith',
-                email: 'john.smith@test.com',
-                password: 'johnsmith'
-            });
+            firstName: 'John',
+            secondName: 'Smith',
+            email: 'john.smith@test.com',
+            password: 'johnsmith'
+        });
         
         expect(response.status).toBe(201);
         expect(response.body.data).toMatchObject({
@@ -47,11 +47,11 @@ describe("POST /users", () => {
             .post('/users')
             .set("Authorization", `Bearer ${token}`)
             .send({ 
-                    firstName: 'John',
-                    secondName: 'Smith',
-                    email: 'john.smith@test.com',
-                    password: 'johnsmith' 
-                });
+                firstName: 'John',
+                secondName: 'Smith',
+                email: 'john.smith@test.com',
+                password: 'johnsmith' 
+            });
         
         expect(response.status).toBe(403);
         expect(response).toSatisfyApiSpec();
@@ -63,10 +63,10 @@ describe("POST /users", () => {
             .post('/users')
             .set("Authorization", `Bearer ${token}`)
             .send({ 
-                    firstName: 'John',
-                    secondName: 'Smith',
-                    password: 'johnsmith' 
-                });
+                firstName: 'John',
+                secondName: 'Smith',
+                password: 'johnsmith' 
+            });
         
         expect(response.status).toBe(400);
         expect(response).toSatisfyApiSpec();
@@ -78,10 +78,10 @@ describe("POST /users", () => {
             .post('/users')
             .set("Authorization", `Bearer ${token}`)
             .send({ 
-                    firstName: 'John',
-                    secondName: 'Smith',
-                    email: 'john.smith@test.com' 
-                });
+                firstName: 'John',
+                secondName: 'Smith',
+                email: 'john.smith@test.com' 
+            });
         
         expect(response.status).toBe(400);
         expect(response).toSatisfyApiSpec();
@@ -91,9 +91,9 @@ describe("POST /users", () => {
         const token = await loginAsAdmin();
         await createUser({email: 'test@test.com'});
         const response = await request(app)
-        .post('/users')
-        .set("Authorization", `Bearer ${token}`)
-        .send({ 
+            .post('/users')
+            .set("Authorization", `Bearer ${token}`)
+            .send({ 
                 firstName: 'John',
                 secondName: 'Smith',
                 email: 'test@test.com',
@@ -103,4 +103,20 @@ describe("POST /users", () => {
         expect(response.status).toBe(409);
         expect(response).toSatisfyApiSpec();
     });
+
+    it('should reject invalid email', async () => {
+        const token = await loginAsAdmin();
+        const response = await request(app)
+            .post ('/users')
+            .set("Authorization", `Bearer ${token}`)
+            .send({
+                firstName: 'John',
+                secondName: 'Smith',
+                email: 'john.smith.com',
+                password: 'johnsmith' 
+            });
+        
+        expect(response.status).toBe(400);
+        expect(response).toSatisfyApiSpec();
+    })
 });
