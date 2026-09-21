@@ -93,7 +93,7 @@ Backend unit and integration tests are written using **Vitest**. To keep your de
 To run the tests manually, go to the backend directory and execute:
 ```bash
 cd backend
-npm run test
+npm test
 ```
 
 ### GitHub Actions (CI)
