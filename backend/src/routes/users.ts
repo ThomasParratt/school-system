@@ -48,6 +48,7 @@ router.post(
   async (req, res) => {
     try {
       const { firstName, secondName, email, password, role, comments } = req.body;
+      const userRole = role ?? "student";
 
       // Validation
       if (!firstName || !secondName || !email || !password ) {
@@ -68,7 +69,7 @@ router.post(
         });
       }
 
-      if (role !== "admin" || role !== "instructor" || role !== "student") {
+      if (!["admin", "instructor", "student"].includes(userRole)) {
         return res.status(400).json({
           error: {
             message: "Invalid role",
@@ -77,7 +78,12 @@ router.post(
         });
       }
 
-      if (typeof firstName !== "string" || typeof secondName !== "string" || typeof password !== "string" || typeof comments !== "string") {
+      if (
+        typeof firstName !== "string" ||
+        typeof secondName !== "string" ||
+        typeof password !== "string" ||
+        (comments !== undefined && typeof comments !== "string")
+      ) {
         return res.status(400).json({
           error: {
             message: "Invalid format",
@@ -94,7 +100,7 @@ router.post(
           secondName,
           email,
           password: hashedPassword,
-          role: role,
+          role: userRole,
           comments
         },
         select: {
