@@ -20,6 +20,7 @@ components:
   schemas:
     User:
       type: object
+      required: [id, firstName, secondName, email, role, createdAt]
       properties:
         id:
           type: integer
@@ -29,6 +30,7 @@ components:
           type: string
         email:
           type: string
+          format: email
         role:
           type: string
           enum: [admin, student, instructor]
@@ -44,6 +46,7 @@ components:
 
     Course:
       type: object
+      required: [id, title, language, level, material, instructorId, createdAt]
       properties:
         id:
           type: integer
@@ -68,6 +71,7 @@ components:
 
     ClassSession:
       type: object
+      required: [id, courseId, location, startsAt, createdAt]
       properties:
         id:
           type: integer
@@ -94,6 +98,7 @@ components:
     
     Enrollment:
       type: object
+      required: [id, userId, courseId, createdAt]
       properties:
         id:
           type: integer
@@ -107,9 +112,11 @@ components:
 
     Error:
       type: object
+      required: [error]
       properties:
         error:
           type: object
+          required: [message, code]
           properties:
             message:
               type: string
@@ -132,6 +139,7 @@ paths:
               properties:
                 email:
                   type: string
+                  format: email
                 password:
                   type: string
 
@@ -195,10 +203,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/Error"
 
         "403":
           description: Forbidden
@@ -212,10 +217,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/Error"
     
     post:
       summary: Create user (admin only)
@@ -239,6 +241,9 @@ paths:
                   type: string
                 comments:
                   type: string
+                role:
+                  type: string
+                  enum: [admin, student, instructor]
 
       responses:
         "201":
@@ -391,6 +396,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       requestBody:
         required: true
         content:
@@ -508,13 +514,18 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       responses:
         "200":
           description: User
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/User"
 
         "400":
           description: Invalid ID
@@ -575,6 +586,7 @@ paths:
                   type: string
                 email:
                   type: string
+                  format: email
                 comments:
                   type: string
       
@@ -709,7 +721,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Enrollment"
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Enrollment"
         
         "401":
           description: Unauthorized
@@ -793,10 +811,13 @@ paths:
               properties:
                 title:
                   type: string
+                  format: email
                 language:
                   type: string
+                  enum: [English, Finnish, Swedish, Russian, German, French]
                 level:
                   type: string
+                  enum: [A1, A2, B1, B2, C1, C2]
                 material:
                   type: string
 
@@ -918,8 +939,10 @@ paths:
                   type: string
                 language:
                   type: string
+                  enum: [English, Finnish, Swedish, Russian, German, French]
                 level:
                   type: string
+                  enum: [A1, A2, B1, B2, C1, C2]
                 material:
                   type: string
       
@@ -980,6 +1003,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
 
       responses:
         "200":
@@ -1047,7 +1071,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Enrollment"
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Enrollment"
         
         "401":
           description: Unauthorized
@@ -1352,17 +1382,21 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Session"
+                      $ref: "#/components/schemas/ClassSession"
+
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         
         "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Session"
+                $ref: "#/components/schemas/Error"
 
         "403":
           description: Forbidden
