@@ -4,7 +4,9 @@ This is a full-stack enterprise web application designed to simplify how a schoo
 
 The platform supports strict role-based access control (RBAC) with completely separate dashboards and permissions for Administrators, Instructors, and Students.
 
-> 💡 **A Note on Deployment:** To save my AWS credits and avoid unnecessary hosting fees, the live AWS instance is currently spun down. You can see how the application works by checking out the OpenAPI/Swagger docs or running the entire stack locally with a single Docker command.
+> 💡 **Live deployment:** The application is deployed to an AWS EC2 instance.
+>
+> 🔗 **Open the deployed site:** [http://16.171.34.233](http://16.171.34.233)
 
 ---
 
@@ -56,7 +58,21 @@ school-system/
 ## 🚀 How to Run the App Locally
 
 ### 1. Environment Files
-Before running the project, make sure to create a `.env` file in the root directory to store your database URLs and JWT secrets.
+Before running the project, create a `.env` file in the repository root. Docker Compose reads these values when it starts the PostgreSQL containers and backend:
+
+```dotenv
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=replace-with-a-local-password
+POSTGRES_DB=app
+JWT_SECRET=replace-with-a-long-random-secret
+```
+
+The variable names must match exactly:
+
+* `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` configure the main local PostgreSQL database. The backend builds its `DATABASE_URL` from these values automatically.
+* `JWT_SECRET` is used by the backend to sign and verify login tokens. Use a long, unpredictable value; it is not a database password.
+
+These values are only examples. Replace the password and JWT secret before starting the application, and do not commit the `.env` file or reuse production secrets locally. The file is ignored by Git. The test database is configured separately by the test setup and runs on port `5433`.
 
 ### 2. Run with Docker Compose
 To build the images and spin up the frontend, backend, and databases all at once, run:
@@ -109,7 +125,7 @@ Once the GitHub Actions test suite passes, any push or merge to the `main` branc
 2. **Database Migrations:** Prisma automatically runs any pending database migrations to safely update the production PostgreSQL schema.
 3. **Production Rebuild:** The script triggers a rebuild of the production container stack (`docker-compose.prod.yml`) in the background, minimizing downtime.
 
-> 💡 **Reminder on Infrastructure Costs:** To save my AWS credits and avoid unnecessary idle hosting fees, the live AWS EC2 instance is currently kept spun down. The production-ready setup can be completely simulated locally using the production Docker Compose instructions above.
+> 💡 **Infrastructure note:** The EC2 instance may be stopped when it is not needed to reduce AWS costs.
 
 
 ## 🗺️ Future Roadmap
@@ -127,4 +143,3 @@ Now that the core MVP architecture is fully operational, I am actively working o
 ### 🛡️ Enhanced Test Coverage & DevOps Resilience
 - [ ] **Infrastructure Health Monitoring:** Integrate declarative `healthcheck` keys into the production `docker-compose.prod.yml` services to track container health natively.
 - [ ] **Targeted Backend Testing:** Expand the Vitest testing suite to include explicit edge-case tests proving strict instructor data ownership boundaries and uniform invalid-input exception behaviors.
-
