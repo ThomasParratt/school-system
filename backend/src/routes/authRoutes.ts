@@ -2,17 +2,20 @@ import { Router } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma.js";
 import { signAuthToken } from "../lib/auth.js";
+import { validEmail } from "../lib/validation.js";
 
 const router = Router();
-
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
 
 // POST /auth/login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const body = req.body;
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      return res.status(400).json({
+        error: { message: "Request body must be a JSON object", code: "VALIDATION_ERROR" },
+      });
+    }
+    const { email, password } = body;
 
     // Validation
     if (!email || !password) {
@@ -33,7 +36,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    if (!isValidEmail(email)) {
+    if (!validEmail(email)) {
       return res.status(400).json({
         error: {
           message: "Invalid email format",

@@ -1,7 +1,17 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
-import { Prisma } from "@prisma/client";
+import { Prisma, type Language, type Level } from "@prisma/client";
+import {
+  errorResponse,
+  isPrismaError,
+  LANGUAGES,
+  LEVELS,
+  nonEmptyString,
+  positiveInteger,
+  positiveIntegerParam,
+  validDateTime,
+} from "../lib/validation.js";
 
 const router = Router();
 
@@ -45,20 +55,27 @@ router.post(
       const { title, language, level, instructorId, material } = req.body;
 
       // Validation
-      if (!title || !language || !level || !instructorId || !material) {
-        return res.status(400).json({
-          error: {
-            message: "Missing required fields",
-            code: "VALIDATION_ERROR",
-          },
-        });
+      if (!nonEmptyString(title) || !nonEmptyString(language) || !nonEmptyString(level) ||
+          !nonEmptyString(material) || !positiveInteger(instructorId)) {
+        return errorResponse(res, 400, "Missing or invalid required fields");
+      }
+      if (!LANGUAGES.includes(language as typeof LANGUAGES[number]) ||
+          !LEVELS.includes(level as typeof LEVELS[number])) {
+        return errorResponse(res, 400, "Invalid language or level");
+      }
+      const instructor = await prisma.user.findUnique({
+        where: { id: instructorId },
+        select: { id: true, role: true },
+      });
+      if (!instructor || instructor.role !== "instructor") {
+        return errorResponse(res, 404, "Instructor not found", "INSTRUCTOR_NOT_FOUND");
       }
 
       const course = await prisma.course.create({
         data: {
           title,
-          language,
-          level,
+          language: language as Language,
+          level: level as Level,
           material,
           instructor: {
             connect: {
@@ -84,6 +101,9 @@ router.post(
     } catch (err: unknown) {
       console.error(err);
 
+      if (isPrismaError(err, "P2025")) {
+        return errorResponse(res, 404, "Instructor not found", "INSTRUCTOR_NOT_FOUND");
+      }
       return res.status(500).json({
         error: {
           message: "Failed to create course",
@@ -97,15 +117,10 @@ router.post(
 // GET /courses/:id
 router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const courseId = Number(req.params.id);
+    const courseId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid course ID",
-            code: "INVALID_ID",
-          },
-        });
+    if (!courseId) {
+      return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
       }
     
     const course = await prisma.course.findUnique({
@@ -121,9 +136,8 @@ router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
       },
     });
 
-    return res.status(200).json({
-      data: course,
-    });
+    if (!course) return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
+    return res.status(200).json({ data: course });
   } catch (err) {
     console.error(err);
     return res.status(500).json({
@@ -142,15 +156,10 @@ router.patch(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const courseId = Number(req.params.id);
+      const courseId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid course ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!courseId) {
+        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
       }
       
       const { title, language, level, material, instructorId } = req.body;
@@ -178,6 +187,13 @@ router.patch(
           },
         });
       }
+      if ((title !== undefined && !nonEmptyString(title)) ||
+          (material !== undefined && !nonEmptyString(material)) ||
+          (language !== undefined && !LANGUAGES.includes(language as typeof LANGUAGES[number])) ||
+          (level !== undefined && !LEVELS.includes(level as typeof LEVELS[number])) ||
+          (instructorId !== undefined && !positiveInteger(instructorId))) {
+        return errorResponse(res, 400, "Invalid course fields");
+      }
 
       const updatedCourse = await prisma.course.update({
         where: { id: courseId },
@@ -200,6 +216,9 @@ router.patch(
   } catch (err: unknown) {
       console.error(err);
 
+      if (isPrismaError(err, "P2025")) {
+        return errorResponse(res, 404, "Course or instructor not found", "NOT_FOUND");
+      }
       return res.status(500).json({
         error: {
           message:
@@ -221,15 +240,10 @@ router.delete(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const courseId = Number(req.params.id);
+      const courseId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid course ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!courseId) {
+        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
       }
 
       await prisma.course.delete({
@@ -244,6 +258,9 @@ router.delete(
     } catch (err) {
       console.error(err);
 
+      if (isPrismaError(err, "P2025")) {
+        return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
+      }
       return res.status(500).json({
         error: {
           message: "Failed to delete course",
@@ -257,18 +274,18 @@ router.delete(
 // GET /courses/:id/sessions
 router.get("/:id/sessions", requireAuth, async (req, res) => {
   try {
-    const courseId = Number(req.params.id);
+    const courseId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid course ID",
-            code: "INVALID_ID",
-          },
-        });
+    if (!courseId) {
+      return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
       }
+      const course = await prisma.course.findUnique({
+        where: { id: courseId },
+        select: { id: true },
+      });
+      if (!course) return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
       
-    const sessions = await prisma.classSession.findMany({
+      const sessions = await prisma.classSession.findMany({
       where: { courseId: courseId },
       select: {
         id: true,
@@ -303,27 +320,21 @@ router.post(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const courseId = Number(req.params.id);
+      const courseId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid course ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!courseId) {
+        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
       }
 
       const { location, startsAt, endsAt } = req.body;
 
       // Validation
-      if (!location || !startsAt) {
-        return res.status(400).json({
-          error: {
-            message: "Missing required fields",
-            code: "VALIDATION_ERROR",
-          },
-        });
+      if (!nonEmptyString(location) || !validDateTime(startsAt) ||
+          (endsAt !== undefined && endsAt !== null && !validDateTime(endsAt))) {
+        return errorResponse(res, 400, "Invalid session fields");
+      }
+      if (endsAt !== undefined && endsAt !== null && Date.parse(endsAt) <= Date.parse(startsAt)) {
+        return errorResponse(res, 400, "endsAt must be after startsAt");
       }
 
       const session = await prisma.classSession.create({
@@ -331,7 +342,7 @@ router.post(
           courseId,
           location,
           startsAt,
-          endsAt: endsAt || null,
+          endsAt: endsAt ?? null,
         },
         select: {
           id: true,
@@ -351,6 +362,12 @@ router.post(
     } catch (err: unknown) {
       console.error(err);
 
+      if (isPrismaError(err, "P2002")) {
+        return errorResponse(res, 409, "A session already exists at this start time", "SESSION_EXISTS");
+      }
+      if (isPrismaError(err, "P2025")) {
+        return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
+      }
       return res.status(500).json({
         error: {
           message: "Failed to create session",
@@ -368,27 +385,25 @@ router.post(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const courseId = Number(req.params.id);
+      const courseId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid course ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!courseId) {
+        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
       }
 
       const { userId } = req.body;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid user ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!positiveInteger(userId)) {
+        return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
       }
+
+      const [course, user] = await Promise.all([
+        prisma.course.findUnique({ where: { id: courseId }, select: { id: true } }),
+        prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } }),
+      ]);
+      if (!course) return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
+      if (!user) return errorResponse(res, 404, "User not found", "USER_NOT_FOUND");
+      if (user.role !== "student") return errorResponse(res, 400, "Only students can enroll", "INVALID_ENROLLMENT_USER");
 
       const enrollment = await prisma.enrollment.create({
         data: {
@@ -436,25 +451,15 @@ router.delete(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const courseId = Number(req.params.courseId);
-      const studentId = Number(req.params.studentId);
+      const courseId = positiveIntegerParam(req.params.courseId);
+      const studentId = positiveIntegerParam(req.params.studentId);
 
-      if (!Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid course ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!courseId) {
+        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
       }
 
-      if (!Number.isInteger(studentId) || studentId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid user ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!studentId) {
+        return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
       }
 
       await prisma.enrollment.delete({
@@ -496,16 +501,16 @@ router.delete(
 // GET /courses/:id/enrollments
 router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const courseId = Number(req.params.id);
+    const courseId = positiveIntegerParam(req.params.id);
 
-    if (!Number.isInteger(courseId) || courseId <= 0) {
-      return res.status(400).json({
-        error: {
-          message: "Invalid user ID",
-          code: "INVALID_ID",
-        },
-      });
+    if (!courseId) {
+      return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
     }
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: { id: true },
+    });
+    if (!course) return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
     
     const enrollments = await prisma.enrollment.findMany({
       where: { courseId: courseId },

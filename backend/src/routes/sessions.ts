@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
+import { errorResponse, isPrismaError, nonEmptyString, positiveIntegerParam, validDateTime } from "../lib/validation.js";
 
 const router = Router();
 
@@ -37,15 +38,10 @@ router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
 // GET /sessions/:id
 router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const sessionId = Number(req.params.id);
+    const sessionId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(sessionId) || sessionId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid session ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!sessionId) {
+        return errorResponse(res, 400, "Invalid session ID", "INVALID_ID");
       }
     
     const session = await prisma.classSession.findUnique({
@@ -83,15 +79,10 @@ router.patch(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const sessionId = Number(req.params.id);
+      const sessionId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(sessionId) || sessionId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid session ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!sessionId) {
+        return errorResponse(res, 400, "Invalid session ID", "INVALID_ID");
       }
 
       const { location, startsAt, endsAt, content, homework } = req.body;
@@ -118,6 +109,24 @@ router.patch(
           },
         });
       }
+      if ((location !== undefined && !nonEmptyString(location)) ||
+          (startsAt !== undefined && !validDateTime(startsAt)) ||
+          (endsAt !== undefined && endsAt !== null && !validDateTime(endsAt)) ||
+          (content !== undefined && content !== null && !nonEmptyString(content)) ||
+          (homework !== undefined && homework !== null && !nonEmptyString(homework))) {
+        return errorResponse(res, 400, "Invalid session fields");
+      }
+      const currentSession = await prisma.classSession.findUnique({
+        where: { id: sessionId },
+        select: { startsAt: true, endsAt: true },
+      });
+      if (!currentSession) return errorResponse(res, 404, "Session not found", "SESSION_NOT_FOUND");
+      const effectiveStarts = startsAt ?? currentSession.startsAt.toISOString();
+      const effectiveEnds = endsAt === undefined ? currentSession.endsAt?.toISOString() : endsAt;
+      if (effectiveEnds !== undefined && effectiveEnds !== null &&
+          Date.parse(effectiveEnds) <= Date.parse(effectiveStarts)) {
+        return errorResponse(res, 400, "endsAt must be after startsAt");
+      }
 
       const updatedSession = await prisma.classSession.update({
         where: { id: sessionId },
@@ -140,6 +149,9 @@ router.patch(
     } catch (err: unknown) {
       console.error(err);
 
+      if (isPrismaError(err, "P2025")) {
+        return errorResponse(res, 404, "Session not found", "SESSION_NOT_FOUND");
+      }
       return res.status(500).json({
         error: {
           message:
@@ -160,15 +172,10 @@ router.delete(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const sessionId = Number(req.params.id);
+      const sessionId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(sessionId) || sessionId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid session ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!sessionId) {
+        return errorResponse(res, 400, "Invalid session ID", "INVALID_ID");
       }
 
       await prisma.classSession.delete({

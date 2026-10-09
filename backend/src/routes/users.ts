@@ -2,17 +2,10 @@ import { Router } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
+import { errorResponse, isPrismaError, nonEmptyString, positiveIntegerParam, validDateTime, validEmail } from "../lib/validation.js";
 
 const router = Router();
 const SALT_ROUNDS = 10;
-
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function isEmptyOrWhitespace(str: string): boolean {
-  return str.trim() === "";
-}
 
 // GET /users
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
@@ -52,34 +45,20 @@ router.post(
   async (req, res) => {
     try {
       const { firstName, secondName, email, password, role, comments } = req.body;
-      const userRole = role ?? "student";
+      const userRole = role === undefined ? "student" : role;
 
       // Validation
-      if (!firstName || !secondName || !email || !password) {
-        return res.status(400).json({
-          error: {
-            message: "Missing required fields",
-            code: "VALIDATION_ERROR",
-          },
-        });
+      if (!nonEmptyString(firstName) || !nonEmptyString(secondName) ||
+          !nonEmptyString(email) || !nonEmptyString(password)) {
+        return errorResponse(res, 400, "Missing required fields");
       }
 
-      if (!isValidEmail(email)) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid email format",
-            code: "VALIDATION_ERROR",
-          },
-        });
+      if (!validEmail(email)) {
+        return errorResponse(res, 400, "Invalid email format");
       }
 
       if (!["admin", "instructor", "student"].includes(userRole)) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid role",
-            code: "VALIDATION_ERROR",
-          },
-        });
+        return errorResponse(res, 400, "Invalid role");
       }
 
       if (
@@ -88,26 +67,16 @@ router.post(
         typeof password !== "string" ||
         (comments !== undefined && typeof comments !== "string")
       ) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid format",
-            code: "VALIDATION_ERROR",
-          },
-        });
+        return errorResponse(res, 400, "Invalid format");
       }
 
       if (
-        isEmptyOrWhitespace(firstName) ||
-        isEmptyOrWhitespace(secondName) ||
-        isEmptyOrWhitespace(password) ||
-        (comments !== undefined && isEmptyOrWhitespace(comments))
+        !nonEmptyString(firstName) ||
+        !nonEmptyString(secondName) ||
+        !nonEmptyString(password) ||
+        (comments !== undefined && !nonEmptyString(comments))
       ) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid format",
-            code: "VALIDATION_ERROR",
-          },
-        });
+        return errorResponse(res, 400, "Invalid format");
       }
 
       const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -184,9 +153,8 @@ router.get("/me", requireAuth, async (req, res) => {
       },
     });
 
-    return res.status(200).json({
-      data: user,
-    });
+    if (!user) return errorResponse(res, 404, "User not found", "USER_NOT_FOUND");
+    return res.status(200).json({ data: user });
   } catch (err) {
     console.error(err);
     return res.status(500).json({
@@ -423,15 +391,10 @@ router.get("/me/students", requireAuth, requireRole("instructor"), async (req, r
 // GET /users/:id
 router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const userId = Number(req.params.id);
+    const userId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid user ID",
-            code: "INVALID_ID",
-          },
-        });
+    if (!userId) {
+      return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
       }
     
     const user = await prisma.user.findUnique({
@@ -469,18 +432,13 @@ router.patch(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const userId = Number(req.params.id);
+      const userId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid user ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!userId) {
+        return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
       }
       
-      const { firstName, secondName, email, comments } = req.body;
+      const { firstName, secondName, email, comments } = req.body ?? {};
 
       const updateData: {
         firstName?: string;
@@ -501,6 +459,12 @@ router.patch(
             code: "EMPTY_UPDATE",
           },
         });
+      }
+      if ((firstName !== undefined && !nonEmptyString(firstName)) ||
+          (secondName !== undefined && !nonEmptyString(secondName)) ||
+          (email !== undefined && !validEmail(email)) ||
+          (comments !== undefined && !nonEmptyString(comments))) {
+        return errorResponse(res, 400, "Invalid user fields");
       }
 
       const updatedUser = await prisma.user.update({
@@ -524,6 +488,12 @@ router.patch(
   } catch (err: unknown) {
       console.error(err);
 
+      if (isPrismaError(err, "P2025")) {
+        return errorResponse(res, 404, "User not found", "USER_NOT_FOUND");
+      }
+      if (isPrismaError(err, "P2002")) {
+        return errorResponse(res, 409, "Email already exists", "EMAIL_ALREADY_EXISTS");
+      }
       return res.status(500).json({
         error: {
           message:
@@ -545,15 +515,10 @@ router.delete(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const userId = Number(req.params.id);
+      const userId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid user ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!userId) {
+        return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
       }
 
       await prisma.user.delete({
@@ -581,15 +546,10 @@ router.delete(
 // GET /users/:id/enrollments
 router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const userId = Number(req.params.id);
+    const userId = positiveIntegerParam(req.params.id);
 
-    if (!Number.isInteger(userId) || userId <= 0) {
-      return res.status(400).json({
-        error: {
-          message: "Invalid user ID",
-          code: "INVALID_ID",
-        },
-      });
+    if (!userId) {
+      return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
     }
     
     const enrollments = await prisma.enrollment.findMany({
@@ -630,15 +590,10 @@ router.patch(
         });
       }
       
-      const sessionId = Number(req.params.id);
+      const sessionId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(sessionId) || sessionId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid session ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!sessionId) {
+        return errorResponse(res, 400, "Invalid session ID", "INVALID_ID");
       }
 
       const { location, startsAt, endsAt, content, homework } = req.body;
@@ -665,6 +620,13 @@ router.patch(
           },
         });
       }
+      if ((location !== undefined && !nonEmptyString(location)) ||
+          (startsAt !== undefined && !validDateTime(startsAt)) ||
+          (endsAt !== undefined && endsAt !== null && !validDateTime(endsAt)) ||
+          (content !== undefined && content !== null && !nonEmptyString(content)) ||
+          (homework !== undefined && homework !== null && !nonEmptyString(homework))) {
+        return errorResponse(res, 400, "Invalid session fields");
+      }
 
       const session = await prisma.classSession.findFirst({
         where: {
@@ -682,6 +644,12 @@ router.patch(
             code: "SESSION_NOT_FOUND",
           },
         });
+      }
+      const effectiveStarts = startsAt ?? session.startsAt.toISOString();
+      const effectiveEnds = endsAt === undefined ? session.endsAt?.toISOString() : endsAt;
+      if (effectiveEnds !== undefined && effectiveEnds !== null &&
+          Date.parse(effectiveEnds) <= Date.parse(effectiveStarts)) {
+        return errorResponse(res, 400, "endsAt must be after startsAt");
       }
 
       const updatedSession = await prisma.classSession.update({
@@ -736,15 +704,10 @@ router.get(
         });
       }
       
-      const sessionId = Number(req.params.id);
+      const sessionId = positiveIntegerParam(req.params.id);
 
-      if (!Number.isInteger(sessionId) || sessionId <= 0) {
-        return res.status(400).json({
-          error: {
-            message: "Invalid session ID",
-            code: "INVALID_ID",
-          },
-        });
+      if (!sessionId) {
+        return errorResponse(res, 400, "Invalid session ID", "INVALID_ID");
       }
 
       const session = await prisma.classSession.findFirst({
