@@ -87,7 +87,22 @@ To stop the containers and shut down the network safely, run:
 docker compose -f docker-compose.dev.yml down
 ```
 
-### 3. Simulating Production
+### 3. Log in as the Seeded Administrator
+
+The development setup seeds an administrator account when the backend starts.
+These are also the credentials currently used to log in to the live site at
+[http://16.171.34.233](http://16.171.34.233). For local development, open the
+frontend at [http://localhost:5173](http://localhost:5173) and use:
+
+| Field | Value |
+| --- | --- |
+| Email | `admin@school.local` |
+| Password | `password123` |
+
+After logging in, the administrator dashboard provides access to user, course,
+session, and enrollment management.
+
+### 4. Simulating Production
 To run the production-optimized build as a background process, run:
 ```bash
 docker compose -f docker-compose.prod.yml up --build -d
