@@ -67,12 +67,6 @@ POSTGRES_DB=app
 JWT_SECRET=replace-with-a-long-random-secret
 ```
 
-The variable names must match exactly:
-
-* `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` configure the main local PostgreSQL database. The backend builds its `DATABASE_URL` from these values automatically.
-* `JWT_SECRET` is used by the backend to sign and verify login tokens. Use a long, unpredictable value; it is not a database password.
-
-These values are only examples. Replace the password and JWT secret before starting the application, and do not commit the `.env` file or reuse production secrets locally. The file is ignored by Git. The test database is configured separately by the test setup and runs on port `5433`.
 
 ### 2. Run with Docker Compose
 To build the images and spin up the frontend, backend, and databases all at once, run:
