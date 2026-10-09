@@ -24,6 +24,7 @@ components:
       properties:
         id:
           type: integer
+          minimum: 1
         firstName:
           type: string
         secondName:
@@ -35,8 +36,9 @@ components:
           type: string
           enum: [admin, student, instructor]
         comments:
-          type: string
-          nullable: true
+          type:
+            - string
+            - "null"
         createdAt:
           type: string
           format: date-time
@@ -50,6 +52,7 @@ components:
       properties:
         id:
           type: integer
+          minimum: 1
         title:
           type: string
         language:
@@ -62,6 +65,7 @@ components:
           type: string
         instructorId:
           type: integer
+          minimum: 1
         createdAt:
           type: string
           format: date-time
@@ -75,23 +79,28 @@ components:
       properties:
         id:
           type: integer
+          minimum: 1
         courseId:
           type: integer
+          minimum: 1
         location:
           type: string
         startsAt:
           type: string
           format: date-time
         endsAt:
-          type: string
+          type:
+            - string
+            - "null"
           format: date-time
-          nullable: true
         content:
-          type: string
-          nullable: true
+          type:
+            - string
+            - "null"
         homework:
-          type: string
-          nullable: true
+          type:
+            - string
+            - "null"
         createdAt:
           type: string
           format: date-time
@@ -102,10 +111,13 @@ components:
       properties:
         id:
           type: integer
+          minimum: 1
         userId:
           type: integer
+          minimum: 1
         courseId:
           type: integer
+          minimum: 1
         createdAt:
           type: string
           format: date-time
@@ -142,6 +154,7 @@ paths:
                   format: email
                 password:
                   type: string
+                  minLength: 8
 
       responses:
         "200":
@@ -239,6 +252,7 @@ paths:
                   type: string
                 password:
                   type: string
+                  minLength: 8
                 comments:
                   type: string
                 role:
@@ -410,9 +424,10 @@ paths:
                   type: string
                   format: date-time
                 endsAt:
-                  type: string
+                  type:
+                    - string
+                    - "null"
                   format: date-time
-                  nullable: true
                 content:
                   type: string
                 homework:
@@ -573,6 +588,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       requestBody:
         required: true
         content:
@@ -654,6 +670,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
 
       responses:
         "200":
@@ -715,6 +732,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       responses:
         "200":
           description: Enrollments
@@ -728,6 +746,13 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Enrollment"
+
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         
         "401":
           description: Unauthorized
@@ -811,7 +836,6 @@ paths:
               properties:
                 title:
                   type: string
-                  format: email
                 language:
                   type: string
                   enum: [English, Finnish, Swedish, Russian, German, French]
@@ -820,6 +844,9 @@ paths:
                   enum: [A1, A2, B1, B2, C1, C2]
                 material:
                   type: string
+                instructorId:
+                  type: integer
+                  minimum: 1
 
       responses:
         "201":
@@ -878,6 +905,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       responses:
         "200":
           description: Course
@@ -928,6 +956,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       requestBody:
         required: true
         content:
@@ -945,6 +974,9 @@ paths:
                   enum: [A1, A2, B1, B2, C1, C2]
                 material:
                   type: string
+                instructorId:
+                  type: integer
+                  minimum: 1
       
       responses:
         "200":
@@ -1065,6 +1097,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       responses:
         "200":
           description: Enrollments
@@ -1078,6 +1111,13 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Enrollment"
+
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
         
         "401":
           description: Unauthorized
@@ -1118,6 +1158,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       responses:
         "200":
           description: List of sessions
@@ -1162,6 +1203,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       requestBody:
         required: true
         content:
@@ -1178,9 +1220,18 @@ paths:
                   type: string
                   format: date-time
                 endsAt:
-                  type: string
+                  type:
+                    - string
+                    - "null"
                   format: date-time
-                  nullable: true
+                content:
+                  type:
+                    - string
+                    - "null"
+                homework:
+                  type:
+                    - string
+                    - "null"
       responses:
         "201":
           description: Session created
@@ -1238,11 +1289,13 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
         - name: studentId
           in: path
           required: true
           schema:
             type: integer
+            minimum: 1
       responses:
         "200":
           description: Enrollment deleted
@@ -1303,6 +1356,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       requestBody:
         required: true
         content:
@@ -1423,6 +1477,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       responses:
         "200":
           description: Session
@@ -1472,6 +1527,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
       requestBody:
         required: true
         content:
@@ -1485,15 +1541,18 @@ paths:
                   type: string
                   format: date-time
                 endsAt:
-                  type: string
+                  type:
+                    - string
+                    - "null"
                   format: date-time
-                  nullable: true
                 content:
-                  type: string
-                  nullable: true
+                  type:
+                    - string
+                    - "null"
                 homework:
-                  type: string
-                  nullable: true
+                  type:
+                    - string
+                    - "null"
       
       responses:
         "200":
@@ -1552,6 +1611,7 @@ paths:
           required: true
           schema:
             type: integer
+            minimum: 1
 
       responses:
         "200":

@@ -194,6 +194,15 @@ router.patch(
           (instructorId !== undefined && !positiveInteger(instructorId))) {
         return errorResponse(res, 400, "Invalid course fields");
       }
+      if (instructorId !== undefined) {
+        const instructor = await prisma.user.findUnique({
+          where: { id: instructorId },
+          select: { role: true },
+        });
+        if (!instructor || instructor.role !== "instructor") {
+          return errorResponse(res, 404, "Instructor not found", "INSTRUCTOR_NOT_FOUND");
+        }
+      }
 
       const updatedCourse = await prisma.course.update({
         where: { id: courseId },
@@ -326,7 +335,7 @@ router.post(
         return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
       }
 
-      const { location, startsAt, endsAt } = req.body;
+      const { location, startsAt, endsAt, content, homework } = req.body;
 
       // Validation
       if (!nonEmptyString(location) || !validDateTime(startsAt) ||
@@ -336,6 +345,16 @@ router.post(
       if (endsAt !== undefined && endsAt !== null && Date.parse(endsAt) <= Date.parse(startsAt)) {
         return errorResponse(res, 400, "endsAt must be after startsAt");
       }
+      if ((content !== undefined && content !== null && !nonEmptyString(content)) ||
+          (homework !== undefined && homework !== null && !nonEmptyString(homework))) {
+        return errorResponse(res, 400, "Invalid session fields");
+      }
+
+      const course = await prisma.course.findUnique({
+        where: { id: courseId },
+        select: { id: true },
+      });
+      if (!course) return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
 
       const session = await prisma.classSession.create({
         data: {
@@ -343,6 +362,8 @@ router.post(
           location,
           startsAt,
           endsAt: endsAt ?? null,
+          content: content ?? null,
+          homework: homework ?? null,
         },
         select: {
           id: true,

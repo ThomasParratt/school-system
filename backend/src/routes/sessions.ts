@@ -58,6 +58,7 @@ router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
       },
     });
 
+    if (!session) return errorResponse(res, 404, "Session not found", "SESSION_NOT_FOUND");
     return res.status(200).json({
       data: session,
     });
@@ -190,6 +191,9 @@ router.delete(
     } catch (err) {
       console.error(err);
 
+      if (isPrismaError(err, "P2025")) {
+        return errorResponse(res, 404, "Session not found", "SESSION_NOT_FOUND");
+      }
       return res.status(500).json({
         error: {
           message: "Failed to delete session",

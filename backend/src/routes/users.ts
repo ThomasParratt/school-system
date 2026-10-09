@@ -6,6 +6,7 @@ import { errorResponse, isPrismaError, nonEmptyString, positiveIntegerParam, val
 
 const router = Router();
 const SALT_ROUNDS = 10;
+const MIN_PASSWORD_LENGTH = 8;
 
 // GET /users
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
@@ -55,6 +56,9 @@ router.post(
 
       if (!validEmail(email)) {
         return errorResponse(res, 400, "Invalid email format");
+      }
+      if (password.length < MIN_PASSWORD_LENGTH) {
+        return errorResponse(res, 400, "Password must be at least 8 characters");
       }
 
       if (!["admin", "instructor", "student"].includes(userRole)) {
@@ -411,6 +415,7 @@ router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
       },
     });
 
+    if (!user) return errorResponse(res, 404, "User not found", "USER_NOT_FOUND");
     return res.status(200).json({
       data: user,
     });
@@ -533,6 +538,9 @@ router.delete(
     } catch (err) {
       console.error(err);
 
+      if (isPrismaError(err, "P2025")) {
+        return errorResponse(res, 404, "User not found", "USER_NOT_FOUND");
+      }
       return res.status(500).json({
         error: {
           message: "Failed to delete user",
