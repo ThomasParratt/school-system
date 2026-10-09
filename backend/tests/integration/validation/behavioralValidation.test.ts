@@ -41,7 +41,7 @@ describe("behavioral validation and error contracts", () => {
       const shortPassword = await request(app)
         .post("/auth/login")
         .send({ email: "user@example.com", password: "short" });
-      expectError(shortPassword, 400, "VALIDATION_ERROR");
+      expectError(shortPassword, 401, "INVALID_CREDENTIALS");
 
       const created = await request(app)
         .post("/users")

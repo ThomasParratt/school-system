@@ -36,9 +36,8 @@ components:
           type: string
           enum: [admin, student, instructor]
         comments:
-          type:
-            - string
-            - "null"
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -89,18 +88,15 @@ components:
           type: string
           format: date-time
         endsAt:
-          type:
-            - string
-            - "null"
+          type: string
+          nullable: true
           format: date-time
         content:
-          type:
-            - string
-            - "null"
+          type: string
+          nullable: true
         homework:
-          type:
-            - string
-            - "null"
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -424,9 +420,8 @@ paths:
                   type: string
                   format: date-time
                 endsAt:
-                  type:
-                    - string
-                    - "null"
+                  type: string
+                  nullable: true
                   format: date-time
                 content:
                   type: string
@@ -1220,18 +1215,15 @@ paths:
                   type: string
                   format: date-time
                 endsAt:
-                  type:
-                    - string
-                    - "null"
+                  type: string
+                  nullable: true
                   format: date-time
                 content:
-                  type:
-                    - string
-                    - "null"
+                  type: string
+                  nullable: true
                 homework:
-                  type:
-                    - string
-                    - "null"
+                  type: string
+                  nullable: true
       responses:
         "201":
           description: Session created
@@ -1541,18 +1533,15 @@ paths:
                   type: string
                   format: date-time
                 endsAt:
-                  type:
-                    - string
-                    - "null"
+                  type: string
+                  nullable: true
                   format: date-time
                 content:
-                  type:
-                    - string
-                    - "null"
+                  type: string
+                  nullable: true
                 homework:
-                  type:
-                    - string
-                    - "null"
+                  type: string
+                  nullable: true
       
       responses:
         "200":

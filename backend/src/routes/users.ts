@@ -100,7 +100,9 @@ router.post(
           secondName: true,
           email: true,
           role: true,
-          comments: true
+          comments: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
 

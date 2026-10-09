@@ -130,6 +130,7 @@ router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
         title: true,
         language: true,
         level: true,
+        material: true,
         instructorId: true,
         createdAt: true,
         updatedAt: true,

@@ -12,7 +12,8 @@ const app = express();
 
 app.use((req, res, next) => {
   if (["POST", "PUT", "PATCH"].includes(req.method) &&
-      (req.headers["content-length"] || req.headers["transfer-encoding"]) &&
+      (req.headers["content-length"] && req.headers["content-length"] !== "0" ||
+       req.headers["transfer-encoding"]) &&
       !req.is("application/json")) {
     return res.status(400).json({
       error: { message: "Request body must use Content-Type: application/json", code: "INVALID_CONTENT_TYPE" },
