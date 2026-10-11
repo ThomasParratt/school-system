@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useMemo, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -17,32 +17,27 @@ type CalendarSession = {
 };
 
 export default function MyStudentCalendar({ token, courses, sessions }: MyLessonsProps) {
-  const [events, setEvents] = useState<EventInput[]>([]);
   const [clickedSession, setClickedSession] = useState<Session | null>(null)
 
-  const getCourseTitle = (courseId: number) =>
-    courses.find((course: Course) => course.id === courseId)?.title ?? "";
-
-  const loadSessions = useCallback(async () => {
-    if (!token) return;
-
-    setEvents(
-      sessions.map((s: CalendarSession) => ({
-          id: String(s.id),
-          title: getCourseTitle(s.courseId) || s.title || "",
-          start: s.startsAt,
-          end: s.endsAt ?? undefined,
-          extendedProps: {
-            location: s.location,
-            courseId: s.courseId,
-          },
-      }))
-    );
-  }, [token, courses]);
-
-  useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+  const events = useMemo<EventInput[]>(
+      () =>
+          sessions.map((session: CalendarSession) => ({
+              id: String(session.id),
+              title:
+                  courses.find(
+                      (course: Course) => course.id === session.courseId
+                  )?.title ??
+                  session.title ??
+                  "",
+              start: session.startsAt,
+              end: session.endsAt ?? undefined,
+              extendedProps: {
+                  location: session.location,
+                  courseId: session.courseId,
+              },
+          })),
+      [courses, sessions]
+  );
 
   const eventContent = (arg: EventContentArg) => {
     const { title, start, end } = arg.event;
@@ -112,7 +107,11 @@ export default function MyStudentCalendar({ token, courses, sessions }: MyLesson
                   </button>
 
                   <h2 className="text-lg font-bold mb-4">
-                      {getCourseTitle(clickedSession.courseId)}
+                      {
+                          courses.find(
+                              (course: Course) => course.id === clickedSession.courseId
+                          )?.title ?? ""
+                      }
                   </h2>
                   <div className="flex justify-between items-center mb-2">
                       <strong>Location</strong>
