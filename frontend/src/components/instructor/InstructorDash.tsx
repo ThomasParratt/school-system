@@ -34,10 +34,27 @@ export default function InstructorDash() {
   };
 
   useEffect(() => {
-    fetchStudents();
-    fetchCourses();
-    fetchSessions();
-  }, [token]);
+    if (!token) return;
+
+    const loadData = async () => {
+      try {
+        const [studentsResponse, coursesResponse, sessionsResponse] =
+          await Promise.all([
+            getUserStudents(token),
+            getUserCourses(token),
+            getUserSessions(token),
+          ]);
+
+        setUsers(studentsResponse.data);
+        setCourses(coursesResponse.data);
+        setSessions(sessionsResponse.data);
+      } catch (error) {
+        console.error("Failed to load instructor dashboard data", error);
+      }
+  };
+
+  void loadData();
+}, [token]);
 
   return (
     <div className="flex gap-4 p-4 h-screen">
