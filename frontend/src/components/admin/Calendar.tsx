@@ -9,9 +9,9 @@ import type {
   EventClickArg,
   EventContentArg,
   EventDropArg,
-  EventInput,
-  EventResizeDoneArg,
+  EventInput
 } from "@fullcalendar/core";
+import type { EventResizeDoneArg } from "@fullcalendar/interaction";
 import { addCourseSession, getCourseSessions } from "../../services/courseService";
 import { getAllSessions, deleteSession, getSession, updateSession } from "../../services/sessionService";
 import type { Course, Session } from "../../types";
