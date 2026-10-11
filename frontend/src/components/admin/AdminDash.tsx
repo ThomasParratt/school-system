@@ -2,7 +2,7 @@ import Instructors from "./Instructors";
 import Students from "./Students";
 import Courses from "./Courses";
 import Calendar from "./Calendar";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { getUsers } from "../../services/userService";
 import { getCourses } from "../../services/courseService";
 import type { User, Course } from "../../types";
@@ -27,9 +27,24 @@ export default function AdminDash() {
   };
 
   useEffect(() => {
-    fetchUsers();
-    fetchCourses();
-  }, [token]);
+    if (!token) return;
+
+    const loadData = async () => {
+      try {
+        const [usersResponse, coursesResponse] = await Promise.all([
+          getUsers(token),
+          getCourses(token),
+        ]);
+
+        setUsers(usersResponse.data);
+        setCourses(coursesResponse.data);
+      } catch (error) {
+        console.error("Failed to load admin dashboard data", error);
+      }
+  };
+
+  void loadData();
+}, [token]);
 
   return (
     <div className="flex gap-4 p-4 h-screen">

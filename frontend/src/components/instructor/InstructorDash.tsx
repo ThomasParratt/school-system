@@ -1,4 +1,4 @@
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import type { User, Course, Session } from "../../types";
 import { useState, useEffect } from "react";
 import { getUserCourses, getUserSessions, getUserStudents } from "../../services/userService";
@@ -13,20 +13,6 @@ export default function InstructorDash() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  const fetchStudents = async () => {
-    if (!token) return;
-    const data = await getUserStudents(token);
-    //console.log(data.data);
-    setUsers(data.data);
-  };
-
-  const fetchCourses = async () => {
-    if (!token) return;
-    const data = await getUserCourses(token);
-    //console.log(data.data);
-    setCourses(data.data);
-  };
-
   const fetchSessions = async () => {
     if (!token) return;
     const data = await getUserSessions(token);
@@ -34,10 +20,27 @@ export default function InstructorDash() {
   };
 
   useEffect(() => {
-    fetchStudents();
-    fetchCourses();
-    fetchSessions();
-  }, [token]);
+    if (!token) return;
+
+    const loadData = async () => {
+      try {
+        const [studentsResponse, coursesResponse, sessionsResponse] =
+          await Promise.all([
+            getUserStudents(token),
+            getUserCourses(token),
+            getUserSessions(token),
+          ]);
+
+        setUsers(studentsResponse.data);
+        setCourses(coursesResponse.data);
+        setSessions(sessionsResponse.data);
+      } catch (error) {
+        console.error("Failed to load instructor dashboard data", error);
+      }
+  };
+
+  void loadData();
+}, [token]);
 
   return (
     <div className="flex gap-4 p-4 h-screen">

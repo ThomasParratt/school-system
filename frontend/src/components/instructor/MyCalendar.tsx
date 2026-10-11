@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useMemo, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -17,59 +17,38 @@ type CalendarSession = {
   title?: string;
 };
 
-// Add refreshSessions to props??
-export default function MyCalendar({ token, courses, sessions }: CalendarProps) {
-  const [events, setEvents] = useState<EventInput[]>([]);
+export default function MyCalendar({ token, courses, sessions, refreshSessions }: CalendarProps) {
+  const events = useMemo<EventInput[]>(
+      () =>
+          sessions.map((session: CalendarSession) => ({
+              id: String(session.id),
+              title:
+                  courses.find((course: Course) => course.id === session.courseId)
+                      ?.title ?? session.title ?? "",
+              start: session.startsAt,
+              end: session.endsAt ?? undefined,
+              extendedProps: {
+                  location: session.location,
+                  courseId: session.courseId,
+              },
+          })),
+      [courses, sessions]
+  );
   const [clickedSession, setClickedSession] = useState<Session | null>(null)
   const [editForm, setEditForm] = useState<Partial<Session>>({});
-
-  useEffect(() => {
-      if (clickedSession) {
-          setEditForm({
-              location: clickedSession.location,
-              content: clickedSession.content ?? "",
-              homework: clickedSession.homework ?? ""
-          });
-      }
-  }, [clickedSession]);
-
-  const getCourseTitle = (courseId?: number) =>
-    courseId === undefined
-      ? ""
-      : courses.find((course: Course) => course.id === courseId)?.title ?? "";
 
   async function handleUpdateSession(sessionId: number) {
       if (!token || !editForm) return;
 
       try {
           await updateSession(token, sessionId, editForm);
+          await refreshSessions();
           setClickedSession(null);
       } catch (err) {
           console.error(err);
           alert(err);
       }
   }
-
-  const loadSessions = useCallback(async () => {
-    if (!token) return;
-
-    setEvents(
-      sessions.map((s: CalendarSession) => ({
-          id: String(s.id),
-          title: getCourseTitle(s.courseId) || s.title || "",
-          start: s.startsAt,
-          end: s.endsAt ?? undefined,
-          extendedProps: {
-            location: s.location,
-            courseId: s.courseId,
-          },
-      }))
-    );
-  }, [token, courses]);
-
-  useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
 
   const eventContent = (arg: EventContentArg) => {
     const { title, start, end } = arg.event;
@@ -89,9 +68,17 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
   };
 
   const handleEventClick = async (clickInfo: EventClickArg) => {
-    const event = clickInfo.event;
-    const session = await getMySession(token, Number(event.id));
-    setClickedSession(session.data);
+      if (!token) return;
+
+      const event = clickInfo.event;
+      const session = await getMySession(token, Number(event.id));
+
+      setClickedSession(session.data);
+      setEditForm({
+          location: session.data.location,
+          content: session.data.content ?? "",
+          homework: session.data.homework ?? ""
+      });
   };
 
   return (
@@ -135,7 +122,9 @@ export default function MyCalendar({ token, courses, sessions }: CalendarProps) 
             }
         >
             <h2 className="text-lg font-bold mb-4">
-                {`${getCourseTitle(clickedSession?.courseId)}`}
+                {courses.find(
+                    (course: Course) => course.id === clickedSession?.courseId
+                )?.title ?? ""}
             </h2>
             <p className="flex justify-between items-center mb-2">
                 <strong>Location</strong>
