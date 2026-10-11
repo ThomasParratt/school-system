@@ -43,7 +43,7 @@ export function useCrud<
         getAll(token)
             .then(res => setItems(res.data))
             .catch(console.error);
-    }, [token]);
+    }, [token, getAll]);
 
     async function addItem(
         data: Partial<T>
