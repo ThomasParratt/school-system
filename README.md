@@ -4,9 +4,6 @@ This is a full-stack enterprise web application designed to simplify how a schoo
 
 The platform supports strict role-based access control (RBAC) with completely separate dashboards and permissions for Administrators, Instructors, and Students.
 
-> 💡 **Live deployment:** The application is deployed to an AWS EC2 instance.
->
-> 🔗 **Open the deployed site:** [http://16.171.34.233](http://16.171.34.233)
 
 ---
 
@@ -126,15 +123,15 @@ The workflow script inside `.github/workflows/ci.yml` runs automatically on ever
 
 ---
 
-## ☁️ AWS Production Deployment (CD)
+## ☁️ AWS Production Deployment (Paused)
 
-Once the GitHub Actions test suite passes, any push or merge to the `main` branch triggers an automated deployment to **AWS EC2** over a secure SSH channel:
+The AWS EC2 instance is currently stopped, and the deployment job in
+`.github/workflows/ci.yml` is commented out. GitHub Actions currently runs
+the backend tests and frontend checks only; pushes to `main` do not deploy the
+application automatically.
 
-1. **Code Sync:** The runner securely logs into the EC2 instance and pulls the latest code from the `main` branch.
-2. **Database Migrations:** Prisma automatically runs any pending database migrations to safely update the production PostgreSQL schema.
-3. **Production Rebuild:** The script triggers a rebuild of the production container stack (`docker-compose.prod.yml`) in the background, minimizing downtime.
-
-> 💡 **Infrastructure note:** The EC2 instance may be stopped when it is not needed to reduce AWS costs.
+The production Docker configuration remains available for when the instance is
+started and deployment is re-enabled.
 
 
 ## 🗺️ Future Roadmap
