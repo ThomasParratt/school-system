@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import edit from "../../../assets/edit.png";
 import type { CalendarProps, Course, Session } from "../../types";
 import CrudModal from "../admin/CrudModal";
@@ -7,16 +7,6 @@ import { updateSession } from "../../services/sessionService";
 export default function MyLessons({ token, courses, sessions, refreshSessions }: CalendarProps) {
     const [selectedSession, setSelectedSession] = useState<Session | null>(null);
     const [editForm, setEditForm] = useState<Partial<Session>>({});
-
-    useEffect(() => {
-        if (selectedSession) {
-            setEditForm({
-                location: selectedSession.location,
-                content: selectedSession.content ?? "",
-                homework: selectedSession.homework ?? ""
-            });
-        }
-    }, [selectedSession]);
 
     const getCourseTitle = (courseId?: number) =>
         courseId === undefined
@@ -63,7 +53,14 @@ export default function MyLessons({ token, courses, sessions, refreshSessions }:
 
                             <div className="flex items-center gap-3">
                                 <img
-                                    onClick={() => setSelectedSession(session)}
+                                    onClick={() => {
+                                        setSelectedSession(session);
+                                        setEditForm({
+                                            location: session.location,
+                                            content: session.content ?? "",
+                                            homework: session.homework ?? ""
+                                        });
+                                    }}
                                     src={edit}
                                     alt="Edit"
                                     className="w-5 h-5 cursor-pointer hover:opacity-70"
