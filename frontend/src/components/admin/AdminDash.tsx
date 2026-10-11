@@ -27,9 +27,24 @@ export default function AdminDash() {
   };
 
   useEffect(() => {
-    fetchUsers();
-    fetchCourses();
-  }, [token]);
+    if (!token) return;
+
+    const loadData = async () => {
+      try {
+        const [usersResponse, coursesResponse] = await Promise.all([
+          getUsers(token),
+          getCourses(token),
+        ]);
+
+        setUsers(usersResponse.data);
+        setCourses(coursesResponse.data);
+      } catch (error) {
+        console.error("Failed to load admin dashboard data", error);
+      }
+  };
+
+  void loadData();
+}, [token]);
 
   return (
     <div className="flex gap-4 p-4 h-screen">
