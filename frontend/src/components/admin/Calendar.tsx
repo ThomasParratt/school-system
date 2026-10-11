@@ -8,7 +8,9 @@ import type {
   EventAddArg,
   EventClickArg,
   EventContentArg,
+  EventDropArg,
   EventInput,
+  EventResizeDoneArg,
 } from "@fullcalendar/core";
 import { addCourseSession, getCourseSessions } from "../../services/courseService";
 import { getAllSessions, deleteSession, getSession, updateSession } from "../../services/sessionService";
@@ -29,6 +31,11 @@ type CalendarProps = {
   courses: Course[];
 };
 
+const EMPTY_SESSION : Partial<Session> = {
+    location: "",
+    startsAt: ""
+}
+
 export default function Calendar({ token, courses }: CalendarProps) {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState("");
@@ -39,30 +46,6 @@ export default function Calendar({ token, courses }: CalendarProps) {
   const [addForm, setAddForm] = useState<Partial<Session>>({});
 
   const calendarRef = useRef<FullCalendar | null>(null);
-
-  const emptySession : Partial<Session> = {
-        location: "",
-        startsAt: ""
-    }
-
-  useEffect(() => {
-      if (clickedSession) {
-          setEditForm({
-              location: clickedSession.location,
-              content: clickedSession.content ?? "",
-              homework: clickedSession.homework ?? ""
-          });
-      }
-  }, [clickedSession]);
-
-  useEffect(() => {
-      if (add) {
-          setAddForm({
-              location: emptySession.location,
-              startsAt: emptySession.startsAt,
-          });
-      }
-  }, [add]);
 
   async function handleUpdateSession(sessionId: number) {
       if (!token || !editForm) return;
@@ -106,7 +89,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
             endsAt: endsAt.toISOString()
           });
           setAdd(false);
-          await loadSessions();
+          setEvents(await loadSessions());
       } catch (err) {
           console.error(err);
           alert(err);
@@ -118,48 +101,70 @@ export default function Calendar({ token, courses }: CalendarProps) {
           alert("Cannot add session. Choose a course from the drop down menu.");
           return;
       }
+
+      setAddForm({
+          location: EMPTY_SESSION.location,
+          startsAt: EMPTY_SESSION.startsAt,
+      });
       setAdd(true);
   };
 
-  const getCourseTitle = (courseId?: number) =>
-    courseId === undefined
-      ? ""
-      : courses.find((course: Course) => course.id === courseId)?.title ?? "";
+  const getCourseTitle = useCallback(
+      (courseId?: number) =>
+          courseId === undefined
+              ? ""
+              : courses.find((course: Course) => course.id === courseId)?.title ?? "",
+      [courses]
+  );
 
   /**
    * Load from backend (source of truth)
    */
-  const loadSessions = useCallback(async () => {
-    if (!token) return;
-    const courseId = Number(selectedCourseId);
+  const loadSessions = useCallback(async (): Promise<EventInput[]> => {
+      if (!token) return [];
 
-    try {
-      let data: CalendarSession[];
-      if (courseId === 0)
-        data = await getAllSessions(token);
-      else
-        data = await getCourseSessions(token, courseId);
+      const courseId = Number(selectedCourseId);
 
-      setEvents(
-        data.map((s: CalendarSession) => ({
-          id: String(s.id),
-          title: getCourseTitle(s.courseId) || s.title || "",
-          start: s.startsAt,
-          end: s.endsAt ?? undefined,
-          extendedProps: {
-            location: s.location,
-            courseId: s.courseId,
-          },
-        }))
-      );
-    } catch (err) {
-      console.error("Failed to load sessions:", err);
-    }
-  }, [token, selectedCourseId, courses]);
+      try {
+          let data: CalendarSession[];
+
+          if (courseId === 0) {
+              data = await getAllSessions(token);
+          } else {
+              data = await getCourseSessions(token, courseId);
+          }
+
+          return data.map((session: CalendarSession) => ({
+              id: String(session.id),
+              title: getCourseTitle(session.courseId) || session.title || "",
+              start: session.startsAt,
+              end: session.endsAt ?? undefined,
+              extendedProps: {
+                  location: session.location,
+                  courseId: session.courseId,
+              },
+          }));
+      } catch (error) {
+          console.error("Failed to load sessions:", error);
+          return [];
+      }
+  }, [token, selectedCourseId, getCourseTitle]);
+
 
   useEffect(() => {
-    loadSessions();
-  }, [loadSessions, clickedEventId]);
+      let cancelled = false;
+      const refreshEvents = async () => {
+          const nextEvents = await loadSessions();
+
+          if (!cancelled) {
+              setEvents(nextEvents);
+          }
+      };
+      void refreshEvents();
+      return () => {
+          cancelled = true;
+      };
+  }, [loadSessions]);
 
   /**
    * CREATE FLOW
@@ -223,12 +228,18 @@ export default function Calendar({ token, courses }: CalendarProps) {
    * DELETE FLOW
    */
   const handleEventClick = async (clickInfo: EventClickArg) => {
-    const event = clickInfo.event;
-    const session = await getSession(token, Number(event.id));
-    setClickedSession(session.data);
-    setClickedEventId(Number(event.id));
-    console.log(Number(event.id));
-    console.log(session.data);
+      if (!token) return;
+
+      const event = clickInfo.event;
+      const session = await getSession(token, Number(event.id));
+
+      setClickedSession(session.data);
+      setClickedEventId(Number(event.id));
+      setEditForm({
+          location: session.data.location,
+          content: session.data.content ?? "",
+          homework: session.data.homework ?? ""
+      });
   };
 
   async function handleEventDelete() {
@@ -248,11 +259,11 @@ export default function Calendar({ token, courses }: CalendarProps) {
     } catch (err) {
       console.error(err);
       alert("Delete failed, reloading calendar...");
-      loadSessions();
+      setEvents(await loadSessions());
     }
   }
 
-  const handleEventDrop = async (info: any) => {
+  const handleEventDrop = async (info: EventDropArg) => {
     if (!token) return;
 
     const event = info.event;
@@ -269,7 +280,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
     }
   }
 
-  const handleEventResize = async (info: any) => {
+  const handleEventResize = async (info: EventResizeDoneArg) => {
     if (!token) return;
 
     const event = info.event;
