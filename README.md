@@ -86,10 +86,7 @@ docker compose -f docker-compose.dev.yml down
 
 ### 3. Log in as the Seeded Administrator
 
-The development setup seeds an administrator account when the backend starts.
-These are also the credentials currently used to log in to the live site at
-[http://16.171.34.233](http://16.171.34.233). For local development, open the
-frontend at [http://localhost:5173](http://localhost:5173) and use:
+The development setup seeds an administrator account when the backend starts. For local development, open the frontend at [http://localhost:5173](http://localhost:5173) and use:
 
 | Field | Value |
 | --- | --- |
