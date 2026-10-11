@@ -1,9 +1,17 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getUserEnrollments } from "../../services/userService";
 import { useCrud } from "../../hooks/useCrud";
 import type { Enrollment, User, UsersProps } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
+
+const EMPTY_USER : Partial<User> = {
+    firstName: "",
+    secondName: "",
+    email: "",
+    password: "",
+    comments: ""
+}
 
 export default function Instructors({ token, users, refreshUsers }: UsersProps) {
     const [editForm, setEditForm] = useState<Partial<User>>({});
@@ -23,40 +31,6 @@ export default function Instructors({ token, users, refreshUsers }: UsersProps) 
         update: updateUser,
         remove: deleteUser
     });
-
-    const emptyUser : Partial<User> = {
-        firstName: "",
-        secondName: "",
-        email: "",
-        password: "",
-        comments: ""
-    }
-
-    useEffect(() => {
-        if (selectedUser) {
-            handleGetEnrollments(selectedUser.id);
-            setEditForm({
-                firstName: selectedUser.firstName,
-                secondName: selectedUser.secondName,
-                email: selectedUser.email,
-                comments: selectedUser.comments ?? "",
-                enrollments: selectedUser.enrollments ?? []
-            });
-        }
-    }, [selectedUser]);
-
-    useEffect(() => {
-        if (add) {
-            setAddForm({
-                firstName: emptyUser.firstName,
-                secondName: emptyUser.secondName,
-                email: emptyUser.email,
-                role: "instructor",
-                password: emptyUser.password,
-                comments: emptyUser.comments ?? ""
-            });
-        }
-    }, [add]);
 
     async function handleAddUser() {
         if (!token || !addForm) return;
@@ -119,7 +93,17 @@ export default function Instructors({ token, users, refreshUsers }: UsersProps) 
                 <h1 className="text-xl font-bold">Instructors</h1>
 
                 <button
-                    onClick={() => setAdd(true)}
+                    onClick={() => {
+                        setAddForm({
+                            firstName: EMPTY_USER.firstName,
+                            secondName: EMPTY_USER.secondName,
+                            email: EMPTY_USER.email,
+                            role: "instructor",
+                            password: EMPTY_USER.password,
+                            comments: EMPTY_USER.comments ?? ""
+                        });
+                        setAdd(true);
+                    }}
                     className="bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
                 >
                     Add
@@ -132,7 +116,17 @@ export default function Instructors({ token, users, refreshUsers }: UsersProps) 
                     renderLabel={(u) =>
                         `${u.secondName}, ${u.firstName}`
                     }
-                    onEdit={setSelectedUser}
+                    onEdit={(user) => {
+                        setSelectedUser(user);
+                        setEditForm({
+                            firstName: user.firstName,
+                            secondName: user.secondName,
+                            email: user.email,
+                            comments: user.comments ?? "",
+                            enrollments: user.enrollments ?? []
+                        });
+                        void handleGetEnrollments(user.id);
+                    }}
                     onDelete={handleDeleteUser}
                 />
             </div>

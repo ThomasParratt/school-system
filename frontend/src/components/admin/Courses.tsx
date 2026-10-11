@@ -1,10 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
 import type { Course, CoursesProps, Enrollment } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../../assets/bin.png";
+
+const EMPTY_COURSE : Partial<Course> = {
+    title: "",
+    language: "",
+    level: "",
+    instructorId: 0,
+    material: ""
+}
 
 export default function Courses({ token, users, courses, refreshCourses }: CoursesProps) {
     const [editForm, setEditForm] = useState<Partial<Course>>({});
@@ -25,40 +33,6 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
         update: updateCourse,
         remove: deleteCourse
     });
-
-    const emptyCourse : Partial<Course> = {
-        title: "",
-        language: "",
-        level: "",
-        instructorId: 0,
-        material: ""
-    }
-
-    useEffect(() => {
-        if (selectedCourse) {
-            handleGetEnrollments(selectedCourse.id);
-            setEditForm({
-                title: selectedCourse.title,
-                language: selectedCourse.language,
-                level: selectedCourse.level,
-                material: selectedCourse.material,
-                instructorId: selectedCourse.instructorId,
-                enrollments: selectedCourse.enrollments ?? []
-            });
-        }
-    }, [selectedCourse]);
-
-    useEffect(() => {
-        if (add) {
-            setAddForm({
-                title: emptyCourse.title,
-                language: emptyCourse.language,
-                level: emptyCourse.level,
-                material: emptyCourse.material,
-                instructorId: emptyCourse.instructorId
-            });
-        }
-    }, [add]);
 
     async function handleAddCourse() {
         if (!token || !addForm) return;
@@ -152,7 +126,16 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                 <h1 className="text-xl font-bold">Courses</h1>
 
                 <button
-                    onClick={() => setAdd(true)}
+                    onClick={() => {
+                        setAddForm({
+                            title: EMPTY_COURSE.title,
+                            language: EMPTY_COURSE.language,
+                            level: EMPTY_COURSE.level,
+                            material: EMPTY_COURSE.material,
+                            instructorId: EMPTY_COURSE.instructorId
+                        });
+                        setAdd(true);
+                    }}
                     className="bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
                 >
                     Add
@@ -165,7 +148,18 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     renderLabel={(u) =>
                         `${u.title} ${u.level}`
                     }
-                    onEdit={setSelectedCourse}
+                    onEdit={(course) => {
+                        setSelectedCourse(course);
+                        setEditForm({
+                            title: course.title,
+                            language: course.language,
+                            level: course.level,
+                            material: course.material,
+                            instructorId: course.instructorId,
+                            enrollments: course.enrollments ?? []
+                        });
+                        void handleGetEnrollments(course.id);
+                    }}
                     onDelete={handleDeleteCourse}
                 />
             </div>
