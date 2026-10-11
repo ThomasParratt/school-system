@@ -1,4 +1,4 @@
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import type { User, Course, Session } from "../../types";
 import { useState, useEffect } from "react";
 import { getUserCourses, getUserSessions, getUserStudents } from "../../services/userService";

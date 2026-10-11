@@ -1,30 +1,27 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useState } from "react";
 import type { User } from "../types.ts";
-
-type AuthContextType = {
-    user: User | null;
-    token: string | null;
-    loginUser: (user: User, token: string) => void;
-    logout: () => void;
-    isAuthenticated: boolean;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from "./useAuth.ts";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
-
-    // restore session on refresh
-    useEffect(() => {
+    const [user, setUser] = useState<User | null>(() => {
         const storedUser = localStorage.getItem("user");
-        const storedToken = localStorage.getItem("token");
 
-        if (storedUser && storedToken) {
-            setUser(JSON.parse(storedUser));
-            setToken(storedToken);
+        if (!storedUser) {
+            return null;
         }
-    }, []);
+
+        try {
+            return JSON.parse(storedUser) as User;
+        } catch (error) {
+            console.error("Failed to restore stored user", error);
+            localStorage.removeItem("user");
+            return null;
+        }
+    });
+
+    const [token, setToken] = useState<string | null>(() => {
+        return localStorage.getItem("token");
+    });
 
     const loginUser = (user: User, token: string) => {
         setUser(user);
@@ -55,14 +52,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             {children}
         </AuthContext.Provider>
     );
-}
-
-export function useAuth() {
-    const context = useContext(AuthContext);
-
-    if (!context) {
-        throw new Error("useAuth must be used within AuthProvider");
-    }
-
-    return context;
 }

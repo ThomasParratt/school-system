@@ -2,7 +2,7 @@ import Instructors from "./Instructors";
 import Students from "./Students";
 import Courses from "./Courses";
 import Calendar from "./Calendar";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
 import { getUsers } from "../../services/userService";
 import { getCourses } from "../../services/courseService";
 import type { User, Course } from "../../types";
