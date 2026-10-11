@@ -11,21 +11,24 @@ export default function StudentDash() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  const fetchCourses = async () => {
-    if (!token) return;
-    const data = await getUserCourses(token);
-    setCourses(data.data);
-  };
-
-  const fetchSessions = async () => {
-    if (!token) return;
-    const data = await getUserSessions(token);
-    setSessions(data.data);
-  };
-
   useEffect(() => {
-    fetchCourses();
-    fetchSessions();
+    if (!token) return;
+
+    const loadData = async () => {
+      try {
+        const [coursesResponse, sessionsResponse] = await Promise.all([
+          getUserCourses(token),
+          getUserSessions(token),
+        ]);
+
+        setCourses(coursesResponse.data);
+        setSessions(sessionsResponse.data);
+      } catch (error) {
+        console.error("Failed to load student dashboard data", error);
+      }
+    };
+
+    void loadData();
   }, [token]);
 
   return (
