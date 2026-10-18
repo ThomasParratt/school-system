@@ -13,7 +13,7 @@ import type {
 } from "@fullcalendar/core";
 import type { EventResizeDoneArg } from "@fullcalendar/interaction";
 import { addCourseSession, getCourseSessions } from "../../services/courseService";
-import { getAllSessions, deleteSession, getSession, updateSession } from "../../services/sessionService";
+import { getAllSessions, deleteSession, getSession, adminUpdateSession } from "../../services/sessionService";
 import type { Course, Session } from "../../types";
 import CrudModal from "./CrudModal";
 
@@ -51,7 +51,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
       if (!token || !editForm) return;
 
       try {
-          await updateSession(token, sessionId, editForm);
+          await adminUpdateSession(token, sessionId, editForm);
           setClickedSession(null);
       } catch (err) {
           console.error(err);
