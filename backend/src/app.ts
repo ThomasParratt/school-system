@@ -10,6 +10,10 @@ import sessionRouter from "./routes/sessions.js";
 
 const app = express();
 
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use((req, res, next) => {
   if (["POST", "PUT", "PATCH"].includes(req.method) &&
       (req.headers["content-length"] && req.headers["content-length"] !== "0" ||
