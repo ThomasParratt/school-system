@@ -269,7 +269,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
     const event = info.event;
 
     try {
-      await updateSession(token, Number(event.id), {
+      await adminUpdateSession(token, Number(event.id), {
         startsAt: event.start?.toISOString(),
         endsAt: event.end?.toISOString(),
       });
@@ -286,7 +286,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
     const event = info.event;
 
     try {
-      await updateSession(token, Number(event.id), {
+      await adminUpdateSession(token, Number(event.id), {
         startsAt: event.start?.toISOString(),
         endsAt: event.end?.toISOString(),
       });
