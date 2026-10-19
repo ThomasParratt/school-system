@@ -18,6 +18,46 @@ async function main() {
     },
   });
 
+  const instructors = [
+    {
+      firstName: "Sofia",
+      secondName: "Laine",
+      email: "sofia.laine@school.local",
+    },
+    {
+      firstName: "Daniel",
+      secondName: "Hughes",
+      email: "daniel.hughes@school.local",
+    },
+    {
+      firstName: "Aino",
+      secondName: "Korhonen",
+      email: "aino.korhonen@school.local",
+    },
+    {
+      firstName: "Marcus",
+      secondName: "Bennett",
+      email: "marcus.bennett@school.local",
+    },
+    {
+      firstName: "Elena",
+      secondName: "Rossi",
+      email: "elena.rossi@school.local",
+    },
+  ];
+
+  for (const instructor of instructors) {
+    await prisma.user.upsert({
+      where: { email: instructor.email },
+      update: {},
+      create: {
+        ...instructor,
+        password: hashedPassword,
+        role: "instructor",
+      },
+    });
+  }
+
   console.log("Seed complete");
 }
 
