@@ -1,0 +1,15 @@
+packages:
+  - backend
+  - frontend
+  - packages/*
+
+# Dependencies whose install scripts may run (pnpm runs none it is not told about):
+# bcrypt's native binding, the Prisma CLI and client (engines, generate) and esbuild (tsx, vite).
+# @scarf/scarf is install telemetry from swagger-ui and stays off.
+allowBuilds:
+  "@prisma/client": true
+  "@prisma/engines": true
+  "@scarf/scarf": false
+  bcrypt: true
+  esbuild: true
+  prisma: true

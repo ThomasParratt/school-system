@@ -37,7 +37,7 @@ export default async function globalSetup() {
 
   await waitForDatabase(databaseUrl);
 
-  execSync("npx prisma migrate deploy", {
+  execSync("pnpm exec prisma migrate deploy", {
     stdio: "inherit",
     cwd: backendDir,
     env: {

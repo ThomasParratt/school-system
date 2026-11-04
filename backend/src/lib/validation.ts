@@ -1,8 +1,7 @@
 import type { Response } from "express";
 
-export const ROLES = ["admin", "student", "instructor"] as const;
-export const LANGUAGES = ["English", "Finnish", "Swedish", "Russian", "German", "French"] as const;
-export const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
+// The lists live in the contracts; the routes not moved yet still import them from here.
+export { LANGUAGES, LEVELS, ROLES } from "@school/contracts";
 
 export function errorResponse(
   res: Response,

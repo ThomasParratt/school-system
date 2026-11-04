@@ -19,8 +19,9 @@
 
     // Other Outputs
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    // An app, not a library: nothing imports its types, and with pnpm the .d.ts of
+    // the Express routers cannot name their types (TS2742).
+    "declaration": false,
 
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,

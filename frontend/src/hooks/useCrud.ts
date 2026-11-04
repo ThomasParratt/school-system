@@ -21,7 +21,7 @@ interface CrudConfig<T> {
     remove: (
         token: string,
         id: number
-    ) => Promise<void>;
+    ) => Promise<unknown>;
 }
 
 export function useCrud<

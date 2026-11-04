@@ -12,7 +12,8 @@ The platform supports strict role-based access control (RBAC) with completely se
 * **Frontend:** React, TypeScript, Vite, React Router, Tailwind CSS
 * **Backend:** Node.js, Express, Prisma ORM
 * **Database:** PostgreSQL (with a separate PostgreSQL instance for isolated testing)
-* **DevOps & Tooling:** Docker, Docker Compose, GitHub Actions, Vitest, OpenAPI/Swagger
+* **Shared packages:** `@school/contracts` (zod schemas of the API) and `@school/domain` (pure business rules), in a pnpm workspace
+* **DevOps & Tooling:** pnpm, Docker, Docker Compose, GitHub Actions, Vitest, OpenAPI/Swagger
 
 ---
 
@@ -41,14 +42,37 @@ school-system/
 ├── backend/
 │   ├── bruno/                 # Bruno collections for testing API endpoints
 │   ├── prisma/                # Database schema and seed scripts
+│   ├── openapi.base.yaml      # OpenAPI of the routes not yet moved onto the contracts
 │   └── src/                   # Express routes, controllers, and middleware
 ├── frontend/
 │   └── src/
 │       └── components/        # Separate UI folders for Admin, Instructor, and Student
+├── packages/
+│   ├── contracts/             # @school/contracts: zod schemas, inferred types, route paths, OpenAPI
+│   └── domain/                # @school/domain: business rules as pure functions (no DB, no HTTP)
+├── pnpm-workspace.yaml        # The workspace: backend, frontend, packages/*
 ├── docker-compose.dev.yml     # Docker setup for local development
 ├── docker-compose.prod.yml    # Hardened Docker setup for production
 └── README.md
 ```
+
+### Contracts and domain
+
+* **`packages/contracts`** holds the API's shapes as zod schemas: request bodies, path
+  params and responses. The backend validates input with them and types its answers
+  with them, and the frontend imports the same types and route paths, so the two
+  cannot drift apart.
+* **The OpenAPI document is built from them.** `backend/src/lib/openapi.ts` merges the
+  paths the contracts generate into `backend/openapi.base.yaml` (the routes not moved
+  yet). `/docs` and the tests' `toSatisfyApiSpec()` use the merged document. A path or
+  schema defined in both places stops the backend at startup.
+* **`packages/domain`** holds the business rules as pure functions with table-driven
+  tests (for example: only an instructor teaches a course, only a student enrolls).
+* **Moved so far:** courses and their enrollments. Users, sessions and auth still use
+  the hand-written yaml and `src/lib/validation.ts`. Each one moves in its own PR.
+* In development, tests and the frontend build, the packages are read from their
+  TypeScript source (the `source` export condition), so there is nothing to rebuild.
+  Only the backend's production build uses their compiled `dist/`.
 
 ---
 
@@ -65,7 +89,15 @@ JWT_SECRET=replace-with-a-long-random-secret
 ```
 
 
-### 2. Run with Docker Compose
+### 2. Install (for running tests and checks outside Docker)
+
+The repository is a pnpm workspace and needs Node 22 or newer. From the repository root:
+
+```bash
+pnpm install
+```
+
+### 3. Run with Docker Compose
 To build the images and spin up the frontend, backend, and databases all at once, run:
 
 ```bash
@@ -84,7 +116,7 @@ To stop the containers and shut down the network safely, run:
 docker compose -f docker-compose.dev.yml down
 ```
 
-### 3. Log in as the Seeded Administrator
+### 4. Log in as the Seeded Administrator
 
 The development setup seeds an administrator account when the backend starts. For local development, open the frontend at [http://localhost:5173](http://localhost:5173) and use:
 
@@ -96,7 +128,7 @@ The development setup seeds an administrator account when the backend starts. Fo
 After logging in, the administrator dashboard provides access to user, course,
 session, and enrollment management.
 
-### 4. Simulating Production
+### 5. Simulating Production
 To run the production-optimized build as a background process, run:
 ```bash
 docker compose -f docker-compose.prod.yml up --build -d
@@ -109,14 +141,18 @@ docker compose -f docker-compose.prod.yml up --build -d
 ### Automated Backend Tests
 Backend unit and integration tests are written using **Vitest**. To keep your development data safe from pollution, the test suite automatically directs its queries to a completely separate test database running on port `5433`.
 
-To run the tests manually, go to the backend directory and execute:
+To run the tests manually (the test database on port `5433` must be up), from the repository root:
 ```bash
-cd backend
-npm test
+pnpm --filter backend test
+```
+
+The contracts and domain tests need no database:
+```bash
+pnpm run check   # lint, build every workspace, test the packages
 ```
 
 ### GitHub Actions (CI)
-The workflow script inside `.github/workflows/ci.yml` runs automatically on every pull request and push to the `main` branch. It spins up an isolated Ubuntu container with PostgreSQL 15, installs Node modules, generates the Prisma client, and runs the Vitest test suite to make sure no broken code gets merged.
+The workflow script inside `.github/workflows/ci.yml` runs automatically on every pull request and push to the `main` branch. It runs three jobs: the backend tests against an isolated PostgreSQL 15 (after generating the Prisma client and type-checking), the frontend lint and build, and the contracts and domain packages' build and tests.
 
 ---
 
