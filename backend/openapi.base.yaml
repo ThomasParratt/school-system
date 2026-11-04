@@ -1,4 +1,7 @@
-openapi: 3.1.0
+# The routes and schemas not yet moved onto packages/contracts. The backend merges
+# the contracts' generated paths and schemas into this file (src/lib/openapi.ts) for
+# /docs and the tests. A route or schema lives in one place: here or in the contracts.
+openapi: 3.0.3
 
 info:
   title: School Management System API
@@ -18,7 +21,9 @@ components:
       bearerFormat: JWT
 
   schemas:
-    User:
+    # The old, looser shapes of the routes not moved yet (login, users). They go when
+    # those routes move onto the contracts' User, Course and Enrollment.
+    LegacyUser:
       type: object
       required: [id, firstName, secondName, email, role, createdAt]
       properties:
@@ -45,7 +50,7 @@ components:
           type: string
           format: date-time
 
-    Course:
+    LegacyCourse:
       type: object
       required: [id, title, language, level, material, instructorId, createdAt]
       properties:
@@ -71,6 +76,24 @@ components:
         updatedAt:
           type: string
           format: date-time
+
+    LegacyEnrollment:
+      type: object
+      required: [id, userId, courseId, createdAt]
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        userId:
+          type: integer
+          minimum: 1
+        courseId:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+
 
     ClassSession:
       type: object
@@ -101,36 +124,6 @@ components:
           type: string
           format: date-time
     
-    Enrollment:
-      type: object
-      required: [id, userId, courseId, createdAt]
-      properties:
-        id:
-          type: integer
-          minimum: 1
-        userId:
-          type: integer
-          minimum: 1
-        courseId:
-          type: integer
-          minimum: 1
-        createdAt:
-          type: string
-          format: date-time
-
-    Error:
-      type: object
-      required: [error]
-      properties:
-        error:
-          type: object
-          required: [message, code]
-          properties:
-            message:
-              type: string
-            code:
-              type: string
-
 paths:
 
   /auth/login:
@@ -164,7 +157,7 @@ paths:
                     type: object
                     properties:
                       user:
-                        $ref: "#/components/schemas/User"
+                        $ref: "#/components/schemas/LegacyUser"
                       token:
                         type: string
         
@@ -205,7 +198,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/User"
+                      $ref: "#/components/schemas/LegacyUser"
         
         "401":
           description: Unauthorized
@@ -264,7 +257,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/User"
+                    $ref: "#/components/schemas/LegacyUser"
 
         "400":
           description: Invalid input
@@ -315,7 +308,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/User"
+                    $ref: "#/components/schemas/LegacyUser"
         
         "401":
           description: Unauthorized
@@ -347,7 +340,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Course"
+                      $ref: "#/components/schemas/LegacyCourse"
         
         "401":
           description: Unauthorized
@@ -490,7 +483,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/User"
+                      $ref: "#/components/schemas/LegacyUser"
 
         "401":
           description: Unauthorized
@@ -535,7 +528,7 @@ paths:
                 required: [data]
                 properties:
                   data:
-                    $ref: "#/components/schemas/User"
+                    $ref: "#/components/schemas/LegacyUser"
 
         "400":
           description: Invalid ID
@@ -610,7 +603,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: "#/components/schemas/User"
+                    $ref: "#/components/schemas/LegacyUser"
         
         "400":
           description: Invalid input
@@ -740,7 +733,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Enrollment"
+                      $ref: "#/components/schemas/LegacyEnrollment"
 
         "400":
           description: Invalid ID
@@ -777,370 +770,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  
-  /courses:
-    get:
-      summary: Get all courses
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: List of courses
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Course"
-        
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-    
-    post:
-      summary: Create course (admin only)
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [title, language, level, material]
-              properties:
-                title:
-                  type: string
-                language:
-                  type: string
-                  enum: [English, Finnish, Swedish, Russian, German, French]
-                level:
-                  type: string
-                  enum: [A1, A2, B1, B2, C1, C2]
-                material:
-                  type: string
-                instructorId:
-                  type: integer
-                  minimum: 1
-
-      responses:
-        "201":
-          description: Course created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Course"
-
-        "400":
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "404":
-          description: Instructor missing
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /courses/{id}:
-    get:
-      summary: Get course
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        "200":
-          description: Course
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Course"
-        
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "404":
-          description: Course not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-
-    patch:
-      summary: Update course information (admin only)
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                language:
-                  type: string
-                  enum: [English, Finnish, Swedish, Russian, German, French]
-                level:
-                  type: string
-                  enum: [A1, A2, B1, B2, C1, C2]
-                material:
-                  type: string
-                instructorId:
-                  type: integer
-                  minimum: 1
-      
-      responses:
-        "200":
-          description: Course updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Course"
-        
-        "400":
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "404":
-          description: Course not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-       
-
-    delete:
-      summary: Delete course
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-
-      responses:
-        "200":
-          description: Course deleted
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-
-        "400":
-          description: Invalid ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "404":
-          description: Course not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  
-  /courses/{id}/enrollments:
-    get:
-      summary: Get enrollments by courseId
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        "200":
-          description: Enrollments
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [data]
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Enrollment"
-
-        "400":
-          description: Invalid ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "404":
-          description: Course not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
   
   /courses/{id}/sessions:
     get:
@@ -1258,148 +887,6 @@ paths:
 
         "404":
           description: Course not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-  /courses/{courseId}/enrollments/{studentId}:
-    delete:
-      summary: Remove a student from a course
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: courseId
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-        - name: studentId
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-      responses:
-        "200":
-          description: Enrollment deleted
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      message:
-                        type: string
-
-        "400":
-          description: Invalid ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "404":
-          description: Enrollment not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "500":
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  
-  /courses/{id}/enroll:
-    post:
-      summary: Create enrollment (admin only)
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [userId]
-              properties:
-                userId:
-                  type: integer
-      responses:
-        "201":
-          description: Enrollment created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    $ref: "#/components/schemas/Enrollment"
-
-        "400":
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "403":
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "404":
-          description: Course not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-        "409":
-          description: Student already enrolled in this course
           content:
             application/json:
               schema:

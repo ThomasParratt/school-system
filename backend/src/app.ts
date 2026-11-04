@@ -1,12 +1,12 @@
 import express from "express";
 import cors from "cors";
 import swaggerUi from 'swagger-ui-express';
-import fs from "fs";
-import YAML from 'yaml';
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/users.js";
 import courseRouter from "./routes/courses.js";
 import sessionRouter from "./routes/sessions.js";
+import { buildOpenApiDocument } from "./lib/openapi.js";
+import { COURSES_BASE_PATH } from "@school/contracts";
 
 const app = express();
 
@@ -37,15 +37,14 @@ app.use((req, res, next) => {
   next();
 });
 
-const file = fs.readFileSync("./openapi.yaml", "utf8");
-const swaggerDocument = YAML.parse(file);
+const swaggerDocument = buildOpenApiDocument();
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(cors());
 
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
-app.use("/courses", courseRouter);
+app.use(COURSES_BASE_PATH, courseRouter);
 app.use("/sessions", sessionRouter);
 
 app.use((error: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {

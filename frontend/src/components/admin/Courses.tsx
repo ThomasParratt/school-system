@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
-import type { Course, CoursesProps, Enrollment } from "../../types";
+import type { Course, CourseEnrollment, CoursesProps } from "../../types";
+import { LANGUAGES, LEVELS, type Language, type Level } from "@school/contracts";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../../assets/bin.png";
 
 const EMPTY_COURSE : Partial<Course> = {
     title: "",
-    language: "",
-    level: "",
     instructorId: 0,
     material: ""
 }
@@ -100,7 +99,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
             const result = await getCourseEnrollments(token, courseId);
             setEditForm(prev => ({
                 ...prev!,
-                enrollments: result.data.map((e: Enrollment) => e.user)
+                enrollments: result.data.map((e: CourseEnrollment) => e.user)
             }));
         } catch (err) {
             console.error(err);
@@ -188,19 +187,16 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     <select
                         value={addForm.language || ""}
                         onChange={(e) =>
-                            setAddForm(prev => ({ ...prev, language: e.target.value }))
+                            setAddForm(prev => ({ ...prev, language: e.target.value as Language }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
                         <option value="" disabled>
                             Select language
                         </option>
-                        <option value="English">English</option>
-                        <option value="Finnish">Finnish</option>
-                        <option value="Swedish">Swedish</option>
-                        <option value="Russian">Russian</option>
-                        <option value="German">German</option>
-                        <option value="French">French</option>
+                        {LANGUAGES.map(language => (
+                            <option key={language} value={language}>{language}</option>
+                        ))}
                     </select>
                 </p>
                 <p className="flex justify-between items-center mb-2">
@@ -208,19 +204,16 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     <select
                         value={addForm.level || ""}
                         onChange={(e) =>
-                            setAddForm(prev => ({ ...prev, level: e.target.value }))
+                            setAddForm(prev => ({ ...prev, level: e.target.value as Level }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
                         <option value="" disabled>
                             Select level
                         </option>
-                        <option value="A1">A1</option>
-                        <option value="A2">A2</option>
-                        <option value="B1">B1</option>
-                        <option value="B2">B2</option>
-                        <option value="C1">C1</option>
-                        <option value="C2">C2</option>
+                        {LEVELS.map(level => (
+                            <option key={level} value={level}>{level}</option>
+                        ))}
                     </select>
                 </p>
                 <p className="flex justify-between items-center mb-3">
@@ -282,16 +275,13 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     <select
                         value={editForm.language || ""}
                         onChange={(e) =>
-                            setEditForm(prev => ({ ...prev, language: e.target.value }))
+                            setEditForm(prev => ({ ...prev, language: e.target.value as Language }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
-                        <option value="English">English</option>
-                        <option value="Finnish">Finnish</option>
-                        <option value="Swedish">Swedish</option>
-                        <option value="Russian">Russian</option>
-                        <option value="German">German</option>
-                        <option value="French">French</option>
+                        {LANGUAGES.map(language => (
+                            <option key={language} value={language}>{language}</option>
+                        ))}
                     </select>
                 </p>
                 <p className="flex justify-between items-center mb-2">
@@ -299,16 +289,13 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     <select
                         value={editForm.level || ""}
                         onChange={(e) =>
-                            setEditForm(prev => ({ ...prev, level: e.target.value }))
+                            setEditForm(prev => ({ ...prev, level: e.target.value as Level }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
-                        <option value="A1">A1</option>
-                        <option value="A2">A2</option>
-                        <option value="B1">B1</option>
-                        <option value="B2">B2</option>
-                        <option value="C1">C1</option>
-                        <option value="C2">C2</option>
+                        {LEVELS.map(level => (
+                            <option key={level} value={level}>{level}</option>
+                        ))}
                     </select>
                 </p>
                 <p className="flex justify-between items-center mb-3">

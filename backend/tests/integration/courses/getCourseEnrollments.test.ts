@@ -36,6 +36,19 @@ describe("GET /courses/:id/enrollments", () => {
         expect(response).toSatisfyApiSpec();
     });
 
+    it("should carry the enrolled user without the password hash", async () => {
+        const token = await loginAsAdmin();
+
+        const response = await request(app)
+        .get(`/courses/${courseId}/enrollments`)
+        .set("Authorization", `Bearer ${token}`)
+
+        expect(response.status).toBe(200);
+        expect(response.body.data[0].user.id).toBe(userId);
+        expect(response.body.data[0].user).not.toHaveProperty("password");
+        expect(JSON.stringify(response.body)).not.toMatch(/password/i);
+    });
+
     it("should reject unauthenticated request", async () => {
         const response = await request(app).get(`/courses/${courseId}/enrollments`);
 

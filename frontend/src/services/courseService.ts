@@ -1,7 +1,21 @@
-import type { ApiErrorResponse, Course } from "../types";
+import {
+    coursePaths,
+    type CourseEnrollmentsResponse,
+    type CourseResponse,
+    type CoursesResponse,
+    type CreateCourseBody,
+    type EnrollBody,
+    type EnrollmentResponse,
+    type MessageResponse,
+    type UpdateCourseBody,
+} from "@school/contracts";
+import type { ApiErrorResponse } from "../types";
 
-export async function getCourses(token: string | null) {
-    const res = await fetch("/api/courses", {
+/** The Vite dev server and nginx forward /api to the backend. */
+const API_PREFIX = "/api";
+
+export async function getCourses(token: string | null): Promise<CoursesResponse> {
+    const res = await fetch(API_PREFIX + coursePaths.list(), {
         headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -17,9 +31,9 @@ export async function getCourses(token: string | null) {
 
 export async function addCourse(
     token: string | null,
-    course: Partial<Course>
-) {
-    const res = await fetch("/api/courses", {
+    course: Partial<CreateCourseBody>
+): Promise<CourseResponse> {
+    const res = await fetch(API_PREFIX + coursePaths.list(), {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -41,8 +55,8 @@ export async function addCourse(
 export async function deleteCourse(
     token: string | null,
     courseId: number
-) {
-    const res = await fetch(`/api/courses/${courseId}`, {
+): Promise<MessageResponse> {
+    const res = await fetch(API_PREFIX + coursePaths.course(courseId), {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -63,9 +77,9 @@ export async function deleteCourse(
 export async function updateCourse(
     token: string | null,
     courseId: number,
-    course: Partial<Course>
-) {
-    const res = await fetch(`/api/courses/${courseId}`, {
+    course: UpdateCourseBody
+): Promise<CourseResponse> {
+    const res = await fetch(API_PREFIX + coursePaths.course(courseId), {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -88,14 +102,14 @@ export async function enroll(
     token: string | null,
     courseId: number,
     userId: number
-) {
-    const res = await fetch(`/api/courses/${courseId}/enroll`, {
+): Promise<EnrollmentResponse> {
+    const res = await fetch(API_PREFIX + coursePaths.enroll(courseId), {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId } satisfies EnrollBody),
     });
 
     if (!res.ok) {
@@ -112,8 +126,8 @@ export async function unenroll(
     token: string | null,
     courseId: number,
     studentId: number
-) {
-    const res = await fetch(`/api/courses/${courseId}/enrollments/${studentId}`, {
+): Promise<MessageResponse> {
+    const res = await fetch(API_PREFIX + coursePaths.enrollment(courseId, studentId), {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -134,8 +148,8 @@ export async function unenroll(
 export async function getCourseEnrollments(
     token: string | null,
     courseId: number,
-) {
-    const res = await fetch(`/api/courses/${courseId}/enrollments`, {
+): Promise<CourseEnrollmentsResponse> {
+    const res = await fetch(API_PREFIX + coursePaths.enrollments(courseId), {
         method: "GET",
         headers: {
             Authorization: `Bearer ${token}`,

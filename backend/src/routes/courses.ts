@@ -1,285 +1,255 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
-import { Prisma, type Language, type Level } from "@prisma/client";
+import {
+  COURSE_ERROR_CODES,
+  COURSE_ROUTES,
+  CourseIdParamsSchema,
+  CreateCourseBodySchema,
+  EnrollBodySchema,
+  EnrollmentParamsSchema,
+  idParam,
+  INVALID_ID,
+  UpdateCourseBodySchema,
+  type CourseEnrollmentsResponse,
+  type CourseResponse,
+  type CoursesResponse,
+  type EnrollmentResponse,
+  type MessageResponse,
+} from "@school/contracts";
+import { canTeach, enrollmentDecision } from "@school/domain";
+import {
+  COURSE_ENROLLMENT_SELECT,
+  COURSE_SELECT,
+  ENROLLMENT_SELECT,
+  toCourse,
+  toCourseEnrollment,
+  toEnrollment,
+} from "../lib/courses.js";
 import {
   errorResponse,
   isPrismaError,
-  LANGUAGES,
-  LEVELS,
   nonEmptyString,
-  positiveInteger,
   positiveIntegerParam,
   validDateTime,
 } from "../lib/validation.js";
 
 const router = Router();
 
-// GET /courses
-router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
-  try {
-    const courses = await prisma.course.findMany({
-      select: {
-        id: true,
-        title: true,
-        language: true,
-        level: true,
-        material: true,
-        instructorId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+const INVALID_COURSE_ID = "Invalid course ID";
 
-    return res.status(200).json({
-      data: courses,
-    });
+/** Is this user an instructor who can be given a course? */
+async function isInstructor(userId: number): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  return user !== null && canTeach(user.role);
+}
+
+// GET /courses
+router.get(COURSE_ROUTES.list, requireAuth, requireRole("admin"), async (_req, res) => {
+  try {
+    const courses = await prisma.course.findMany({ select: COURSE_SELECT });
+    return res.status(200).json({ data: courses.map(toCourse) } satisfies CoursesResponse);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({
-      error: {
-        message: "Failed to fetch courses",
-        code: "FETCH_COURSES_ERROR",
-      },
-    });
+    return errorResponse(res, 500, "Failed to fetch courses", COURSE_ERROR_CODES.fetchCourses);
   }
 });
 
 // POST /courses
-router.post(
-  "/",
-  requireAuth,
-  requireRole("admin"),
-  async (req, res) => {
-    try {
-      const { title, language, level, instructorId, material } = req.body;
-
-      // Validation
-      if (!nonEmptyString(title) || !nonEmptyString(language) || !nonEmptyString(level) ||
-          !nonEmptyString(material) || !positiveInteger(instructorId)) {
-        return errorResponse(res, 400, "Missing or invalid required fields");
-      }
-      if (!LANGUAGES.includes(language as typeof LANGUAGES[number]) ||
-          !LEVELS.includes(level as typeof LEVELS[number])) {
-        return errorResponse(res, 400, "Invalid language or level");
-      }
-      const instructor = await prisma.user.findUnique({
-        where: { id: instructorId },
-        select: { id: true, role: true },
-      });
-      if (!instructor || instructor.role !== "instructor") {
-        return errorResponse(res, 404, "Instructor not found", "INSTRUCTOR_NOT_FOUND");
-      }
-
-      const course = await prisma.course.create({
-        data: {
-          title,
-          language: language as Language,
-          level: level as Level,
-          material,
-          instructor: {
-            connect: {
-              id: instructorId,
-            },
-          },
-        },
-        select: {
-          id: true,
-          title: true,
-          language: true,
-          level: true,
-          material: true,
-          instructorId: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-
-      return res.status(201).json({
-        data: course,
-      });
-    } catch (err: unknown) {
-      console.error(err);
-
-      if (isPrismaError(err, "P2025")) {
-        return errorResponse(res, 404, "Instructor not found", "INSTRUCTOR_NOT_FOUND");
-      }
-      return res.status(500).json({
-        error: {
-          message: "Failed to create course",
-          code: "CREATE_COURSE_ERROR",
-        },
-      });
-    }
-  }
-);
-
-// GET /courses/:id
-router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
+router.post(COURSE_ROUTES.list, requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const courseId = positiveIntegerParam(req.params.id);
+    const body = CreateCourseBodySchema.safeParse(req.body);
+    if (!body.success) return errorResponse(res, 400, "Missing or invalid required fields");
 
-    if (!courseId) {
-      return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
-      }
-    
-    const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      select: {
-        id: true,
-        title: true,
-        language: true,
-        level: true,
-        material: true,
-        instructorId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+    const { instructorId, ...fields } = body.data;
+    if (!(await isInstructor(instructorId))) {
+      return errorResponse(res, 404, "Instructor not found", COURSE_ERROR_CODES.instructorNotFound);
+    }
+
+    const course = await prisma.course.create({
+      data: { ...fields, instructor: { connect: { id: instructorId } } },
+      select: COURSE_SELECT,
     });
-
-    if (!course) return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
-    return res.status(200).json({ data: course });
+    return res.status(201).json({ data: toCourse(course) } satisfies CourseResponse);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({
-      error: {
-        message: "Failed to fetch user",
-        code: "FETCH_USER_ERROR",
-      },
+    if (isPrismaError(err, "P2025")) {
+      return errorResponse(res, 404, "Instructor not found", COURSE_ERROR_CODES.instructorNotFound);
+    }
+    return errorResponse(res, 500, "Failed to create course", COURSE_ERROR_CODES.createCourse);
+  }
+});
+
+// GET /courses/:id
+router.get(COURSE_ROUTES.course, requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const params = CourseIdParamsSchema.safeParse(req.params);
+    if (!params.success) return errorResponse(res, 400, INVALID_COURSE_ID, INVALID_ID);
+
+    const course = await prisma.course.findUnique({
+      where: { id: params.data.id },
+      select: COURSE_SELECT,
     });
+    if (!course) return errorResponse(res, 404, "Course not found", COURSE_ERROR_CODES.courseNotFound);
+    return res.status(200).json({ data: toCourse(course) } satisfies CourseResponse);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, 500, "Failed to fetch course", COURSE_ERROR_CODES.fetchCourse);
   }
 });
 
 // PATCH /courses/:id
-router.patch(
-  "/:id",
-  requireAuth,
-  requireRole("admin"),
-  async (req, res) => {
-    try {
-      const courseId = positiveIntegerParam(req.params.id);
+router.patch(COURSE_ROUTES.course, requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const params = CourseIdParamsSchema.safeParse(req.params);
+    if (!params.success) return errorResponse(res, 400, INVALID_COURSE_ID, INVALID_ID);
 
-      if (!courseId) {
-        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
-      }
-      
-      const { title, language, level, material, instructorId } = req.body;
+    const body = UpdateCourseBodySchema.safeParse(req.body);
+    if (!body.success) return errorResponse(res, 400, "Invalid course fields");
 
-      const updateData: Prisma.CourseUpdateInput = {};
-
-      if (title !== undefined) updateData.title = title;
-      if (language !== undefined) updateData.language = language;
-      if (level !== undefined) updateData.level = level;
-      if (material !== undefined) updateData.material = material;
-
-      if (instructorId !== undefined) {
-        updateData.instructor = {
-          connect: {
-            id: instructorId,
-          },
-        };
-      }
-    
-      if (Object.keys(updateData).length === 0) {
-        return res.status(400).json({
-          error: {
-            message: "No valid fields provided",
-            code: "EMPTY_UPDATE",
-          },
-        });
-      }
-      if ((title !== undefined && !nonEmptyString(title)) ||
-          (material !== undefined && !nonEmptyString(material)) ||
-          (language !== undefined && !LANGUAGES.includes(language as typeof LANGUAGES[number])) ||
-          (level !== undefined && !LEVELS.includes(level as typeof LEVELS[number])) ||
-          (instructorId !== undefined && !positiveInteger(instructorId))) {
-        return errorResponse(res, 400, "Invalid course fields");
-      }
-      if (instructorId !== undefined) {
-        const instructor = await prisma.user.findUnique({
-          where: { id: instructorId },
-          select: { role: true },
-        });
-        if (!instructor || instructor.role !== "instructor") {
-          return errorResponse(res, 404, "Instructor not found", "INSTRUCTOR_NOT_FOUND");
-        }
-      }
-
-      const updatedCourse = await prisma.course.update({
-        where: { id: courseId },
-        data: updateData,
-        select: {
-          id: true,
-          title: true,
-          language: true,
-          level: true,
-          material: true,
-          instructorId: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-
-      return res.status(200).json({
-        data: updatedCourse,
-      });
-  } catch (err: unknown) {
-      console.error(err);
-
-      if (isPrismaError(err, "P2025")) {
-        return errorResponse(res, 404, "Course or instructor not found", "NOT_FOUND");
-      }
-      return res.status(500).json({
-        error: {
-          message:
-            err instanceof Error
-              ? err.message
-              : "Unexpected server error",
-          code: "SERVER_ERROR",
-        },
-      });
+    const { instructorId, title, language, level, material } = body.data;
+    const fields = {
+      ...(title !== undefined && { title }),
+      ...(language !== undefined && { language }),
+      ...(level !== undefined && { level }),
+      ...(material !== undefined && { material }),
+    };
+    if (Object.keys(fields).length === 0 && instructorId === undefined) {
+      return errorResponse(res, 400, "No valid fields provided", COURSE_ERROR_CODES.emptyUpdate);
     }
-  }
-)
+    if (instructorId !== undefined && !(await isInstructor(instructorId))) {
+      return errorResponse(res, 404, "Instructor not found", COURSE_ERROR_CODES.instructorNotFound);
+    }
 
+    const course = await prisma.course.update({
+      where: { id: params.data.id },
+      data: {
+        ...fields,
+        ...(instructorId !== undefined && { instructor: { connect: { id: instructorId } } }),
+      },
+      select: COURSE_SELECT,
+    });
+    return res.status(200).json({ data: toCourse(course) } satisfies CourseResponse);
+  } catch (err) {
+    console.error(err);
+    if (isPrismaError(err, "P2025")) {
+      return errorResponse(res, 404, "Course or instructor not found", COURSE_ERROR_CODES.notFound);
+    }
+    return errorResponse(res, 500, "Failed to update course", COURSE_ERROR_CODES.updateCourse);
+  }
+});
 
 // DELETE /courses/:id
-router.delete(
-  "/:id",
-  requireAuth,
-  requireRole("admin"),
-  async (req, res) => {
-    try {
-      const courseId = positiveIntegerParam(req.params.id);
+router.delete(COURSE_ROUTES.course, requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const params = CourseIdParamsSchema.safeParse(req.params);
+    if (!params.success) return errorResponse(res, 400, INVALID_COURSE_ID, INVALID_ID);
 
-      if (!courseId) {
-        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
-      }
-
-      await prisma.course.delete({
-        where: { id: courseId },
-      });
-
-      return res.status(200).json({
-        data: {
-          message: "Course deleted successfully",
-        },
-      });
-    } catch (err) {
-      console.error(err);
-
-      if (isPrismaError(err, "P2025")) {
-        return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
-      }
-      return res.status(500).json({
-        error: {
-          message: "Failed to delete course",
-          code: "DELETE_COURSE_ERROR",
-        },
-      });
+    await prisma.course.delete({ where: { id: params.data.id } });
+    return res
+      .status(200)
+      .json({ data: { message: "Course deleted successfully" } } satisfies MessageResponse);
+  } catch (err) {
+    console.error(err);
+    if (isPrismaError(err, "P2025")) {
+      return errorResponse(res, 404, "Course not found", COURSE_ERROR_CODES.courseNotFound);
     }
+    return errorResponse(res, 500, "Failed to delete course", COURSE_ERROR_CODES.deleteCourse);
   }
-);
+});
+
+// GET /courses/:id/enrollments
+router.get(COURSE_ROUTES.enrollments, requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const params = CourseIdParamsSchema.safeParse(req.params);
+    if (!params.success) return errorResponse(res, 400, INVALID_COURSE_ID, INVALID_ID);
+
+    const course = await prisma.course.findUnique({
+      where: { id: params.data.id },
+      select: { id: true },
+    });
+    if (!course) return errorResponse(res, 404, "Course not found", COURSE_ERROR_CODES.courseNotFound);
+
+    const enrollments = await prisma.enrollment.findMany({
+      where: { courseId: course.id },
+      select: COURSE_ENROLLMENT_SELECT,
+    });
+    return res
+      .status(200)
+      .json({ data: enrollments.map(toCourseEnrollment) } satisfies CourseEnrollmentsResponse);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, 500, "Failed to fetch enrollments", COURSE_ERROR_CODES.fetchEnrollments);
+  }
+});
+
+// POST /courses/:id/enroll
+router.post(COURSE_ROUTES.enroll, requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const params = CourseIdParamsSchema.safeParse(req.params);
+    if (!params.success) return errorResponse(res, 400, INVALID_COURSE_ID, INVALID_ID);
+
+    const body = EnrollBodySchema.safeParse(req.body);
+    if (!body.success) return errorResponse(res, 400, "Invalid user ID", INVALID_ID);
+
+    const courseId = params.data.id;
+    const { userId } = body.data;
+    const [course, user] = await Promise.all([
+      prisma.course.findUnique({ where: { id: courseId }, select: { id: true } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } }),
+    ]);
+    if (!course) return errorResponse(res, 404, "Course not found", COURSE_ERROR_CODES.courseNotFound);
+    if (!user) return errorResponse(res, 404, "User not found", COURSE_ERROR_CODES.userNotFound);
+    if (!enrollmentDecision(user.role).allowed) {
+      return errorResponse(res, 400, "Only students can enroll", COURSE_ERROR_CODES.notAStudent);
+    }
+
+    const enrollment = await prisma.enrollment.create({
+      data: { userId, courseId },
+      select: ENROLLMENT_SELECT,
+    });
+    return res.status(201).json({ data: toEnrollment(enrollment) } satisfies EnrollmentResponse);
+  } catch (err) {
+    console.error(err);
+    if (isPrismaError(err, "P2002")) {
+      return errorResponse(
+        res,
+        409,
+        "Student is already enrolled in this course",
+        COURSE_ERROR_CODES.enrollmentExists,
+      );
+    }
+    return errorResponse(res, 500, "Failed to create enrollment", COURSE_ERROR_CODES.createEnrollment);
+  }
+});
+
+// DELETE /courses/:courseId/enrollments/:studentId
+router.delete(COURSE_ROUTES.enrollment, requireAuth, requireRole("admin"), async (req, res) => {
+  try {
+    const params = EnrollmentParamsSchema.safeParse(req.params);
+    if (!params.success) {
+      const courseIdValid = idParam().safeParse(req.params.courseId).success;
+      return errorResponse(res, 400, courseIdValid ? "Invalid user ID" : INVALID_COURSE_ID, INVALID_ID);
+    }
+
+    const { courseId, studentId } = params.data;
+    await prisma.enrollment.delete({
+      where: { userId_courseId: { userId: studentId, courseId } },
+    });
+    return res
+      .status(200)
+      .json({ data: { message: "Enrollment deleted successfully" } } satisfies MessageResponse);
+  } catch (err) {
+    if (isPrismaError(err, "P2025")) {
+      return errorResponse(res, 404, "Enrollment not found", COURSE_ERROR_CODES.enrollmentNotFound);
+    }
+    console.error(err);
+    return errorResponse(res, 500, "Failed to delete enrollment", COURSE_ERROR_CODES.deleteEnrollment);
+  }
+});
+
+// The two session routes below belong to the sessions feature and move onto
+// the contracts with it; they are unchanged here.
 
 // GET /courses/:id/sessions
 router.get("/:id/sessions", requireAuth, async (req, res) => {
@@ -400,158 +370,5 @@ router.post(
   }
 );
 
-// POST /courses/:id/enroll
-router.post(
-  "/:id/enroll",
-  requireAuth,
-  requireRole("admin"),
-  async (req, res) => {
-    try {
-      const courseId = positiveIntegerParam(req.params.id);
-
-      if (!courseId) {
-        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
-      }
-
-      const { userId } = req.body;
-
-      if (!positiveInteger(userId)) {
-        return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
-      }
-
-      const [course, user] = await Promise.all([
-        prisma.course.findUnique({ where: { id: courseId }, select: { id: true } }),
-        prisma.user.findUnique({ where: { id: userId }, select: { id: true, role: true } }),
-      ]);
-      if (!course) return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
-      if (!user) return errorResponse(res, 404, "User not found", "USER_NOT_FOUND");
-      if (user.role !== "student") return errorResponse(res, 400, "Only students can enroll", "INVALID_ENROLLMENT_USER");
-
-      const enrollment = await prisma.enrollment.create({
-        data: {
-          userId,
-          courseId,
-        },
-        select: {
-          id: true,
-          userId: true,
-          courseId: true,
-          createdAt: true,
-        },
-      });
-
-      return res.status(201).json({
-        data: enrollment,
-      });
-    } catch (err: unknown) {
-      console.error(err);
-
-      // Handle unique constraint violation (duplicate enrollment)
-      if (err && typeof err === "object" && "code" in err && err.code === "P2002") {
-        return res.status(409).json({
-          error: {
-            message: "Student is already enrolled in this course",
-            code: "ENROLLMENT_EXISTS",
-          },
-        });
-      }
-
-      return res.status(500).json({
-        error: {
-          message: "Failed to create enrollment",
-          code: "CREATE_ENROLLMENT_ERROR",
-        },
-      });
-    }
-  }
-);
-
-// DELETE /courses/:courseId/enrollments/:studentId
-router.delete(
-  "/:courseId/enrollments/:studentId",
-  requireAuth,
-  requireRole("admin"),
-  async (req, res) => {
-    try {
-      const courseId = positiveIntegerParam(req.params.courseId);
-      const studentId = positiveIntegerParam(req.params.studentId);
-
-      if (!courseId) {
-        return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
-      }
-
-      if (!studentId) {
-        return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
-      }
-
-      await prisma.enrollment.delete({
-        where: {
-          userId_courseId: {
-            userId: studentId,
-            courseId,
-          },
-        },
-      });
-
-      return res.status(200).json({
-        data: {
-          message: "Enrollment deleted successfully",
-        },
-      });
-    } catch (err: unknown) {
-      if (err && typeof err === "object" && "code" in err && err.code === "P2025") {
-        return res.status(404).json({
-          error: {
-            message: "Enrollment not found",
-            code: "ENROLLMENT_NOT_FOUND",
-          },
-        });
-      }
-
-      console.error(err);
-
-      return res.status(500).json({
-        error: {
-          message: "Failed to delete enrollment",
-          code: "DELETE_ENROLLMENT_ERROR",
-        },
-      });
-    }
-  }
-);
-
-// GET /courses/:id/enrollments
-router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, res) => {
-  try {
-    const courseId = positiveIntegerParam(req.params.id);
-
-    if (!courseId) {
-      return errorResponse(res, 400, "Invalid course ID", "INVALID_ID");
-    }
-    const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      select: { id: true },
-    });
-    if (!course) return errorResponse(res, 404, "Course not found", "COURSE_NOT_FOUND");
-    
-    const enrollments = await prisma.enrollment.findMany({
-      where: { courseId: courseId },
-      include: {
-        user: true,
-      },
-    });
-    return res.status(200).json({
-      data: enrollments,
-    });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({
-        error: {
-          message: "Failed to fetch enrollments",
-          code: "FETCH_ENROLLMENTS_ERROR",
-        },
-      });
-    }
-  });
 
 export default router;

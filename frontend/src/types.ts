@@ -1,3 +1,5 @@
+import type { Course as CourseDto, CourseEnrollment } from "@school/contracts";
+
 export type User = {
     id: number;
     firstName: string;
@@ -9,15 +11,13 @@ export type User = {
     enrollments: Course[];
 };
 
-export type Course = {
-    id: number;
-    title: string;
-    language: string;
-    level: string;
-    material: string;
-    instructorId: number;
-    enrollments: User[];
+// A course as the API answers it (the contract), plus the students the admin
+// page loads into it when one is opened.
+export type Course = CourseDto & {
+    enrollments?: Pick<User, "id" | "firstName" | "secondName">[];
 };
+
+export type { CourseEnrollment };
 
 export type Session = {
     id: number;
