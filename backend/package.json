@@ -7,11 +7,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --conditions=source src/index.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
-    "dev:docker": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed && npm run dev",
+    "dev:docker": "pnpm run prisma:generate && pnpm run prisma:migrate && pnpm run prisma:seed && pnpm run dev",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js"
   },
@@ -21,6 +21,8 @@
   "type": "module",
   "dependencies": {
     "@prisma/client": "^6.7.0",
+    "@school/contracts": "workspace:*",
+    "@school/domain": "workspace:*",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

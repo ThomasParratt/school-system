@@ -1,0 +1,14 @@
+# The images build from the repository root (the workspace), so keep out
+# everything that is not source: installs, builds, secrets and git.
+**/node_modules
+**/dist
+**/coverage
+**/*.tsbuildinfo
+.git
+.github
+.env
+.env.*
+**/.env
+**/.env.*
+backend/bruno
+infra
