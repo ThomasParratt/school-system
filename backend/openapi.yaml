@@ -49,6 +49,30 @@ components:
       type: string
       enum: [A1, A2, B1, B2, C1, C2]
 
+    SessionUpdate:
+      description: >
+        Fields to change; at least one is needed (EMPTY_UPDATE otherwise). The session's
+        end, new or kept, must be after its start.
+      type: object
+      properties:
+        location:
+          $ref: "#/components/schemas/NonEmptyString"
+        startsAt:
+          $ref: "#/components/schemas/DateTime"
+        endsAt:
+          type: string
+          nullable: true
+          format: date-time
+          pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+        content:
+          type: string
+          nullable: true
+          pattern: "\\S"
+        homework:
+          type: string
+          nullable: true
+          pattern: "\\S"
+
     User:
       type: object
       required: [id, firstName, secondName, email, role, createdAt]
@@ -177,11 +201,11 @@ paths:
               required: [email, password]
               properties:
                 email:
-                  type: string
-                  format: email
-                # No minLength here: a short password is answered 401 INVALID_CREDENTIALS, not 400.
+                  $ref: "#/components/schemas/Email"
+                # Only non-empty: a short password is answered 401 INVALID_CREDENTIALS, not 400.
                 password:
                   type: string
+                  minLength: 1
 
       responses:
         "200":
@@ -272,17 +296,19 @@ paths:
               required: [firstName, secondName, email, password]
               properties:
                 firstName:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 secondName:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 email:
-                  type: string
+                  $ref: "#/components/schemas/Email"
                 password:
                   type: string
                   minLength: 8
+                  pattern: "\\S"
                 comments:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 role:
+                  description: Defaults to student.
                   type: string
                   enum: [admin, student, instructor]
 
@@ -499,23 +525,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                location:
-                  type: string
-                startsAt:
-                  type: string
-                  format: date-time
-                endsAt:
-                  type: string
-                  nullable: true
-                  format: date-time
-                content:
-                  type: string
-                  nullable: true
-                homework:
-                  type: string
-                  nullable: true
+              $ref: "#/components/schemas/SessionUpdate"
       responses:
         "200":
           description: Updated session
@@ -677,17 +687,17 @@ paths:
           application/json:
             schema:
               type: object
+              description: Fields to change; at least one is needed (EMPTY_UPDATE otherwise).
               properties:
                 firstName:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 secondName:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 email:
-                  type: string
-                  format: email
+                  $ref: "#/components/schemas/Email"
                 comments:
-                  type: string
-      
+                  $ref: "#/components/schemas/NonEmptyString"
+
       responses:
         "200":
           description: User updated successfully
@@ -1603,23 +1613,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                location:
-                  type: string
-                startsAt:
-                  type: string
-                  format: date-time
-                endsAt:
-                  type: string
-                  nullable: true
-                  format: date-time
-                content:
-                  type: string
-                  nullable: true
-                homework:
-                  type: string
-                  nullable: true
+              $ref: "#/components/schemas/SessionUpdate"
       
       responses:
         "200":

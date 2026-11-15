@@ -83,6 +83,56 @@ describe("behavioral validation and error contracts", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ ...validUser, email: "short-password@example.com", password: "short" });
       expectError(shortPassword, 400, "VALIDATION_ERROR");
+
+      const blankPassword = await request(app)
+        .post("/users")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ ...validUser, email: "blank-password@example.com", password: "        " });
+      expectError(blankPassword, 400, "VALIDATION_ERROR");
+
+      const blankName = await request(app)
+        .post("/users")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ ...validUser, email: "blank-name@example.com", secondName: " " });
+      expectError(blankName, 400, "VALIDATION_ERROR");
+
+      // The email rule is the API's own pattern, not JSON Schema's stricter "email" format.
+      const nonAsciiEmail = await request(app)
+        .post("/users")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ ...validUser, email: "äiti@example.fi" });
+      expect(nonAsciiEmail.status).toBe(201);
+    });
+
+    it("rejects an empty login password and a blank user update", async () => {
+      const token = await loginAsAdmin();
+
+      const emptyPassword = await request(app)
+        .post("/auth/login")
+        .send({ email: "user@example.com", password: "" });
+      expectError(emptyPassword, 400, "VALIDATION_ERROR");
+
+      const user = await createUser();
+      const blankUpdate = await request(app)
+        .patch(`/users/${user.id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ firstName: "" });
+      expectError(blankUpdate, 400, "VALIDATION_ERROR");
+
+      const emptyUpdate = await request(app)
+        .patch(`/users/${user.id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({});
+      expectError(emptyUpdate, 400, "EMPTY_UPDATE");
+    });
+
+    it("answers a wrong role 403 before looking at the body", async () => {
+      const instructorToken = await loginAsInstructor();
+      const response = await request(app)
+        .post("/users")
+        .set("Authorization", `Bearer ${instructorToken}`)
+        .send({ firstName: 42 });
+      expectError(response, 403, "FORBIDDEN");
     });
 
     it("returns 404 for nonexistent users and updates/deletes", async () => {
@@ -252,6 +302,31 @@ describe("behavioral validation and error contracts", () => {
 
       const remove = await request(app).delete(path).set("Authorization", `Bearer ${token}`);
       expectError(remove, 404, "SESSION_NOT_FOUND");
+    });
+
+    it("rejects invalid session updates", async () => {
+      const token = await loginAsAdmin();
+      const session = await createSession();
+      const path = `/sessions/${session.id}`;
+
+      const blankLocation = await request(app)
+        .patch(path)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ location: "  " });
+      expectError(blankLocation, 400, "VALIDATION_ERROR");
+
+      const lowercaseDate = await request(app)
+        .patch(path)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ startsAt: "2026-06-01t10:00:00z" });
+      expectError(lowercaseDate, 400, "VALIDATION_ERROR");
+
+      const clearedContent = await request(app)
+        .patch(path)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ content: null });
+      expect(clearedContent.status).toBe(200);
+      expect(clearedContent.body.data.content).toBeNull();
     });
   });
 

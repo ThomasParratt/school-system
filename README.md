@@ -79,6 +79,8 @@ This will automatically initialize the following local URLs:
 * **Main PostgreSQL Database:** `localhost:5432`
 * **Test PostgreSQL Database:** `localhost:5433`
 
+`backend/openapi.yaml` is the API contract, not only its documentation: every request is checked against it (token, role, path params and body) before it reaches a route, so a new or changed route must be described there first. Rules the spec cannot express, such as `endsAt` after `startsAt` or checks that need the database, stay in the route.
+
 To stop the containers and shut down the network safely, run:
 ```bash
 docker compose -f docker-compose.dev.yml down

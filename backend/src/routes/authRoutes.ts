@@ -2,48 +2,14 @@ import { Router } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma.js";
 import { signAuthToken } from "../lib/auth.js";
-import { validEmail } from "../lib/validation.js";
 
 const router = Router();
 
 // POST /auth/login
 router.post("/login", async (req, res) => {
   try {
-    const body = req.body;
-    if (typeof body !== "object" || body === null || Array.isArray(body)) {
-      return res.status(400).json({
-        error: { message: "Request body must be a JSON object", code: "VALIDATION_ERROR" },
-      });
-    }
-    const { email, password } = body;
-
-    // Validation
-    if (!email || !password) {
-      return res.status(400).json({
-        error: {
-          message: "Missing email or password",
-          code: "VALIDATION_ERROR",
-        },
-      });
-    }
-
-    if (typeof email !== "string" || typeof password !== "string") {
-      return res.status(400).json({
-        error: {
-          message: "Invalid email or password format",
-          code: "VALIDATION_ERROR",
-        },
-      });
-    }
-
-    if (!validEmail(email)) {
-      return res.status(400).json({
-        error: {
-          message: "Invalid email format",
-          code: "VALIDATION_ERROR",
-        },
-      });
-    }
+    // Shape and field types are checked against openapi.yaml before this runs.
+    const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({
       where: { email },
