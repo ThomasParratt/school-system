@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 import { Prisma, type Language, type Level } from "@prisma/client";
 import { errorResponse, isPrismaError } from "../lib/validation.js";
+import { COURSE_ORDER, SESSION_ORDER } from "../lib/order.js";
 
 const router = Router();
 
@@ -10,6 +11,7 @@ const router = Router();
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const courses = await prisma.course.findMany({
+      orderBy: COURSE_ORDER,
       select: {
         id: true,
         title: true,
@@ -257,6 +259,7 @@ router.get("/:id/sessions", requireAuth, async (req, res) => {
       
       const sessions = await prisma.classSession.findMany({
       where: { courseId: courseId },
+      orderBy: SESSION_ORDER,
       select: {
         id: true,
         courseId: true,
@@ -465,6 +468,7 @@ router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, re
     
     const enrollments = await prisma.enrollment.findMany({
       where: { courseId: courseId },
+      orderBy: [{ user: { secondName: "asc" } }, { user: { firstName: "asc" } }, { id: "asc" }],
       include: {
         // Never select the password hash.
         user: {

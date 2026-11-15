@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 import { errorResponse, isPrismaError } from "../lib/validation.js";
+import { byName, byStart, COURSE_ORDER, USER_ORDER } from "../lib/order.js";
 
 const router = Router();
 const SALT_ROUNDS = 10;
@@ -11,6 +12,7 @@ const SALT_ROUNDS = 10;
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const users = await prisma.user.findMany({
+      orderBy: USER_ORDER,
       select: {
         id: true,
         firstName: true,
@@ -154,6 +156,7 @@ router.get("/me/courses", requireAuth, async (req, res) => {
     if (req.user?.role === "instructor") {
       const taughtCourses = await prisma.course.findMany({
         where: { instructorId: userId },
+        orderBy: COURSE_ORDER,
         select: {
           id: true,
           title: true,
@@ -183,6 +186,7 @@ router.get("/me/courses", requireAuth, async (req, res) => {
       where: { id: userId },
       select: {
         enrollments: {
+          orderBy: { course: { title: "asc" } },
           select: {
             course: {
               select: {
@@ -259,7 +263,7 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
         },
       });
 
-      const sessions = taughtCoursesWithSessions.flatMap(c => c.sessions);
+      const sessions = taughtCoursesWithSessions.flatMap(c => c.sessions).sort(byStart);
 
       return res.status(200).json({
         data: sessions,
@@ -292,7 +296,7 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
       },
     });
 
-    const sessions = user?.enrollments.flatMap(e => e.course.sessions) ?? [];
+    const sessions = (user?.enrollments.flatMap(e => e.course.sessions) ?? []).sort(byStart);
 
     return res.status(200).json({
       data: sessions,
@@ -353,7 +357,7 @@ router.get("/me/students", requireAuth, requireRole("instructor"), async (req, r
       }
     }
 
-    const students = Object.values(studentsById);
+    const students = Object.values(studentsById).sort(byName);
 
     return res.status(200).json({ data: students });
   } catch (err) {
@@ -515,6 +519,7 @@ router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, re
     
     const enrollments = await prisma.enrollment.findMany({
       where: { userId: userId },
+      orderBy: [{ course: { title: "asc" } }, { id: "asc" }],
       include: {
         course: true,
       },
