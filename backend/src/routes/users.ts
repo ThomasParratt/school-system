@@ -2,11 +2,10 @@ import { Router } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
-import { errorResponse, isPrismaError, nonEmptyString, positiveIntegerParam, validDateTime, validEmail } from "../lib/validation.js";
+import { errorResponse, isPrismaError } from "../lib/validation.js";
 
 const router = Router();
 const SALT_ROUNDS = 10;
-const MIN_PASSWORD_LENGTH = 8;
 
 // GET /users
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
@@ -45,43 +44,9 @@ router.post(
   requireRole("admin"),
   async (req, res) => {
     try {
+      // Shape and field types are checked against openapi.yaml before this runs.
       const { firstName, secondName, email, password, role, comments } = req.body;
       const userRole = role === undefined ? "student" : role;
-
-      // Validation
-      if (!nonEmptyString(firstName) || !nonEmptyString(secondName) ||
-          !nonEmptyString(email) || !nonEmptyString(password)) {
-        return errorResponse(res, 400, "Missing required fields");
-      }
-
-      if (!validEmail(email)) {
-        return errorResponse(res, 400, "Invalid email format");
-      }
-      if (password.length < MIN_PASSWORD_LENGTH) {
-        return errorResponse(res, 400, "Password must be at least 8 characters");
-      }
-
-      if (!["admin", "instructor", "student"].includes(userRole)) {
-        return errorResponse(res, 400, "Invalid role");
-      }
-
-      if (
-        typeof firstName !== "string" ||
-        typeof secondName !== "string" ||
-        typeof password !== "string" ||
-        (comments !== undefined && typeof comments !== "string")
-      ) {
-        return errorResponse(res, 400, "Invalid format");
-      }
-
-      if (
-        !nonEmptyString(firstName) ||
-        !nonEmptyString(secondName) ||
-        !nonEmptyString(password) ||
-        (comments !== undefined && !nonEmptyString(comments))
-      ) {
-        return errorResponse(res, 400, "Invalid format");
-      }
 
       const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
@@ -397,11 +362,7 @@ router.get("/me/students", requireAuth, requireRole("instructor"), async (req, r
 // GET /users/:id
 router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const userId = positiveIntegerParam(req.params.id);
-
-    if (!userId) {
-      return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
-      }
+    const userId = Number(req.params.id);
     
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -439,11 +400,7 @@ router.patch(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const userId = positiveIntegerParam(req.params.id);
-
-      if (!userId) {
-        return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
-      }
+      const userId = Number(req.params.id);
       
       const { firstName, secondName, email, comments } = req.body ?? {};
 
@@ -466,12 +423,6 @@ router.patch(
             code: "EMPTY_UPDATE",
           },
         });
-      }
-      if ((firstName !== undefined && !nonEmptyString(firstName)) ||
-          (secondName !== undefined && !nonEmptyString(secondName)) ||
-          (email !== undefined && !validEmail(email)) ||
-          (comments !== undefined && !nonEmptyString(comments))) {
-        return errorResponse(res, 400, "Invalid user fields");
       }
 
       const updatedUser = await prisma.user.update({
@@ -522,11 +473,7 @@ router.delete(
   requireRole("admin"),
   async (req, res) => {
     try {
-      const userId = positiveIntegerParam(req.params.id);
-
-      if (!userId) {
-        return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
-      }
+      const userId = Number(req.params.id);
 
       await prisma.user.delete({
         where: { id: userId },
@@ -556,11 +503,7 @@ router.delete(
 // GET /users/:id/enrollments
 router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const userId = positiveIntegerParam(req.params.id);
-
-    if (!userId) {
-      return errorResponse(res, 400, "Invalid user ID", "INVALID_ID");
-    }
+    const userId = Number(req.params.id);
     
     const enrollments = await prisma.enrollment.findMany({
       where: { userId: userId },
@@ -600,11 +543,7 @@ router.patch(
         });
       }
       
-      const sessionId = positiveIntegerParam(req.params.id);
-
-      if (!sessionId) {
-        return errorResponse(res, 400, "Invalid session ID", "INVALID_ID");
-      }
+      const sessionId = Number(req.params.id);
 
       const { location, startsAt, endsAt, content, homework } = req.body;
 
@@ -629,13 +568,6 @@ router.patch(
             code: "EMPTY_UPDATE",
           },
         });
-      }
-      if ((location !== undefined && !nonEmptyString(location)) ||
-          (startsAt !== undefined && !validDateTime(startsAt)) ||
-          (endsAt !== undefined && endsAt !== null && !validDateTime(endsAt)) ||
-          (content !== undefined && content !== null && !nonEmptyString(content)) ||
-          (homework !== undefined && homework !== null && !nonEmptyString(homework))) {
-        return errorResponse(res, 400, "Invalid session fields");
       }
 
       const session = await prisma.classSession.findFirst({
@@ -714,11 +646,7 @@ router.get(
         });
       }
       
-      const sessionId = positiveIntegerParam(req.params.id);
-
-      if (!sessionId) {
-        return errorResponse(res, 400, "Invalid session ID", "INVALID_ID");
-      }
+      const sessionId = Number(req.params.id);
 
       const session = await prisma.classSession.findFirst({
         where: {

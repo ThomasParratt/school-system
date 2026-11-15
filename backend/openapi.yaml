@@ -18,6 +18,61 @@ components:
       bearerFormat: JWT
 
   schemas:
+    # Field rules shared by request schemas. The validator enforces them before a route runs.
+    Id:
+      description: A database ID (Postgres INT).
+      type: integer
+      minimum: 1
+      maximum: 2147483647
+
+    NonEmptyString:
+      description: A string with at least one non-whitespace character.
+      type: string
+      pattern: "\\S"
+
+    DateTime:
+      description: An ISO 8601 date-time with seconds and a time zone, e.g. 2026-06-01T10:00:00.000Z.
+      type: string
+      format: date-time
+      pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+
+    Email:
+      description: An email address (something@domain.tld).
+      type: string
+      pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+
+    Language:
+      type: string
+      enum: [English, Finnish, Swedish, Russian, German, French]
+
+    Level:
+      type: string
+      enum: [A1, A2, B1, B2, C1, C2]
+
+    SessionUpdate:
+      description: >
+        Fields to change; at least one is needed (EMPTY_UPDATE otherwise). The session's
+        end, new or kept, must be after its start.
+      type: object
+      properties:
+        location:
+          $ref: "#/components/schemas/NonEmptyString"
+        startsAt:
+          $ref: "#/components/schemas/DateTime"
+        endsAt:
+          type: string
+          nullable: true
+          format: date-time
+          pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+        content:
+          type: string
+          nullable: true
+          pattern: "\\S"
+        homework:
+          type: string
+          nullable: true
+          pattern: "\\S"
+
     User:
       type: object
       required: [id, firstName, secondName, email, role, createdAt]
@@ -146,11 +201,11 @@ paths:
               required: [email, password]
               properties:
                 email:
-                  type: string
-                  format: email
+                  $ref: "#/components/schemas/Email"
+                # Only non-empty: a short password is answered 401 INVALID_CREDENTIALS, not 400.
                 password:
                   type: string
-                  minLength: 8
+                  minLength: 1
 
       responses:
         "200":
@@ -193,7 +248,7 @@ paths:
     get:
       summary: Get all users
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       responses:
         "200":
           description: List of users
@@ -231,7 +286,7 @@ paths:
     post:
       summary: Create user (admin only)
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       requestBody:
         required: true
         content:
@@ -241,17 +296,19 @@ paths:
               required: [firstName, secondName, email, password]
               properties:
                 firstName:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 secondName:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 email:
-                  type: string
+                  $ref: "#/components/schemas/Email"
                 password:
                   type: string
                   minLength: 8
+                  pattern: "\\S"
                 comments:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 role:
+                  description: Defaults to student.
                   type: string
                   enum: [admin, student, instructor]
 
@@ -396,37 +453,79 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /users/me/sessions/{id}:
-    patch:
-      summary: Update a session taught by the logged-in instructor
+    get:
+      summary: Get a session the logged-in instructor teaches or student attends
       security:
-        - bearerAuth: []
+        - bearerAuth: [instructor, student]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
+      responses:
+        "200":
+          description: Session
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ClassSession"
+
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden - requires instructor or student role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: Inaccessible session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    patch:
+      summary: Update a session taught by the logged-in instructor
+      security:
+        - bearerAuth: [instructor]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                location:
-                  type: string
-                startsAt:
-                  type: string
-                  format: date-time
-                endsAt:
-                  type: string
-                  nullable: true
-                  format: date-time
-                content:
-                  type: string
-                homework:
-                  type: string
+              $ref: "#/components/schemas/SessionUpdate"
       responses:
         "200":
           description: Updated session
@@ -478,7 +577,7 @@ paths:
       summary: Get students of the logged-in instructor
       description: Returns a list of students enrolled in courses taught by the authenticated instructor. Requires instructor role.
       security:
-        - bearerAuth: []
+        - bearerAuth: [instructor]
       responses:
         "200":
           description: List of students
@@ -517,14 +616,13 @@ paths:
     get:
       summary: Get user by Id
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       responses:
         "200":
           description: User
@@ -576,31 +674,30 @@ paths:
     patch:
       summary: Update user information (admin only)
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              description: Fields to change; at least one is needed (EMPTY_UPDATE otherwise).
               properties:
                 firstName:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 secondName:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 email:
-                  type: string
-                  format: email
+                  $ref: "#/components/schemas/Email"
                 comments:
-                  type: string
-      
+                  $ref: "#/components/schemas/NonEmptyString"
+
       responses:
         "200":
           description: User updated successfully
@@ -658,14 +755,13 @@ paths:
     delete:
       summary: Delete user
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
 
       responses:
         "200":
@@ -720,14 +816,13 @@ paths:
     get:
       summary: Get enrollments by userId
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       responses:
         "200":
           description: Enrollments
@@ -782,7 +877,7 @@ paths:
     get:
       summary: Get all courses
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       responses:
         "200":
           description: List of courses
@@ -820,28 +915,25 @@ paths:
     post:
       summary: Create course (admin only)
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [title, language, level, material]
+              required: [title, language, level, material, instructorId]
               properties:
                 title:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 language:
-                  type: string
-                  enum: [English, Finnish, Swedish, Russian, German, French]
+                  $ref: "#/components/schemas/Language"
                 level:
-                  type: string
-                  enum: [A1, A2, B1, B2, C1, C2]
+                  $ref: "#/components/schemas/Level"
                 material:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 instructorId:
-                  type: integer
-                  minimum: 1
+                  $ref: "#/components/schemas/Id"
 
       responses:
         "201":
@@ -893,14 +985,13 @@ paths:
     get:
       summary: Get course
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       responses:
         "200":
           description: Course
@@ -944,14 +1035,13 @@ paths:
     patch:
       summary: Update course information (admin only)
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       requestBody:
         required: true
         content:
@@ -960,19 +1050,16 @@ paths:
               type: object
               properties:
                 title:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 language:
-                  type: string
-                  enum: [English, Finnish, Swedish, Russian, German, French]
+                  $ref: "#/components/schemas/Language"
                 level:
-                  type: string
-                  enum: [A1, A2, B1, B2, C1, C2]
+                  $ref: "#/components/schemas/Level"
                 material:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 instructorId:
-                  type: integer
-                  minimum: 1
-      
+                  $ref: "#/components/schemas/Id"
+
       responses:
         "200":
           description: Course updated successfully
@@ -1023,14 +1110,13 @@ paths:
     delete:
       summary: Delete course
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
 
       responses:
         "200":
@@ -1085,14 +1171,13 @@ paths:
     get:
       summary: Get enrollments by courseId
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       responses:
         "200":
           description: Enrollments
@@ -1105,7 +1190,13 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Enrollment"
+                      allOf:
+                        - $ref: "#/components/schemas/Enrollment"
+                        - type: object
+                          required: [user]
+                          properties:
+                            user:
+                              $ref: "#/components/schemas/User"
 
         "400":
           description: Invalid ID
@@ -1152,8 +1243,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       responses:
         "200":
           description: List of sessions
@@ -1191,14 +1281,13 @@ paths:
     post:
       summary: Create a new session for a course
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       requestBody:
         required: true
         content:
@@ -1206,24 +1295,28 @@ paths:
             schema:
               type: object
               required: [location, startsAt]
+              description: endsAt, when given, must be after startsAt.
               properties:
                 courseId:
                   type: integer
+                  description: Ignored; the course comes from the path.
                 location:
-                  type: string
+                  $ref: "#/components/schemas/NonEmptyString"
                 startsAt:
-                  type: string
-                  format: date-time
+                  $ref: "#/components/schemas/DateTime"
                 endsAt:
                   type: string
                   nullable: true
                   format: date-time
+                  pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
                 content:
                   type: string
                   nullable: true
+                  pattern: "\\S"
                 homework:
                   type: string
                   nullable: true
+                  pattern: "\\S"
       responses:
         "201":
           description: Session created
@@ -1274,20 +1367,18 @@ paths:
     delete:
       summary: Remove a student from a course
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: courseId
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
         - name: studentId
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       responses:
         "200":
           description: Enrollment deleted
@@ -1341,14 +1432,13 @@ paths:
     post:
       summary: Create enrollment (admin only)
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       requestBody:
         required: true
         content:
@@ -1358,7 +1448,7 @@ paths:
               required: [userId]
               properties:
                 userId:
-                  type: integer
+                  $ref: "#/components/schemas/Id"
       responses:
         "201":
           description: Enrollment created
@@ -1416,7 +1506,7 @@ paths:
     get:
       summary: Get all sessions
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       responses:
         "200":
           description: List of sessions
@@ -1462,14 +1552,13 @@ paths:
     get:
       summary: Get session
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       responses:
         "200":
           description: Session
@@ -1512,36 +1601,19 @@ paths:
     patch:
       summary: Update session information (admin or instructor only)
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                location:
-                  type: string
-                startsAt:
-                  type: string
-                  format: date-time
-                endsAt:
-                  type: string
-                  nullable: true
-                  format: date-time
-                content:
-                  type: string
-                  nullable: true
-                homework:
-                  type: string
-                  nullable: true
+              $ref: "#/components/schemas/SessionUpdate"
       
       responses:
         "200":
@@ -1593,14 +1665,13 @@ paths:
     delete:
       summary: Delete session
       security:
-        - bearerAuth: []
+        - bearerAuth: [admin]
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-            minimum: 1
+            $ref: "#/components/schemas/Id"
 
       responses:
         "200":

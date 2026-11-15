@@ -33,6 +33,8 @@ describe("GET /courses/:id/enrollments", () => {
         expect(response.status).toBe(200);
         expect(response.body.data).toHaveLength(1);
         expect(response.body.data[0].courseId).toBe(courseId);
+        expect(response.body.data[0].user.id).toBe(userId);
+        expect(JSON.stringify(response.body)).not.toContain("password");
         expect(response).toSatisfyApiSpec();
     });
 
