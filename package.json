@@ -1,0 +1,19 @@
+{
+  "name": "school-system",
+  "private": true,
+  "description": "Repo-level tooling: Git hooks for the backend and frontend.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "npm --prefix backend exec -- tsc --noEmit -p backend/tsconfig.json && npm --prefix frontend exec -- tsc -b frontend",
+    "test": "npm --prefix backend test",
+    "prepare": "node .husky/install.mjs"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@secretlint/secretlint-rule-preset-recommend": "^13.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "secretlint": "^13.1.0"
+  }
+}

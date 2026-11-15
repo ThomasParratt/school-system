@@ -119,6 +119,13 @@ cd backend
 npm test
 ```
 
+### Git Hooks
+Run `npm install` once in the repository root to install the Git hooks (Husky):
+
+- **pre-commit:** scans staged files for secrets (secretlint) and lints staged frontend files (ESLint).
+- **commit-msg:** checks the message follows [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat(courses): add enrolment limit`.
+- **pre-push:** type checks the backend and frontend, then runs the backend tests. Start the test database first with `docker compose -f docker-compose.dev.yml up -d db_test`.
+
 ### GitHub Actions (CI)
 The workflow script inside `.github/workflows/ci.yml` runs automatically on every pull request and push to the `main` branch. It spins up an isolated Ubuntu container with PostgreSQL 15, installs Node modules, generates the Prisma client, and runs the Vitest test suite to make sure no broken code gets merged.
 
