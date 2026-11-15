@@ -155,7 +155,25 @@ components:
         createdAt:
           type: string
           format: date-time
-    
+
+    CourseWithInstructor:
+      allOf:
+        - $ref: "#/components/schemas/Course"
+        - type: object
+          required: [instructor]
+          properties:
+            instructor:
+              type: object
+              required: [id, firstName, secondName]
+              properties:
+                id:
+                  type: integer
+                  minimum: 1
+                firstName:
+                  type: string
+                secondName:
+                  type: string
+
     Enrollment:
       type: object
       required: [id, userId, courseId, createdAt]
@@ -214,9 +232,11 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: object
+                    required: [user, token]
                     properties:
                       user:
                         $ref: "#/components/schemas/User"
@@ -256,6 +276,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
@@ -319,6 +340,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/User"
@@ -370,6 +392,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/User"
@@ -400,11 +423,12 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Course"
+                      $ref: "#/components/schemas/CourseWithInstructor"
         
         "401":
           description: Unauthorized
@@ -432,6 +456,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
@@ -533,6 +558,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/ClassSession"
@@ -585,6 +611,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
@@ -705,6 +732,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/User"
@@ -770,6 +798,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: object
@@ -835,7 +864,13 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Enrollment"
+                      allOf:
+                        - $ref: "#/components/schemas/Enrollment"
+                        - type: object
+                          required: [course]
+                          properties:
+                            course:
+                              $ref: "#/components/schemas/Course"
 
         "400":
           description: Invalid ID
@@ -885,6 +920,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
@@ -942,6 +978,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/Course"
@@ -999,6 +1036,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/Course"
@@ -1067,6 +1105,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/Course"
@@ -1125,6 +1164,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: object
@@ -1251,6 +1291,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
@@ -1324,6 +1365,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/ClassSession"
@@ -1386,6 +1428,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: object
@@ -1456,6 +1499,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/Enrollment"
@@ -1514,6 +1558,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: array
@@ -1566,6 +1611,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/ClassSession"
@@ -1622,6 +1668,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     $ref: "#/components/schemas/ClassSession"
@@ -1680,6 +1727,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [data]
                 properties:
                   data:
                     type: object

@@ -160,6 +160,9 @@ router.get("/me/courses", requireAuth, async (req, res) => {
           language: true,
           level: true,
           material: true,
+          instructorId: true,
+          createdAt: true,
+          updatedAt: true,
           instructor: {
             select: {
               id: true,
@@ -188,6 +191,9 @@ router.get("/me/courses", requireAuth, async (req, res) => {
                 language: true,
                 level: true,
                 material: true,
+                instructorId: true,
+                createdAt: true,
+                updatedAt: true,
                 instructor: {
                   select: {
                     id: true,
@@ -247,6 +253,7 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
               endsAt: true,
               content: true,
               homework: true,
+              createdAt: true,
             },
           },
         },
@@ -275,6 +282,7 @@ router.get("/me/sessions", requireAuth, async (req, res) => {
                     endsAt: true,
                     content: true,
                     homework: true,
+                    createdAt: true,
                   },
                 },
               },
