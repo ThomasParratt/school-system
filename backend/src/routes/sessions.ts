@@ -2,6 +2,7 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 import { errorResponse, isPrismaError } from "../lib/validation.js";
+import { SESSION_ORDER } from "../lib/order.js";
 
 const router = Router();
 
@@ -9,6 +10,7 @@ const router = Router();
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
     const sessions = await prisma.classSession.findMany({
+      orderBy: SESSION_ORDER,
       select: {
         id: true,
         courseId: true,
