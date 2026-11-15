@@ -11,9 +11,9 @@ const authFailures = new WeakMap<Request, AuthFailure>();
  * Validates every request's path params, query and JSON body against openapi.yaml
  * before it reaches a router. A route that is not in the spec answers 404.
  *
- * The bearer token is checked first, on the operations the spec secures, so a
- * request without a valid token is answered 401 before its body is looked at.
- * Roles stay with requireRole in the routes.
+ * The bearer token and the operation's roles are checked first, on the operations
+ * the spec secures, so a request is answered 401 or 403 before its body is looked
+ * at. requireAuth and requireRole in the routes stay as a second check.
  */
 export function openApiValidator(spec: object) {
   return OpenApiValidator.middleware({
@@ -23,11 +23,16 @@ export function openApiValidator(spec: object) {
     validateResponses: false,
     validateSecurity: {
       handlers: {
-        bearerAuth: (req) => {
+        // `roles` is the operation's list in the spec, e.g. `- bearerAuth: [admin]`; empty means any role.
+        bearerAuth: (req, roles) => {
           const failure = authenticate(req as Request);
           if (failure) {
             authFailures.set(req as Request, failure);
             throw { status: 401, error: { message: failure.message } };
+          }
+          const role = (req as Request).user?.role;
+          if (roles.length > 0 && (!role || !roles.includes(role))) {
+            throw { status: 403, error: { message: "Forbidden" } };
           }
           return true;
         },
@@ -66,6 +71,8 @@ export function openApiErrorHandler(error: unknown, req: Request, res: Response,
         ? errorResponse(res, 401, failure.message, failure.code)
         : errorResponse(res, 401, "Missing or invalid authorization token", "MISSING_AUTH_TOKEN");
     }
+    case 403:
+      return errorResponse(res, 403, "Forbidden", "FORBIDDEN");
     case 404:
       return errorResponse(res, 404, "Route not found", "ROUTE_NOT_FOUND");
     case 405:

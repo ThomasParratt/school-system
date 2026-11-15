@@ -146,6 +146,25 @@ describe("behavioral validation and error contracts", () => {
         .send({ ...base, instructorId: "1" });
       expectError(invalidId, 400, "VALIDATION_ERROR");
 
+      const blankTitle = await request(app)
+        .post("/courses")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ ...base, title: "   " });
+      expectError(blankTitle, 400, "VALIDATION_ERROR");
+
+      const { instructorId: _omitted, ...withoutInstructor } = base;
+      const missingField = await request(app)
+        .post("/courses")
+        .set("Authorization", `Bearer ${token}`)
+        .send(withoutInstructor);
+      expectError(missingField, 400, "VALIDATION_ERROR");
+
+      const outOfRangeId = await request(app)
+        .post("/courses")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ ...base, instructorId: 2147483648 });
+      expectError(outOfRangeId, 400, "VALIDATION_ERROR");
+
       const instructor = await createUser({ role: "instructor" });
       const course = await createCourse({ instructorId: instructor.id });
       const invalidPatch = await request(app)
@@ -182,6 +201,18 @@ describe("behavioral validation and error contracts", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ location: "Room 1", startsAt: "not-a-date" });
       expectError(invalidDate, 400, "VALIDATION_ERROR");
+
+      const noTimeZone = await request(app)
+        .post(`/courses/${course.id}/sessions`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ location: "Room 1", startsAt: "2026-06-01T10:00:00" });
+      expectError(noTimeZone, 400, "VALIDATION_ERROR");
+
+      const blankContent = await request(app)
+        .post(`/courses/${course.id}/sessions`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ location: "Room 1", startsAt, content: " " });
+      expectError(blankContent, 400, "VALIDATION_ERROR");
 
       const reversed = await request(app)
         .post(`/courses/${course.id}/sessions`)
@@ -253,6 +284,12 @@ describe("behavioral validation and error contracts", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ userId: student.id });
       expectError(invalidId, 400, "INVALID_ID");
+
+      const invalidUserId = await request(app)
+        .post(`/courses/${course.id}/enroll`)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ userId: "1" });
+      expectError(invalidUserId, 400, "VALIDATION_ERROR");
 
       const first = await request(app)
         .post(`/courses/${course.id}/enroll`)
