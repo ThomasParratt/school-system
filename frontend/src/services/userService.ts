@@ -1,6 +1,6 @@
-import type { ApiErrorResponse, User } from "../types";
+import type { ApiErrorResponse, ApiResponse, CreateUserBody, UpdateUserBody } from "../types";
 
-export async function getUsers(token: string | null) {
+export async function getUsers(token: string | null): Promise<ApiResponse<"/users", "get">> {
     const res = await fetch("/api/users", {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -17,8 +17,8 @@ export async function getUsers(token: string | null) {
 
 export async function addUser(
     token: string | null,
-    user: Partial<User>
-) {
+    user: CreateUserBody
+): Promise<ApiResponse<"/users", "post", 201>> {
     const res = await fetch("/api/users", {
         method: "POST",
         headers: {
@@ -41,7 +41,7 @@ export async function addUser(
 export async function deleteUser(
     token: string | null,
     userId: number
-) {
+): Promise<ApiResponse<"/users/{id}", "delete">> {
     const res = await fetch(`/api/users/${userId}`, {
         method: "DELETE",
         headers: {
@@ -63,8 +63,8 @@ export async function deleteUser(
 export async function updateUser(
     token: string | null,
     userId: number,
-    user: Partial<User>
-) {
+    user: UpdateUserBody
+): Promise<ApiResponse<"/users/{id}", "patch">> {
     const res = await fetch(`/api/users/${userId}`, {
         method: "PATCH",
         headers: {
@@ -87,7 +87,7 @@ export async function updateUser(
 export async function getUserEnrollments(
     token: string | null,
     userId: number,
-) {
+): Promise<ApiResponse<"/users/{id}/enrollments", "get">> {
     const res = await fetch(`/api/users/${userId}/enrollments`, {
         method: "GET",
         headers: {
@@ -106,7 +106,7 @@ export async function getUserEnrollments(
     return res.json();
 }
 
-export async function getUserCourses(token: string | null) {
+export async function getUserCourses(token: string | null): Promise<ApiResponse<"/users/me/courses", "get">> {
     const res = await fetch("/api/users/me/courses", {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -121,7 +121,7 @@ export async function getUserCourses(token: string | null) {
     return res.json();
 }
 
-export async function getUserSessions(token: string | null) {
+export async function getUserSessions(token: string | null): Promise<ApiResponse<"/users/me/sessions", "get">> {
     const res = await fetch("/api/users/me/sessions", {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -136,7 +136,7 @@ export async function getUserSessions(token: string | null) {
     return res.json();
 }
 
-export async function getUserStudents(token: string | null) {
+export async function getUserStudents(token: string | null): Promise<ApiResponse<"/users/me/students", "get">> {
     const res = await fetch("/api/users/me/students", {
         headers: { Authorization: `Bearer ${token}` },
     });

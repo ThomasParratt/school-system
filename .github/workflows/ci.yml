@@ -76,6 +76,14 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Check API types match backend/openapi.yaml
+        run: |
+          npm run gen:api
+          git diff --exit-code src/api/schema.d.ts || {
+            echo "::error::src/api/schema.d.ts is out of date. Run 'npm run gen:api' in frontend/ and commit the result."
+            exit 1
+          }
+
       - name: Run frontend lint
         run: npm run lint
 
