@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-interface CrudConfig<T> {
+interface CrudConfig<T, CreateBody, UpdateBody> {
     token: string | null;
 
     getAll: (
@@ -9,30 +9,32 @@ interface CrudConfig<T> {
 
     create: (
         token: string,
-        data: Partial<T>
+        data: CreateBody
     ) => Promise<{ data: T }>;
 
     update: (
         token: string,
         id: number,
-        data: Partial<T>
+        data: UpdateBody
     ) => Promise<{ data: T }>;
 
     remove: (
         token: string,
         id: number
-    ) => Promise<void>;
+    ) => Promise<unknown>;
 }
 
 export function useCrud<
-    T extends { id: number }
+    T extends { id: number },
+    CreateBody = Partial<T>,
+    UpdateBody = CreateBody
 >({
     token,
     getAll,
     create,
     update,
     remove
-}: CrudConfig<T>) {
+}: CrudConfig<T, CreateBody, UpdateBody>) {
     const [items, setItems] = useState<T[]>([]);
     const [selectedItem, setSelectedItem] =
         useState<T | null>(null);
@@ -46,7 +48,7 @@ export function useCrud<
     }, [token, getAll]);
 
     async function addItem(
-        data: Partial<T>
+        data: CreateBody
     ) {
         if (!token) return;
 
@@ -60,7 +62,7 @@ export function useCrud<
 
     async function updateItem(
         id: number,
-        data: Partial<T>
+        data: UpdateBody
     ) {
         if (!token) return;
 

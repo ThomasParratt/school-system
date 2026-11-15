@@ -17,14 +17,7 @@ import { getAllSessions, deleteSession, getSession, adminUpdateSession } from ".
 import type { Course, Session } from "../../types";
 import CrudModal from "./CrudModal";
 
-type CalendarSession = {
-  id: number;
-  courseId: number;
-  location: string;
-  startsAt: string;
-  endsAt: string | null;
-  title?: string;
-};
+type CalendarSession = Pick<Session, "id" | "courseId" | "location" | "startsAt" | "endsAt"> & { title?: string };
 
 type CalendarProps = {
   token: string | null;
@@ -215,7 +208,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
       });
 
       // reconcile backend ID with UI event
-      event.setProp("id", String(created.id));
+      event.setProp("id", String(created.data.id));
     } catch (err) {
       console.error("Failed to create event:", err);
 

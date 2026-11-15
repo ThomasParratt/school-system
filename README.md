@@ -81,6 +81,8 @@ This will automatically initialize the following local URLs:
 
 `backend/openapi.yaml` is the API contract, not only its documentation: every request is checked against it (token, role, path params and body) before it reaches a route, so a new or changed route must be described there first. Rules the spec cannot express, such as `endsAt` after `startsAt` or checks that need the database, stay in the route.
 
+The frontend's API types come from the same file: `frontend/src/api/schema.d.ts` is generated from it. After changing `openapi.yaml`, run `npm run gen:api` in `frontend/` and commit the result; CI fails if the two are out of step.
+
 To stop the containers and shut down the network safely, run:
 ```bash
 docker compose -f docker-compose.dev.yml down

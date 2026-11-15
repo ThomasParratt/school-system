@@ -7,14 +7,7 @@ import type { EventContentArg, EventInput, EventClickArg } from "@fullcalendar/c
 import type { Course, Session, MyLessonsProps } from "../../types";
 import { getMySession } from "../../services/sessionService";
 
-type CalendarSession = {
-  id: number;
-  courseId: number;
-  location: string;
-  startsAt: string;
-  endsAt: string | null;
-  title?: string;
-};
+type CalendarSession = Pick<Session, "id" | "courseId" | "location" | "startsAt" | "endsAt"> & { title?: string };
 
 export default function MyStudentCalendar({ token, courses, sessions }: MyLessonsProps) {
   const [clickedSession, setClickedSession] = useState<Session | null>(null)

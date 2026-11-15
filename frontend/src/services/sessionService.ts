@@ -1,9 +1,9 @@
-import type { ApiErrorResponse } from "../types";
+import type { ApiErrorResponse, ApiResponse, Session, UpdateSessionBody } from "../types";
 
 export async function deleteSession(
     token: string | null,
     sessionId: number
-) {
+): Promise<ApiResponse<"/sessions/{id}", "delete">> {
     const res = await fetch(`/api/sessions/${sessionId}`, {
         method: "DELETE",
         headers: {
@@ -24,7 +24,7 @@ export async function deleteSession(
 
 export async function getAllSessions(
     token: string | null,
-) {
+): Promise<Session[]> {
     const res = await fetch(`/api/sessions/`, {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -43,7 +43,7 @@ export async function getAllSessions(
 export async function getSession(
     token: string | null,
     sessionId: number
-) {
+): Promise<ApiResponse<"/sessions/{id}", "get">> {
     const res = await fetch(`/api/sessions/${sessionId}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -60,7 +60,7 @@ export async function getSession(
 export async function getMySession(
     token: string | null,
     sessionId: number
-) {
+): Promise<ApiResponse<"/users/me/sessions/{id}", "get">> {
     const res = await fetch(`/api/users/me/sessions/${sessionId}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -77,14 +77,8 @@ export async function getMySession(
 export async function updateSession(
     token: string | null,
     sessionId: number,
-    session: {
-        location?: string;
-        startsAt?: string;
-        endsAt?: string | null;
-        content?: string | null;
-        homework?: string | null;
-    }
-) {
+    session: UpdateSessionBody
+): Promise<ApiResponse<"/users/me/sessions/{id}", "patch">> {
     const res = await fetch(`/api/users/me/sessions/${sessionId}`, {
         method: "PATCH",
         headers: {
@@ -107,14 +101,8 @@ export async function updateSession(
 export async function adminUpdateSession(
     token: string | null,
     sessionId: number,
-    session: {
-        location?: string;
-        startsAt?: string;
-        endsAt?: string | null;
-        content?: string | null;
-        homework?: string | null;
-    }
-) {
+    session: UpdateSessionBody
+): Promise<ApiResponse<"/sessions/{id}", "patch">> {
     const res = await fetch(`/api/sessions/${sessionId}`, {
         method: "PATCH",
         headers: {

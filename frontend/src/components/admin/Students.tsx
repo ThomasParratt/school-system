@@ -2,12 +2,12 @@ import { useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getUserEnrollments } from "../../services/userService";
 import { enroll, unenroll } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
-import type { User, UsersProps, Course, Enrollment } from "../../types";
+import type { User, UsersProps, Course, UserEnrollment, CreateUserBody, UpdateUserBody, UserForm } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../../assets/bin.png";
 
-const EMPTY_USER : Partial<User> = {
+const EMPTY_USER: UserForm = {
     firstName: "",
     secondName: "",
     email: "",
@@ -16,9 +16,9 @@ const EMPTY_USER : Partial<User> = {
 }
 
 export default function Students({ token, users, courses, refreshUsers }: UsersProps) {
-    const [editForm, setEditForm] = useState<Partial<User>>({});
+    const [editForm, setEditForm] = useState<UserForm>({});
     const [selectedCourseId, setSelectedCourseId] = useState("");
-    const [addForm, setAddForm] = useState<Partial<User>>({});
+    const [addForm, setAddForm] = useState<UserForm>({});
     const [add, setAdd] = useState(false);
 
     const {
@@ -27,7 +27,7 @@ export default function Students({ token, users, courses, refreshUsers }: UsersP
         addItem,
         updateItem,
         deleteItem
-    } = useCrud<User>({
+    } = useCrud<User, CreateUserBody, UpdateUserBody>({
         token,
         getAll: getUsers,
         create: addUser,
@@ -37,8 +37,16 @@ export default function Students({ token, users, courses, refreshUsers }: UsersP
 
     async function handleAddUser() {
         if (!token || !addForm) return;
+
+        const { firstName, secondName, email, password, role, comments } = addForm;
+        if (!firstName || !secondName || !email || !password) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
         try {
-            await addItem(addForm);
+            // An empty comment is left out: the API takes no comment, not an empty one.
+            await addItem({ firstName, secondName, email, password, role, comments: comments || undefined });
             await refreshUsers();
             setAdd(false);
         } catch (err) {
@@ -66,7 +74,9 @@ export default function Students({ token, users, courses, refreshUsers }: UsersP
         if (!token || !editForm) return;
 
         try {
-            await updateItem(userId, editForm);
+            // Enrollments are saved through their own endpoints; an empty comment leaves it unchanged.
+            const { firstName, secondName, email, comments } = editForm;
+            await updateItem(userId, { firstName, secondName, email, comments: comments || undefined });
             await refreshUsers();
             setSelectedUser(null);
         } catch (err) {
@@ -94,7 +104,7 @@ export default function Students({ token, users, courses, refreshUsers }: UsersP
             const result = await getUserEnrollments(token, userId);
             setEditForm(prev => ({
                 ...prev!,
-                enrollments: result.data.map((e: Enrollment) => e.course)
+                enrollments: result.data.map((e: UserEnrollment) => e.course)
             }));
         } catch (err) {
             console.error(err);
@@ -149,7 +159,7 @@ export default function Students({ token, users, courses, refreshUsers }: UsersP
                             secondName: user.secondName,
                             email: user.email,
                             comments: user.comments ?? "",
-                            enrollments: user.enrollments ?? []
+                            enrollments: []
                         });
                         void handleGetEnrollments(user.id);
                     }}

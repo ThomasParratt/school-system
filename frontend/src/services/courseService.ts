@@ -1,6 +1,6 @@
-import type { ApiErrorResponse, Course } from "../types";
+import type { ApiErrorResponse, ApiResponse, CreateCourseBody, CreateSessionBody, Session, UpdateCourseBody } from "../types";
 
-export async function getCourses(token: string | null) {
+export async function getCourses(token: string | null): Promise<ApiResponse<"/courses", "get">> {
     const res = await fetch("/api/courses", {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -17,8 +17,8 @@ export async function getCourses(token: string | null) {
 
 export async function addCourse(
     token: string | null,
-    course: Partial<Course>
-) {
+    course: CreateCourseBody
+): Promise<ApiResponse<"/courses", "post", 201>> {
     const res = await fetch("/api/courses", {
         method: "POST",
         headers: {
@@ -41,7 +41,7 @@ export async function addCourse(
 export async function deleteCourse(
     token: string | null,
     courseId: number
-) {
+): Promise<ApiResponse<"/courses/{id}", "delete">> {
     const res = await fetch(`/api/courses/${courseId}`, {
         method: "DELETE",
         headers: {
@@ -63,8 +63,8 @@ export async function deleteCourse(
 export async function updateCourse(
     token: string | null,
     courseId: number,
-    course: Partial<Course>
-) {
+    course: UpdateCourseBody
+): Promise<ApiResponse<"/courses/{id}", "patch">> {
     const res = await fetch(`/api/courses/${courseId}`, {
         method: "PATCH",
         headers: {
@@ -88,7 +88,7 @@ export async function enroll(
     token: string | null,
     courseId: number,
     userId: number
-) {
+): Promise<ApiResponse<"/courses/{id}/enroll", "post", 201>> {
     const res = await fetch(`/api/courses/${courseId}/enroll`, {
         method: "POST",
         headers: {
@@ -112,7 +112,7 @@ export async function unenroll(
     token: string | null,
     courseId: number,
     studentId: number
-) {
+): Promise<ApiResponse<"/courses/{courseId}/enrollments/{studentId}", "delete">> {
     const res = await fetch(`/api/courses/${courseId}/enrollments/${studentId}`, {
         method: "DELETE",
         headers: {
@@ -134,7 +134,7 @@ export async function unenroll(
 export async function getCourseEnrollments(
     token: string | null,
     courseId: number,
-) {
+): Promise<ApiResponse<"/courses/{id}/enrollments", "get">> {
     const res = await fetch(`/api/courses/${courseId}/enrollments`, {
         method: "GET",
         headers: {
@@ -156,7 +156,7 @@ export async function getCourseEnrollments(
 export async function getCourseSessions(
     token: string | null,
     courseId: number,
-) {
+): Promise<Session[]> {
     const res = await fetch(`/api/courses/${courseId}/sessions`, {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -175,8 +175,8 @@ export async function getCourseSessions(
 export async function addCourseSession(
     token: string | null,
     courseId: number,
-    session: { location: string; startsAt: string; endsAt?: string }
-) {
+    session: CreateSessionBody
+): Promise<ApiResponse<"/courses/{id}/sessions", "post", 201>> {
     const res = await fetch(`/api/courses/${courseId}/sessions`, {
         method: "POST",
         headers: {

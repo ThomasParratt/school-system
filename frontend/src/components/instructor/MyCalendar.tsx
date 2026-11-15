@@ -8,14 +8,7 @@ import type { Course, Session, CalendarProps } from "../../types";
 import { getMySession, updateSession } from "../../services/sessionService";
 import CrudModal from "../admin/CrudModal";
 
-type CalendarSession = {
-  id: number;
-  courseId: number;
-  location: string;
-  startsAt: string;
-  endsAt: string | null;
-  title?: string;
-};
+type CalendarSession = Pick<Session, "id" | "courseId" | "location" | "startsAt" | "endsAt"> & { title?: string };
 
 export default function MyCalendar({ token, courses, sessions, refreshSessions }: CalendarProps) {
   const events = useMemo<EventInput[]>(

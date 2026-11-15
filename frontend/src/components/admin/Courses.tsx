@@ -1,23 +1,20 @@
 import { useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
-import type { Course, CoursesProps, Enrollment } from "../../types";
+import type { Course, CourseEnrollment, CourseForm, CoursesProps, CreateCourseBody, Language, Level, UpdateCourseBody } from "../../types";
 import CrudList from "./CrudList";
 import CrudModal from "./CrudModal";
 import bin from "../../../assets/bin.png";
 
-const EMPTY_COURSE : Partial<Course> = {
+const EMPTY_COURSE: CourseForm = {
     title: "",
-    language: "",
-    level: "",
-    instructorId: 0,
     material: ""
 }
 
 export default function Courses({ token, users, courses, refreshCourses }: CoursesProps) {
-    const [editForm, setEditForm] = useState<Partial<Course>>({});
+    const [editForm, setEditForm] = useState<CourseForm>({});
     const [selectedUserId, setSelectedUserId] = useState("");
-    const [addForm, setAddForm] = useState<Partial<Course>>({});
+    const [addForm, setAddForm] = useState<CourseForm>({});
     const [add, setAdd] = useState(false);
 
     const {
@@ -26,7 +23,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
         addItem,
         updateItem,
         deleteItem
-    } = useCrud<Course>({
+    } = useCrud<Course, CreateCourseBody, UpdateCourseBody>({
         token,
         getAll: getCourses,
         create: addCourse,
@@ -37,13 +34,14 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
     async function handleAddCourse() {
         if (!token || !addForm) return;
 
-        if (!addForm.title || !addForm.language || !addForm.level || !addForm.material) {
+        const { title, language, level, material, instructorId } = addForm;
+        if (!title || !language || !level || !material || !instructorId) {
             alert("Please fill in all required fields.");
             return;
         }
 
         try {
-            await addItem(addForm);
+            await addItem({ title, language, level, material, instructorId });
             await refreshCourses();
             setAdd(false);
         } catch (err) {
@@ -72,7 +70,9 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
         if (!token || !editForm) return;
 
         try {
-            await updateItem(courseId, editForm);
+            // Enrollments are saved through their own endpoints, not with the course.
+            const { title, language, level, material, instructorId } = editForm;
+            await updateItem(courseId, { title, language, level, material, instructorId });
             await refreshCourses();
             setSelectedCourse(null);
         } catch (err) {
@@ -100,7 +100,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
             const result = await getCourseEnrollments(token, courseId);
             setEditForm(prev => ({
                 ...prev!,
-                enrollments: result.data.map((e: Enrollment) => e.user)
+                enrollments: result.data.map((e: CourseEnrollment) => e.user)
             }));
         } catch (err) {
             console.error(err);
@@ -156,7 +156,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                             level: course.level,
                             material: course.material,
                             instructorId: course.instructorId,
-                            enrollments: course.enrollments ?? []
+                            enrollments: []
                         });
                         void handleGetEnrollments(course.id);
                     }}
@@ -188,7 +188,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     <select
                         value={addForm.language || ""}
                         onChange={(e) =>
-                            setAddForm(prev => ({ ...prev, language: e.target.value }))
+                            setAddForm(prev => ({ ...prev, language: e.target.value as Language }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
@@ -208,7 +208,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     <select
                         value={addForm.level || ""}
                         onChange={(e) =>
-                            setAddForm(prev => ({ ...prev, level: e.target.value }))
+                            setAddForm(prev => ({ ...prev, level: e.target.value as Level }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
@@ -282,7 +282,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     <select
                         value={editForm.language || ""}
                         onChange={(e) =>
-                            setEditForm(prev => ({ ...prev, language: e.target.value }))
+                            setEditForm(prev => ({ ...prev, language: e.target.value as Language }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
@@ -299,7 +299,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     <select
                         value={editForm.level || ""}
                         onChange={(e) =>
-                            setEditForm(prev => ({ ...prev, level: e.target.value }))
+                            setEditForm(prev => ({ ...prev, level: e.target.value as Level }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
