@@ -537,7 +537,19 @@ router.get("/:id/enrollments", requireAuth, requireRole("admin"), async (req, re
     const enrollments = await prisma.enrollment.findMany({
       where: { courseId: courseId },
       include: {
-        user: true,
+        // Never select the password hash.
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            secondName: true,
+            email: true,
+            role: true,
+            comments: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
     return res.status(200).json({

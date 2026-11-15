@@ -148,9 +148,9 @@ paths:
                 email:
                   type: string
                   format: email
+                # No minLength here: a short password is answered 401 INVALID_CREDENTIALS, not 400.
                 password:
                   type: string
-                  minLength: 8
 
       responses:
         "200":
@@ -396,6 +396,64 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /users/me/sessions/{id}:
+    get:
+      summary: Get a session the logged-in instructor teaches or student attends
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Session
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ClassSession"
+
+        "400":
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Forbidden - requires instructor or student role
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: Inaccessible session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
     patch:
       summary: Update a session taught by the logged-in instructor
       security:
@@ -425,8 +483,10 @@ paths:
                   format: date-time
                 content:
                   type: string
+                  nullable: true
                 homework:
                   type: string
+                  nullable: true
       responses:
         "200":
           description: Updated session
@@ -1105,7 +1165,13 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Enrollment"
+                      allOf:
+                        - $ref: "#/components/schemas/Enrollment"
+                        - type: object
+                          required: [user]
+                          properties:
+                            user:
+                              $ref: "#/components/schemas/User"
 
         "400":
           description: Invalid ID

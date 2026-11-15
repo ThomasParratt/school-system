@@ -3,24 +3,34 @@ import jwt from "jsonwebtoken";
 import { isAuthTokenPayload, JWT_SECRET, type AuthTokenPayload } from "../lib/auth.js";
 import { errorResponse } from "../lib/validation.js";
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
+export type AuthFailure = { message: string; code: "MISSING_AUTH_TOKEN" | "INVALID_TOKEN" };
+
+/** Verifies the bearer token and sets req.user; returns why it failed, or null. */
+export function authenticate(req: Request): AuthFailure | null {
     const authorizationHeader = req.header("authorization");
     if (!authorizationHeader?.startsWith("Bearer ")) {
-        return errorResponse(res, 401, "Missing or invalid authorization token", "MISSING_AUTH_TOKEN");
+        return { message: "Missing or invalid authorization token", code: "MISSING_AUTH_TOKEN" };
     }
-
-    const token = authorizationHeader.slice(7);
 
     try {
-        const payload = jwt.verify(token, JWT_SECRET);
+        const payload = jwt.verify(authorizationHeader.slice(7), JWT_SECRET);
         if (!isAuthTokenPayload(payload)) {
-            return errorResponse(res, 401, "Invalid or expired token", "INVALID_TOKEN");
+            return { message: "Invalid or expired token", code: "INVALID_TOKEN" };
         }
         req.user = payload;
-        next();
+        return null;
     } catch {
-        return errorResponse(res, 401, "Invalid or expired token", "INVALID_TOKEN");
+        return { message: "Invalid or expired token", code: "INVALID_TOKEN" };
     }
+}
+
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+    // Already verified by the OpenAPI validator's bearerAuth handler.
+    if (req.user) return next();
+
+    const failure = authenticate(req);
+    if (failure) return errorResponse(res, 401, failure.message, failure.code);
+    next();
 }
 
 export function requireRole(...allowedRoles: AuthTokenPayload["role"][]) {

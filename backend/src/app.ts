@@ -7,6 +7,7 @@ import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/users.js";
 import courseRouter from "./routes/courses.js";
 import sessionRouter from "./routes/sessions.js";
+import { openApiErrorHandler, openApiValidator } from "./lib/openapiValidation.js";
 
 const app = express();
 
@@ -43,6 +44,9 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(cors());
 
+// After cors so preflight requests are answered, before the routers so they only see valid requests.
+app.use(openApiValidator(swaggerDocument));
+
 app.use("/auth", authRouter);
 app.use("/users", userRouter);
 app.use("/courses", courseRouter);
@@ -56,5 +60,6 @@ app.use((error: unknown, _req: express.Request, res: express.Response, next: exp
   }
   next(error);
 });
+app.use(openApiErrorHandler);
 
 export default app;
