@@ -4,7 +4,7 @@ import Courses from "./Courses";
 import Calendar from "./Calendar";
 import { useAuth } from "../../context/useAuth";
 import { getAllUsers } from "../../services/userService";
-import { getCourses } from "../../services/courseService";
+import { getAllCourses } from "../../services/courseService";
 import type { User, Course } from "../../types";
 import { useState, useEffect } from "react";
 
@@ -13,6 +13,8 @@ export default function AdminDash() {
   // Every user, for the course form's instructor and student pickers. The Instructors
   // and Students lists page their own.
   const [users, setUsers] = useState<User[]>([]);
+  // Every course, for the Students course picker and the Calendar. The Courses list
+  // pages its own.
   const [courses, setCourses] = useState<Course[]>([]);
 
   const fetchUsers = async () => {
@@ -22,8 +24,7 @@ export default function AdminDash() {
 
   const fetchCourses = async () => {
     if (!token) return;
-    const data = await getCourses(token);
-    setCourses(data.data);
+    setCourses(await getAllCourses(token));
   };
 
   useEffect(() => {
@@ -33,11 +34,11 @@ export default function AdminDash() {
       try {
         const [usersResponse, coursesResponse] = await Promise.all([
           getAllUsers(token),
-          getCourses(token),
+          getAllCourses(token),
         ]);
 
         setUsers(usersResponse);
-        setCourses(coursesResponse.data);
+        setCourses(coursesResponse);
       } catch (error) {
         console.error("Failed to load admin dashboard data", error);
       }
@@ -60,7 +61,7 @@ export default function AdminDash() {
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <Courses token={token} users={users} courses={courses} refreshCourses={fetchCourses} />
+          <Courses token={token} users={users} refreshCourses={fetchCourses} />
         </div>
       </div>
 

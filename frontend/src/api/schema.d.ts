@@ -979,17 +979,33 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all courses */
+        /**
+         * List courses, a page at a time
+         * @description Ordered by title. q matches the title or the instructor's first name or surname.
+         */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description The page to answer, counting from 1. A page past the last answers an empty list. */
+                    page?: components["parameters"]["Page"];
+                    /** @description How many rows a page holds. */
+                    limit?: components["parameters"]["Limit"];
+                    /** @description Free-text search, matched anywhere in the fields the endpoint names, ignoring case. */
+                    q?: components["parameters"]["Search"];
+                    /** @description Only courses in this language. */
+                    language?: components["schemas"]["Language"];
+                    /** @description Only courses at this level. */
+                    level?: components["schemas"]["Level"];
+                    /** @description Only courses this instructor teaches. */
+                    instructorId?: components["schemas"]["Id"];
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description List of courses */
+                /** @description A page of courses */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -997,7 +1013,17 @@ export interface paths {
                     content: {
                         "application/json": {
                             data: components["schemas"]["Course"][];
+                            meta: components["schemas"]["PageMeta"];
                         };
+                    };
+                };
+                /** @description Invalid query */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
                     };
                 };
                 /** @description Unauthorized */

@@ -40,6 +40,7 @@ export type CourseEnrollment = ApiResponse<"/courses/{id}/enrollments", "get">["
 export type UserEnrollment = ApiResponse<"/users/{id}/enrollments", "get">["data"][number];
 
 export type UserListQuery = ApiQuery<"/users", "get">;
+export type CourseListQuery = ApiQuery<"/courses", "get">;
 
 export type LoginResponse = ApiResponse<"/auth/login", "post">;
 
@@ -74,7 +75,6 @@ export type CourseForm = Partial<CreateCourseBody> & { enrollments?: User[] };
 export type CoursesProps = {
     token: string | null;
     users: User[];
-    courses: Course[];
     refreshCourses: () => Promise<void>;
 }
 
