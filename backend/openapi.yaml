@@ -976,23 +976,52 @@ paths:
   
   /courses:
     get:
-      summary: Get all courses
+      summary: List courses, a page at a time
+      description: Ordered by title. q matches the title or the instructor's first name or surname.
       security:
         - bearerAuth: [admin]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Search"
+        - name: language
+          in: query
+          description: Only courses in this language.
+          schema:
+            $ref: "#/components/schemas/Language"
+        - name: level
+          in: query
+          description: Only courses at this level.
+          schema:
+            $ref: "#/components/schemas/Level"
+        - name: instructorId
+          in: query
+          description: Only courses this instructor teaches.
+          schema:
+            $ref: "#/components/schemas/Id"
       responses:
         "200":
-          description: List of courses
+          description: A page of courses
           content:
             application/json:
               schema:
                 type: object
-                required: [data]
+                required: [data, meta]
                 properties:
                   data:
                     type: array
                     items:
                       $ref: "#/components/schemas/Course"
-        
+                  meta:
+                    $ref: "#/components/schemas/PageMeta"
+
+        "400":
+          description: Invalid query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "401":
           description: Unauthorized
           content:

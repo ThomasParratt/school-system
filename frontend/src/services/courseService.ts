@@ -1,7 +1,12 @@
-import type { ApiErrorResponse, ApiResponse, CreateCourseBody, CreateSessionBody, Session, UpdateCourseBody } from "../types";
+import type { ApiErrorResponse, ApiResponse, Course, CourseListQuery, CreateCourseBody, CreateSessionBody, Session, UpdateCourseBody } from "../types";
+import { fetchAllPages, toQueryString } from "./query";
 
-export async function getCourses(token: string | null): Promise<ApiResponse<"/courses", "get">> {
-    const res = await fetch("/api/courses", {
+/** One page of courses. Without a query this is the first 25. */
+export async function getCourses(
+    token: string | null,
+    query: CourseListQuery = {}
+): Promise<ApiResponse<"/courses", "get">> {
+    const res = await fetch(`/api/courses${toQueryString(query)}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -13,6 +18,14 @@ export async function getCourses(token: string | null): Promise<ApiResponse<"/co
         throw new Error(errorMessage);
     }
     return res.json();
+}
+
+/** Every course that matches, for pickers. Screens that show a list page it with getCourses. */
+export function getAllCourses(
+    token: string | null,
+    query: Omit<CourseListQuery, "page" | "limit"> = {}
+): Promise<Course[]> {
+    return fetchAllPages((page, limit) => getCourses(token, { ...query, page, limit }));
 }
 
 export async function addCourse(

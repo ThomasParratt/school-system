@@ -1,14 +1,5 @@
 import type { ApiErrorResponse, ApiResponse, CreateUserBody, UpdateUserBody, User, UserListQuery } from "../types";
-
-/** A query string from the params that are set, e.g. "?role=student&page=2". */
-function toQueryString(query: Record<string, string | number | undefined>): string {
-    const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(query)) {
-        if (value !== undefined && value !== "") params.set(key, String(value));
-    }
-    const qs = params.toString();
-    return qs ? `?${qs}` : "";
-}
+import { fetchAllPages, toQueryString } from "./query";
 
 /** One page of users. Without a query this is the first 25. */
 export async function getUsers(
@@ -29,21 +20,12 @@ export async function getUsers(
     return res.json();
 }
 
-/**
- * Every user that matches, fetched a page at a time. For pickers that need the whole
- * list; screens that show a list should page it with getUsers instead.
- */
-export async function getAllUsers(
+/** Every user that matches, for pickers. Screens that show a list page it with getUsers. */
+export function getAllUsers(
     token: string | null,
     query: Omit<UserListQuery, "page" | "limit"> = {}
 ): Promise<User[]> {
-    const limit = 100;
-    const users: User[] = [];
-    for (let page = 1; ; page++) {
-        const res = await getUsers(token, { ...query, page, limit });
-        users.push(...res.data);
-        if (res.data.length < limit || users.length >= res.meta.total) return users;
-    }
+    return fetchAllPages((page, limit) => getUsers(token, { ...query, page, limit }));
 }
 
 export async function addUser(

@@ -9,8 +9,8 @@ export type PageArgs = { page: number; limit: number; skip: number; take: number
 
 /** The page a list request asks for, as Prisma's skip and take. */
 export function pageArgs(req: Request): PageArgs {
-  const page = toInt(req.query.page) ?? 1;
-  const limit = toInt(req.query.limit) ?? DEFAULT_LIMIT;
+  const page = queryInt(req.query.page) ?? 1;
+  const limit = queryInt(req.query.limit) ?? DEFAULT_LIMIT;
   return { page, limit, skip: (page - 1) * limit, take: limit };
 }
 
@@ -24,8 +24,11 @@ export function queryString(value: unknown): string | undefined {
   return typeof value === "string" && value !== "" ? value : undefined;
 }
 
-// Express 5 keeps query values as strings; the validator may or may not have coerced them.
-function toInt(value: unknown): number | undefined {
+/**
+ * An integer query param, or undefined when it is missing. Express 5 keeps query
+ * values as strings; the validator may or may not have coerced them.
+ */
+export function queryInt(value: unknown): number | undefined {
   if (typeof value === "number") return value;
   if (typeof value === "string" && value !== "") return Number(value);
   return undefined;

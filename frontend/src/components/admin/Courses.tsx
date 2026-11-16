@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
-import type { Course, CourseEnrollment, CourseForm, CoursesProps, CreateCourseBody, Language, Level, UpdateCourseBody } from "../../types";
+import { useListQuery } from "../../hooks/useListQuery";
+import type { Course, CourseEnrollment, CourseForm, CourseListQuery, CoursesProps, CreateCourseBody, Language, Level, UpdateCourseBody } from "../../types";
 import CrudList from "./CrudList";
+import { Pager, SearchBox } from "./ListControls";
 import CrudModal from "./CrudModal";
 import bin from "../../../assets/bin.png";
 
@@ -11,21 +13,26 @@ const EMPTY_COURSE: CourseForm = {
     material: ""
 }
 
-export default function Courses({ token, users, courses, refreshCourses }: CoursesProps) {
+export default function Courses({ token, users, refreshCourses }: CoursesProps) {
     const [editForm, setEditForm] = useState<CourseForm>({});
     const [selectedUserId, setSelectedUserId] = useState("");
     const [addForm, setAddForm] = useState<CourseForm>({});
     const [add, setAdd] = useState(false);
 
+    const list = useListQuery<CourseListQuery>({});
+
     const {
+        items: courses,
+        meta,
         selectedItem: selectedCourse,
         setSelectedItem: setSelectedCourse,
         addItem,
         updateItem,
         deleteItem
-    } = useCrud<Course, CreateCourseBody, UpdateCourseBody>({
+    } = useCrud<Course, CreateCourseBody, UpdateCourseBody, CourseListQuery>({
         token,
         getAll: getCourses,
+        query: list.query,
         create: addCourse,
         update: updateCourse,
         remove: deleteCourse
@@ -141,6 +148,11 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     Add
                 </button>
             </div>
+            <SearchBox
+                value={list.search}
+                onChange={list.setSearch}
+                placeholder="Search title or instructor"
+            />
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <CrudList<Course>
                     items={courses}
@@ -163,6 +175,7 @@ export default function Courses({ token, users, courses, refreshCourses }: Cours
                     onDelete={handleDeleteCourse}
                 />
             </div>
+            <Pager meta={meta} page={list.page} onPageChange={list.setPage} />
             <CrudModal
                 open={!!add}
                 onClose={() => setAdd(false)}

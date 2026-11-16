@@ -4,14 +4,37 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 import { Prisma, type Language, type Level } from "@prisma/client";
 import { errorResponse, isPrismaError } from "../lib/validation.js";
 import { COURSE_ORDER, SESSION_ORDER } from "../lib/order.js";
+import { pageArgs, pageMeta, queryInt, queryString } from "../lib/pagination.js";
 
 const router = Router();
 
-// GET /courses
+// GET /courses?page&limit&q&language&level&instructorId
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const courses = await prisma.course.findMany({
+    const page = pageArgs(req);
+    const q = queryString(req.query.q);
+    const language = queryString(req.query.language) as Language | undefined;
+    const level = queryString(req.query.level) as Level | undefined;
+    const instructorId = queryInt(req.query.instructorId);
+
+    const where: Prisma.CourseWhereInput = {
+      ...(language && { language }),
+      ...(level && { level }),
+      ...(instructorId && { instructorId }),
+      ...(q && {
+        OR: [
+          { title: { contains: q, mode: "insensitive" } },
+          { instructor: { firstName: { contains: q, mode: "insensitive" } } },
+          { instructor: { secondName: { contains: q, mode: "insensitive" } } },
+        ],
+      }),
+    };
+
+    const findCourses = prisma.course.findMany({
+      where,
       orderBy: COURSE_ORDER,
+      skip: page.skip,
+      take: page.take,
       select: {
         id: true,
         title: true,
@@ -23,9 +46,12 @@ router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
         updatedAt: true,
       },
     });
+    // One transaction, so the total counts the same rows the page was cut from.
+    const [courses, total] = await prisma.$transaction([findCourses, prisma.course.count({ where })]);
 
     return res.status(200).json({
       data: courses,
+      meta: pageMeta(page, total),
     });
   } catch (err) {
     console.error(err);
