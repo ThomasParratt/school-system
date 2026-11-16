@@ -1643,25 +1643,50 @@ paths:
 
   /sessions:
     get:
-      summary: Get all sessions
+      summary: List sessions, a page at a time
+      description: >
+        Ordered by start time. q matches the location, content or homework. from and to
+        pick sessions by when they start: from is included and to is not, so a calendar
+        can pass the range it shows. to must be after from (VALIDATION_ERROR otherwise).
       security:
         - bearerAuth: [admin]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Search"
+        - name: courseId
+          in: query
+          description: Only this course's sessions.
+          schema:
+            $ref: "#/components/schemas/Id"
+        - name: from
+          in: query
+          description: Only sessions starting at or after this time.
+          schema:
+            $ref: "#/components/schemas/DateTime"
+        - name: to
+          in: query
+          description: Only sessions starting before this time.
+          schema:
+            $ref: "#/components/schemas/DateTime"
       responses:
         "200":
-          description: List of sessions
+          description: A page of sessions
           content:
             application/json:
               schema:
                 type: object
-                required: [data]
+                required: [data, meta]
                 properties:
                   data:
                     type: array
                     items:
                       $ref: "#/components/schemas/ClassSession"
+                  meta:
+                    $ref: "#/components/schemas/PageMeta"
 
         "400":
-          description: Invalid ID
+          description: Invalid query
           content:
             application/json:
               schema:

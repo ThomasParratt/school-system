@@ -41,6 +41,7 @@ export type UserEnrollment = ApiResponse<"/users/{id}/enrollments", "get">["data
 
 export type UserListQuery = ApiQuery<"/users", "get">;
 export type CourseListQuery = ApiQuery<"/courses", "get">;
+export type SessionListQuery = ApiQuery<"/sessions", "get">;
 
 export type LoginResponse = ApiResponse<"/auth/login", "post">;
 

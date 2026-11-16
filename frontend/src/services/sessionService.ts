@@ -1,4 +1,5 @@
-import type { ApiErrorResponse, ApiResponse, Session, UpdateSessionBody } from "../types";
+import type { ApiErrorResponse, ApiResponse, Session, SessionListQuery, UpdateSessionBody } from "../types";
+import { fetchAllPages, toQueryString } from "./query";
 
 export async function deleteSession(
     token: string | null,
@@ -22,10 +23,12 @@ export async function deleteSession(
     return res.json();
 }
 
-export async function getAllSessions(
+/** One page of sessions. Without a query this is the first 25. */
+export async function getSessions(
     token: string | null,
-): Promise<Session[]> {
-    const res = await fetch(`/api/sessions/`, {
+    query: SessionListQuery = {}
+): Promise<ApiResponse<"/sessions", "get">> {
+    const res = await fetch(`/api/sessions${toQueryString(query)}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) {
@@ -35,9 +38,18 @@ export async function getAllSessions(
             : await res.text();
         throw new Error(errorMessage);
     }
-    const data = await res.json();
-    //console.log(data.data);
-    return data.data;
+    return res.json();
+}
+
+/**
+ * Every session that matches, e.g. all of those in the range a calendar shows.
+ * Without from and to this is every session there is.
+ */
+export function getAllSessions(
+    token: string | null,
+    query: Omit<SessionListQuery, "page" | "limit"> = {}
+): Promise<Session[]> {
+    return fetchAllPages((page, limit) => getSessions(token, { ...query, page, limit }));
 }
 
 export async function getSession(

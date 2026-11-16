@@ -5,6 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import type {
   DateSelectArg,
+  DatesSetArg,
   EventAddArg,
   EventClickArg,
   EventContentArg,
@@ -12,7 +13,7 @@ import type {
   EventInput
 } from "@fullcalendar/core";
 import type { EventResizeDoneArg } from "@fullcalendar/interaction";
-import { addCourseSession, getCourseSessions } from "../../services/courseService";
+import { addCourseSession } from "../../services/courseService";
 import { getAllSessions, deleteSession, getSession, adminUpdateSession } from "../../services/sessionService";
 import type { Course, Session } from "../../types";
 import CrudModal from "./CrudModal";
@@ -39,6 +40,15 @@ export default function Calendar({ token, courses }: CalendarProps) {
   const [addForm, setAddForm] = useState<Partial<Session>>({});
 
   const calendarRef = useRef<FullCalendar | null>(null);
+
+  // The dates the calendar shows (to is exclusive). Only these sessions are fetched.
+  const [range, setRange] = useState<{ from: string; to: string } | null>(null);
+
+  const handleDatesSet = useCallback((arg: DatesSetArg) => {
+      const from = arg.start.toISOString();
+      const to = arg.end.toISOString();
+      setRange(prev => (prev?.from === from && prev.to === to ? prev : { from, to }));
+  }, []);
 
   async function handleUpdateSession(sessionId: number) {
       if (!token || !editForm) return;
@@ -114,18 +124,16 @@ export default function Calendar({ token, courses }: CalendarProps) {
    * Load from backend (source of truth)
    */
   const loadSessions = useCallback(async (): Promise<EventInput[]> => {
-      if (!token) return [];
+      if (!token || !range) return [];
 
       const courseId = Number(selectedCourseId);
 
       try {
-          let data: CalendarSession[];
-
-          if (courseId === 0) {
-              data = await getAllSessions(token);
-          } else {
-              data = await getCourseSessions(token, courseId);
-          }
+          const data: CalendarSession[] = await getAllSessions(token, {
+              from: range.from,
+              to: range.to,
+              ...(courseId ? { courseId } : {}),
+          });
 
           return data.map((session: CalendarSession) => ({
               id: String(session.id),
@@ -141,7 +149,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
           console.error("Failed to load sessions:", error);
           return [];
       }
-  }, [token, selectedCourseId, getCourseTitle]);
+  }, [token, range, selectedCourseId, getCourseTitle]);
 
 
   useEffect(() => {
@@ -362,6 +370,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
           selectable={true}
           selectMirror={true}
           events={events}
+          datesSet={handleDatesSet}
           select={handleSelect}
           eventAdd={handleEventAdd}
           eventClick={handleEventClick}
