@@ -19,11 +19,13 @@ The platform supports strict role-based access control (RBAC) with completely se
 ## 🚦 Key Features & Roles
 
 ### 1. Authentication
-* Users log in via a secure screen using JWT. The frontend parses the token and automatically routes the user to the correct dashboard based on their role (Admin, Instructor, or Student).
+* Users log in with email and password and receive a JWT (valid for 1 hour). The login response includes the user's role, and the frontend shows the matching dashboard (Admin, Instructor, or Student).
 
 ### 2. Administrator Dashboard
 * Full CRUD operations for managing users, creating courses, and scheduling class sessions.
 * Handles student-to-course enrollments via database join tables.
+* Tabs for the overview, each list and the calendar. The open tab is kept in the URL (`?tab=students`), so a refresh or the back button keeps it.
+* The user, course and session lists are paginated and searchable, and sessions can be filtered by date range.
 
 ### 3. Instructor Dashboard
 * A personal dashboard featuring a weekly calendar of their taught courses, lessons, and assigned students.
@@ -40,11 +42,16 @@ The platform supports strict role-based access control (RBAC) with completely se
 school-system/
 ├── backend/
 │   ├── bruno/                 # Bruno collections for testing API endpoints
-│   ├── prisma/                # Database schema and seed scripts
-│   └── src/                   # Express routes, controllers, and middleware
+│   ├── prisma/                # Database schema, migrations and seed script
+│   ├── src/                   # Express app: routes, middleware and shared lib code
+│   ├── tests/                 # Vitest integration tests (run against the test database)
+│   └── openapi.yaml           # API contract, validated on every request
 ├── frontend/
 │   └── src/
-│       └── components/        # Separate UI folders for Admin, Instructor, and Student
+│       ├── api/               # Types generated from backend/openapi.yaml
+│       ├── components/        # Separate UI folders for Admin, Instructor, and Student
+│       └── services/          # API calls to the backend
+├── infra/                     # Infrastructure (Terraform) for the AWS deployment
 ├── docker-compose.dev.yml     # Docker setup for local development
 ├── docker-compose.prod.yml    # Hardened Docker setup for production
 └── README.md
@@ -111,10 +118,11 @@ docker compose -f docker-compose.prod.yml up --build -d
 ## 🛡️ Testing & CI/CD Pipeline
 
 ### Automated Backend Tests
-Backend unit and integration tests are written using **Vitest**. To keep your development data safe from pollution, the test suite automatically directs its queries to a completely separate test database running on port `5433`.
+The backend tests are integration tests written with **Vitest** and supertest. Each one sends real HTTP requests to the Express app and checks the response against `openapi.yaml`. To keep your development data safe from pollution, the test suite automatically directs its queries to a completely separate test database running on port `5433`.
 
-To run the tests manually, go to the backend directory and execute:
+To run the tests manually, start the test database, then run them from the backend directory:
 ```bash
+docker compose -f docker-compose.dev.yml up -d db_test
 cd backend
 npm test
 ```
@@ -127,7 +135,10 @@ Run `npm install` once in the repository root to install the Git hooks (Husky):
 - **pre-push:** type checks the backend and frontend, then runs the backend tests. Start the test database first with `docker compose -f docker-compose.dev.yml up -d db_test`.
 
 ### GitHub Actions (CI)
-The workflow script inside `.github/workflows/ci.yml` runs automatically on every pull request and push to the `main` branch. It spins up an isolated Ubuntu container with PostgreSQL 15, installs Node modules, generates the Prisma client, and runs the Vitest test suite to make sure no broken code gets merged.
+The workflow script inside `.github/workflows/ci.yml` runs automatically on every pull request and push to the `main` branch. It has two jobs:
+
+- **Backend tests:** spins up PostgreSQL 15, installs Node modules, generates the Prisma client, and runs the Vitest test suite.
+- **Frontend checks:** confirms `frontend/src/api/schema.d.ts` matches `backend/openapi.yaml`, then runs ESLint and the production build.
 
 ---
 
@@ -151,9 +162,9 @@ Now that the core MVP architecture is fully operational, I am actively working o
 - [ ] **Credentials Lifecycle:** Implement a mandatory first-login password change flow and a secure password-reset mechanism.
 
 ### 📈 Scalability & Performance
-- [ ] **Data Pagination & Search:** Implement cursor or offset pagination alongside query search filters for the `/users`, `/courses`, and `/sessions` administrative grids to prevent bottleneck queries as the database scales.
-- [ ] **Code Cleanup:** Conduct a full optimization sweep to strip duplicate middleware definitions (e.g., `express.json()`) and remove stray debugging `console.log` statements from production execution paths.
+- [x] **Data Pagination & Search:** Offset pagination (`page`, `limit`) and search on `/users`, `/courses`, and `/sessions`, plus a `from`/`to` date filter on `/sessions`.
+- [x] **Code Cleanup:** Removed duplicate middleware definitions (e.g., `express.json()`) and stray debugging `console.log` statements from production execution paths.
 
 ### 🛡️ Enhanced Test Coverage & DevOps Resilience
 - [x] **Infrastructure Health Monitoring:** Integrate declarative `healthcheck` keys into the production `docker-compose.prod.yml` services to track container health natively.
-- [ ] **Targeted Backend Testing:** Expand the Vitest testing suite to include explicit edge-case tests proving strict instructor data ownership boundaries and uniform invalid-input exception behaviors.
+- [x] **Targeted Backend Testing:** Edge-case tests for instructor data ownership boundaries (e.g., an instructor can't edit another instructor's session, and a student can't read a session from a course they aren't enrolled in) and uniform invalid-input error responses.
