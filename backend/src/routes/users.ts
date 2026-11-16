@@ -4,15 +4,35 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 import { errorResponse, isPrismaError } from "../lib/validation.js";
 import { byName, byStart, COURSE_ORDER, USER_ORDER } from "../lib/order.js";
+import { pageArgs, pageMeta, queryString } from "../lib/pagination.js";
+import type { Prisma, Role } from "@prisma/client";
 
 const router = Router();
 const SALT_ROUNDS = 10;
 
-// GET /users
+// GET /users?page&limit&q&role
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
+    const page = pageArgs(req);
+    const q = queryString(req.query.q);
+    const role = queryString(req.query.role) as Role | undefined;
+
+    const where: Prisma.UserWhereInput = {
+      ...(role && { role }),
+      ...(q && {
+        OR: [
+          { firstName: { contains: q, mode: "insensitive" } },
+          { secondName: { contains: q, mode: "insensitive" } },
+          { email: { contains: q, mode: "insensitive" } },
+        ],
+      }),
+    };
+
+    const findUsers = prisma.user.findMany({
+      where,
       orderBy: USER_ORDER,
+      skip: page.skip,
+      take: page.take,
       select: {
         id: true,
         firstName: true,
@@ -24,9 +44,12 @@ router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
         updatedAt: true,
       },
     });
+    // One transaction, so the total counts the same rows the page was cut from.
+    const [users, total] = await prisma.$transaction([findUsers, prisma.user.count({ where })]);
 
     return res.status(200).json({
       data: users,
+      meta: pageMeta(page, total),
     });
   } catch (err) {
     console.error(err);
