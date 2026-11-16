@@ -3,14 +3,43 @@ import { prisma } from "../lib/prisma.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 import { errorResponse, isPrismaError } from "../lib/validation.js";
 import { SESSION_ORDER } from "../lib/order.js";
+import { pageArgs, pageMeta, queryInt, queryString } from "../lib/pagination.js";
+import type { Prisma } from "@prisma/client";
 
 const router = Router();
 
-// GET /sessions
+// GET /sessions?page&limit&q&courseId&from&to
 router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
   try {
-    const sessions = await prisma.classSession.findMany({
+    const page = pageArgs(req);
+    const q = queryString(req.query.q);
+    const courseId = queryInt(req.query.courseId);
+    const fromParam = queryString(req.query.from);
+    const toParam = queryString(req.query.to);
+    const from = fromParam ? new Date(fromParam) : undefined;
+    const to = toParam ? new Date(toParam) : undefined;
+
+    if (from && to && to <= from) {
+      return errorResponse(res, 400, "to must be after from");
+    }
+
+    const where: Prisma.ClassSessionWhereInput = {
+      ...(courseId && { courseId }),
+      ...((from || to) && { startsAt: { ...(from && { gte: from }), ...(to && { lt: to }) } }),
+      ...(q && {
+        OR: [
+          { location: { contains: q, mode: "insensitive" } },
+          { content: { contains: q, mode: "insensitive" } },
+          { homework: { contains: q, mode: "insensitive" } },
+        ],
+      }),
+    };
+
+    const findSessions = prisma.classSession.findMany({
+      where,
       orderBy: SESSION_ORDER,
+      skip: page.skip,
+      take: page.take,
       select: {
         id: true,
         courseId: true,
@@ -22,9 +51,12 @@ router.get("/", requireAuth, requireRole("admin"), async (req, res) => {
         createdAt: true,
       },
     });
+    // One transaction, so the total counts the same rows the page was cut from.
+    const [sessions, total] = await prisma.$transaction([findSessions, prisma.classSession.count({ where })]);
 
     return res.status(200).json({
       data: sessions,
+      meta: pageMeta(page, total),
     });
   } catch (err) {
     console.error(err);

@@ -1797,17 +1797,33 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all sessions */
+        /**
+         * List sessions, a page at a time
+         * @description Ordered by start time. q matches the location, content or homework. from and to pick sessions by when they start: from is included and to is not, so a calendar can pass the range it shows. to must be after from (VALIDATION_ERROR otherwise).
+         */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description The page to answer, counting from 1. A page past the last answers an empty list. */
+                    page?: components["parameters"]["Page"];
+                    /** @description How many rows a page holds. */
+                    limit?: components["parameters"]["Limit"];
+                    /** @description Free-text search, matched anywhere in the fields the endpoint names, ignoring case. */
+                    q?: components["parameters"]["Search"];
+                    /** @description Only this course's sessions. */
+                    courseId?: components["schemas"]["Id"];
+                    /** @description Only sessions starting at or after this time. */
+                    from?: components["schemas"]["DateTime"];
+                    /** @description Only sessions starting before this time. */
+                    to?: components["schemas"]["DateTime"];
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description List of sessions */
+                /** @description A page of sessions */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -1815,10 +1831,11 @@ export interface paths {
                     content: {
                         "application/json": {
                             data: components["schemas"]["ClassSession"][];
+                            meta: components["schemas"]["PageMeta"];
                         };
                     };
                 };
-                /** @description Invalid ID */
+                /** @description Invalid query */
                 400: {
                     headers: {
                         [name: string]: unknown;

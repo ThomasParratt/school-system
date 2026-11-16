@@ -84,6 +84,26 @@ describe("list order", () => {
     expect(pages).toHaveLength(5);
   });
 
+  it("pages through sessions in that order, with no row missed or repeated", async () => {
+    const token = await loginAsAdmin();
+    // Same start times (one per course), so only the id tiebreaker keeps the pages apart.
+    for (let i = 0; i < 5; i++) {
+      const course = await createCourse();
+      await createSession({ courseId: course.id, startsAt: new Date("2026-03-01T09:00:00Z"), endsAt: null });
+    }
+
+    const all = await request(app).get("/sessions").set("Authorization", `Bearer ${token}`);
+    const pages: number[] = [];
+    for (const page of [1, 2, 3]) {
+      const response = await request(app)
+        .get(`/sessions?limit=2&page=${page}`)
+        .set("Authorization", `Bearer ${token}`);
+      pages.push(...response.body.data.map((s: { id: number }) => s.id));
+    }
+    expect(pages).toEqual(all.body.data.map((s: { id: number }) => s.id));
+    expect(pages).toHaveLength(5);
+  });
+
   it("lists sessions by start time, also after one is edited", async () => {
     const token = await loginAsAdmin();
     const course = await createCourse();

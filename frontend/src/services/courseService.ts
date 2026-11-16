@@ -1,4 +1,4 @@
-import type { ApiErrorResponse, ApiResponse, Course, CourseListQuery, CreateCourseBody, CreateSessionBody, Session, UpdateCourseBody } from "../types";
+import type { ApiErrorResponse, ApiResponse, Course, CourseListQuery, CreateCourseBody, CreateSessionBody, UpdateCourseBody } from "../types";
 import { fetchAllPages, toQueryString } from "./query";
 
 /** One page of courses. Without a query this is the first 25. */
@@ -164,25 +164,6 @@ export async function getCourseEnrollments(
         throw new Error(errorMessage);
     }
     return res.json();
-}
-
-export async function getCourseSessions(
-    token: string | null,
-    courseId: number,
-): Promise<Session[]> {
-    const res = await fetch(`/api/courses/${courseId}/sessions`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    const data = await res.json();
-    //console.log(data.data);
-    return data.data;
 }
 
 export async function addCourseSession(
