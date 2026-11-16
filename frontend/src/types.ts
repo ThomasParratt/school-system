@@ -73,7 +73,15 @@ export type UserForm = Partial<CreateUserBody> & { enrollments?: Course[] };
 /** The add/edit form for a course; enrollments are its students. */
 export type CourseForm = Partial<CreateCourseBody> & { enrollments?: User[] };
 
-export type CoursesProps = {
+/** How an admin list is laid out: a short box on the dashboard, or a tab of its own. */
+export type ListVariant = "compact" | "full";
+
+/** Layout props shared by the admin lists. */
+export type ListLayoutProps = {
+    variant?: ListVariant;
+}
+
+export type CoursesProps = ListLayoutProps & {
     token: string | null;
     users: User[];
     refreshCourses: () => Promise<void>;
@@ -84,7 +92,7 @@ export type MyCoursesProps = {
     courses: Course[];
 }
 
-export type UsersProps = {
+export type UsersProps = ListLayoutProps & {
     token: string | null;
     courses: Course[];
     refreshUsers: () => Promise<void>;

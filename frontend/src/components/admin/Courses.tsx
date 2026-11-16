@@ -4,7 +4,7 @@ import { useCrud } from "../../hooks/useCrud";
 import { useListQuery } from "../../hooks/useListQuery";
 import type { Course, CourseEnrollment, CourseForm, CourseListQuery, CoursesProps, CreateCourseBody, Language, Level, UpdateCourseBody } from "../../types";
 import CrudList from "./CrudList";
-import { Pager, SearchBox } from "./ListControls";
+import { ListHeader, Pager } from "./ListControls";
 import CrudModal from "./CrudModal";
 import bin from "../../../assets/bin.png";
 
@@ -13,13 +13,13 @@ const EMPTY_COURSE: CourseForm = {
     material: ""
 }
 
-export default function Courses({ token, users, refreshCourses }: CoursesProps) {
+export default function Courses({ token, users, refreshCourses, variant = "full" }: CoursesProps) {
     const [editForm, setEditForm] = useState<CourseForm>({});
     const [selectedUserId, setSelectedUserId] = useState("");
     const [addForm, setAddForm] = useState<CourseForm>({});
     const [add, setAdd] = useState(false);
 
-    const list = useListQuery<CourseListQuery>({});
+    const { listRef, ...list } = useListQuery<CourseListQuery>({}, variant);
 
     const {
         items: courses,
@@ -127,33 +127,30 @@ export default function Courses({ token, users, refreshCourses }: CoursesProps) 
         }
     }
 
+
+    const pager = <Pager meta={meta} page={list.page} onPageChange={list.setPage} variant={variant} />;
+
     return (
         <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-xl font-bold">Courses</h1>
-
-                <button
-                    onClick={() => {
-                        setAddForm({
-                            title: EMPTY_COURSE.title,
-                            language: EMPTY_COURSE.language,
-                            level: EMPTY_COURSE.level,
-                            material: EMPTY_COURSE.material,
-                            instructorId: EMPTY_COURSE.instructorId
-                        });
-                        setAdd(true);
-                    }}
-                    className="bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
-                >
-                    Add
-                </button>
-            </div>
-            <SearchBox
-                value={list.search}
-                onChange={list.setSearch}
-                placeholder="Search title or instructor"
+            <ListHeader
+                title="Courses"
+                onAdd={() => {
+                    setAddForm({
+                        title: EMPTY_COURSE.title,
+                        language: EMPTY_COURSE.language,
+                        level: EMPTY_COURSE.level,
+                        material: EMPTY_COURSE.material,
+                        instructorId: EMPTY_COURSE.instructorId
+                    });
+                    setAdd(true);
+                }}
+                search={list.search}
+                onSearchChange={list.setSearch}
+                searchPlaceholder="Search title or instructor"
+                variant={variant}
+                pager={variant === "compact" ? pager : undefined}
             />
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto">
                 <CrudList<Course>
                     items={courses}
                     getKey={(u) => u.id}
@@ -173,9 +170,10 @@ export default function Courses({ token, users, refreshCourses }: CoursesProps) 
                         void handleGetEnrollments(course.id);
                     }}
                     onDelete={handleDeleteCourse}
+                    dense={variant === "compact"}
                 />
             </div>
-            <Pager meta={meta} page={list.page} onPageChange={list.setPage} />
+            {variant === "full" && pager}
             <CrudModal
                 open={!!add}
                 onClose={() => setAdd(false)}

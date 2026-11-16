@@ -32,7 +32,7 @@ export default function StudentDash() {
   }, [token]);
 
   return (
-    <div className="flex gap-4 p-4 h-screen">
+    <div className="flex flex-1 min-h-0 gap-4 pt-4">
 
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
