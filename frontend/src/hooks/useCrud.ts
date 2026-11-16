@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { PageMeta } from "../types";
 
-interface CrudConfig<T, CreateBody, UpdateBody> {
+interface CrudConfig<T, CreateBody, UpdateBody, Query> {
     token: string | null;
 
+    /** Fetches the list. A paged endpoint also answers meta. */
     getAll: (
-        token: string
-    ) => Promise<{ data: T[] }>;
+        token: string,
+        query: Query
+    ) => Promise<{ data: T[]; meta?: PageMeta }>;
+
+    /** Passed to getAll; the list is fetched again whenever it changes. */
+    query?: Query;
 
     create: (
         token: string,
@@ -27,37 +33,56 @@ interface CrudConfig<T, CreateBody, UpdateBody> {
 export function useCrud<
     T extends { id: number },
     CreateBody = Partial<T>,
-    UpdateBody = CreateBody
+    UpdateBody = CreateBody,
+    Query = Record<string, never>
 >({
     token,
     getAll,
+    query,
     create,
     update,
     remove
-}: CrudConfig<T, CreateBody, UpdateBody>) {
+}: CrudConfig<T, CreateBody, UpdateBody, Query>) {
     const [items, setItems] = useState<T[]>([]);
+    const [meta, setMeta] = useState<PageMeta | null>(null);
     const [selectedItem, setSelectedItem] =
         useState<T | null>(null);
+
+    // A key rather than the object, so a query rebuilt with the same values doesn't refetch.
+    const queryKey = JSON.stringify(query ?? {});
+
+    const refresh = useCallback(async () => {
+        if (!token) return;
+
+        const res = await getAll(token, JSON.parse(queryKey) as Query);
+        setItems(res.data);
+        setMeta(res.meta ?? null);
+    }, [token, getAll, queryKey]);
 
     useEffect(() => {
         if (!token) return;
 
-        getAll(token)
-            .then(res => setItems(res.data))
+        // A reply that lands after the query has moved on (typing a search) is dropped.
+        let stale = false;
+        getAll(token, JSON.parse(queryKey) as Query)
+            .then(res => {
+                if (stale) return;
+                setItems(res.data);
+                setMeta(res.meta ?? null);
+            })
             .catch(console.error);
-    }, [token, getAll]);
+        return () => { stale = true; };
+    }, [token, getAll, queryKey]);
 
+    // Each change fetches the list again rather than patching it, so a row lands on the
+    // page and in the place the server's order puts it.
     async function addItem(
         data: CreateBody
     ) {
         if (!token) return;
 
-        const res = await create(token, data);
-
-        setItems(prev => [
-            ...prev,
-            res.data
-        ]);
+        await create(token, data);
+        await refresh();
     }
 
     async function updateItem(
@@ -66,19 +91,8 @@ export function useCrud<
     ) {
         if (!token) return;
 
-        const res = await update(
-            token,
-            id,
-            data
-        );
-
-        setItems(prev =>
-            prev.map(item =>
-                item.id === id
-                    ? res.data
-                    : item
-            )
-        );
+        await update(token, id, data);
+        await refresh();
     }
 
     async function deleteItem(
@@ -87,17 +101,13 @@ export function useCrud<
         if (!token) return;
 
         await remove(token, id);
-
-        setItems(prev =>
-            prev.filter(
-                item => item.id !== id
-            )
-        );
+        await refresh();
     }
 
     return {
         items,
-        setItems,
+        meta,
+        refresh,
         selectedItem,
         setSelectedItem,
         addItem,

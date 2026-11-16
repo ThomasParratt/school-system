@@ -33,6 +33,23 @@ describe("list order", () => {
     expect(listed).toEqual(ids);
   });
 
+  it("pages through users in that order, with no row missed or repeated", async () => {
+    const token = await loginAsAdmin();
+    // Same names, so only the id tiebreaker keeps the pages apart.
+    for (let i = 0; i < 5; i++) await createUser({ firstName: "Same", secondName: "Name" });
+
+    const all = await request(app).get("/users?role=student").set("Authorization", `Bearer ${token}`);
+    const pages: number[] = [];
+    for (const page of [1, 2, 3]) {
+      const response = await request(app)
+        .get(`/users?role=student&limit=2&page=${page}`)
+        .set("Authorization", `Bearer ${token}`);
+      pages.push(...response.body.data.map((u: { id: number }) => u.id));
+    }
+    expect(pages).toEqual(all.body.data.map((u: { id: number }) => u.id));
+    expect(pages).toHaveLength(5);
+  });
+
   it("lists courses by title, also after one is edited", async () => {
     const token = await loginAsAdmin();
     const finnish = await createCourse({ title: "Finnish A1" });

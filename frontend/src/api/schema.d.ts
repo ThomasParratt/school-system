@@ -86,17 +86,29 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all users */
+        /**
+         * List users, a page at a time
+         * @description Ordered by surname, then first name. q matches first name, surname or email.
+         */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description The page to answer, counting from 1. A page past the last answers an empty list. */
+                    page?: components["parameters"]["Page"];
+                    /** @description How many rows a page holds. */
+                    limit?: components["parameters"]["Limit"];
+                    /** @description Free-text search, matched anywhere in the fields the endpoint names, ignoring case. */
+                    q?: components["parameters"]["Search"];
+                    /** @description Only users with this role. */
+                    role?: "admin" | "student" | "instructor";
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description List of users */
+                /** @description A page of users */
                 200: {
                     headers: {
                         [name: string]: unknown;
@@ -104,7 +116,17 @@ export interface paths {
                     content: {
                         "application/json": {
                             data: components["schemas"]["User"][];
+                            meta: components["schemas"]["PageMeta"];
                         };
+                    };
+                };
+                /** @description Invalid query */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
                     };
                 };
                 /** @description Unauthorized */
@@ -2119,6 +2141,12 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        /** @description Where a page sits in the whole list. total counts every row that matches the filters. */
+        PageMeta: {
+            total: number;
+            page: number;
+            limit: number;
+        };
         Error: {
             error: {
                 message: string;
@@ -2127,7 +2155,14 @@ export interface components {
         };
     };
     responses: never;
-    parameters: never;
+    parameters: {
+        /** @description The page to answer, counting from 1. A page past the last answers an empty list. */
+        Page: number;
+        /** @description How many rows a page holds. */
+        Limit: number;
+        /** @description Free-text search, matched anywhere in the fields the endpoint names, ignoring case. */
+        Search: string;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;

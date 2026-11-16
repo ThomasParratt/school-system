@@ -3,21 +3,21 @@ import Students from "./Students";
 import Courses from "./Courses";
 import Calendar from "./Calendar";
 import { useAuth } from "../../context/useAuth";
-import { getUsers } from "../../services/userService";
+import { getAllUsers } from "../../services/userService";
 import { getCourses } from "../../services/courseService";
 import type { User, Course } from "../../types";
 import { useState, useEffect } from "react";
 
 export default function AdminDash() {
   const { token } = useAuth();
+  // Every user, for the course form's instructor and student pickers. The Instructors
+  // and Students lists page their own.
   const [users, setUsers] = useState<User[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
 
   const fetchUsers = async () => {
     if (!token) return;
-    const data = await getUsers(token);
-    console.log(data.data);
-    setUsers(data.data);
+    setUsers(await getAllUsers(token));
   };
 
   const fetchCourses = async () => {
@@ -32,11 +32,11 @@ export default function AdminDash() {
     const loadData = async () => {
       try {
         const [usersResponse, coursesResponse] = await Promise.all([
-          getUsers(token),
+          getAllUsers(token),
           getCourses(token),
         ]);
 
-        setUsers(usersResponse.data);
+        setUsers(usersResponse);
         setCourses(coursesResponse.data);
       } catch (error) {
         console.error("Failed to load admin dashboard data", error);
@@ -52,11 +52,11 @@ export default function AdminDash() {
       {/* Side column */}
       <div className="flex flex-col flex-1 gap-4">
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <Instructors token={token} users={users} courses={courses} refreshUsers={fetchUsers} />
+          <Instructors token={token} courses={courses} refreshUsers={fetchUsers} />
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">
-          <Students token={token} users={users} courses={courses} refreshUsers={fetchUsers} />
+          <Students token={token} courses={courses} refreshUsers={fetchUsers} />
         </div>
 
         <div className="flex-1 min-h-0 bg-gray-100 rounded-xl p-4 flex flex-col text-left">

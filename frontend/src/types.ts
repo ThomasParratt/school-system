@@ -15,6 +15,7 @@ export type Course = Schemas["Course"];
 export type CourseWithInstructor = Schemas["CourseWithInstructor"];
 export type Session = Schemas["ClassSession"];
 export type Enrollment = Schemas["Enrollment"];
+export type PageMeta = Schemas["PageMeta"];
 
 type Method = "get" | "post" | "patch" | "delete";
 type JsonBody<T> = T extends { content: { "application/json": infer B } } ? B : never;
@@ -29,10 +30,16 @@ export type ApiResponse<P extends keyof paths, M extends Method & keyof paths[P]
 export type ApiRequest<P extends keyof paths, M extends Method & keyof paths[P]> =
     paths[P][M] extends { requestBody?: infer B } ? JsonBody<NonNullable<B>> : never;
 
+/** The query string an operation takes, e.g. ApiQuery<"/users", "get">. */
+export type ApiQuery<P extends keyof paths, M extends Method & keyof paths[P]> =
+    paths[P][M] extends { parameters: { query?: infer Q } } ? NonNullable<Q> : never;
+
 /** An enrollment from GET /courses/{id}/enrollments, with its student. */
 export type CourseEnrollment = ApiResponse<"/courses/{id}/enrollments", "get">["data"][number];
 /** An enrollment from GET /users/{id}/enrollments, with its course. */
 export type UserEnrollment = ApiResponse<"/users/{id}/enrollments", "get">["data"][number];
+
+export type UserListQuery = ApiQuery<"/users", "get">;
 
 export type LoginResponse = ApiResponse<"/auth/login", "post">;
 
@@ -78,7 +85,6 @@ export type MyCoursesProps = {
 
 export type UsersProps = {
     token: string | null;
-    users: User[];
     courses: Course[];
     refreshUsers: () => Promise<void>;
 }

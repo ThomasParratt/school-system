@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { getUsers, addUser, deleteUser, updateUser, getUserEnrollments } from "../../services/userService";
 import { useCrud } from "../../hooks/useCrud";
-import type { UserEnrollment, User, UsersProps, CreateUserBody, UpdateUserBody, UserForm } from "../../types";
+import { useListQuery } from "../../hooks/useListQuery";
+import type { UserEnrollment, User, UsersProps, CreateUserBody, UpdateUserBody, UserForm, UserListQuery } from "../../types";
 import CrudList from "./CrudList";
+import { Pager, SearchBox } from "./ListControls";
 import CrudModal from "./CrudModal";
 
 const EMPTY_USER: UserForm = {
@@ -13,20 +15,25 @@ const EMPTY_USER: UserForm = {
     comments: ""
 }
 
-export default function Instructors({ token, users, refreshUsers }: UsersProps) {
+export default function Instructors({ token, refreshUsers }: UsersProps) {
     const [editForm, setEditForm] = useState<UserForm>({});
     const [addForm, setAddForm] = useState<UserForm>({});
     const [add, setAdd] = useState(false);
 
+    const list = useListQuery<UserListQuery>({ role: "instructor" });
+
     const {
+        items: users,
+        meta,
         selectedItem: selectedUser,
         setSelectedItem: setSelectedUser,
         addItem,
         updateItem,
         deleteItem
-    } = useCrud<User, CreateUserBody, UpdateUserBody>({
+    } = useCrud<User, CreateUserBody, UpdateUserBody, UserListQuery>({
         token,
         getAll: getUsers,
+        query: list.query,
         create: addUser,
         update: updateUser,
         remove: deleteUser
@@ -119,9 +126,14 @@ export default function Instructors({ token, users, refreshUsers }: UsersProps) 
                     Add
                 </button>
             </div>
+            <SearchBox
+                value={list.search}
+                onChange={list.setSearch}
+                placeholder="Search name or email"
+            />
             <div className="flex-1 min-h-0 overflow-y-auto">
                 <CrudList<User>
-                    items={users.filter(u => u.role === "instructor")}
+                    items={users}
                     getKey={(u) => u.id}
                     renderLabel={(u) =>
                         `${u.secondName}, ${u.firstName}`
@@ -140,6 +152,7 @@ export default function Instructors({ token, users, refreshUsers }: UsersProps) 
                     onDelete={handleDeleteUser}
                 />
             </div>
+            <Pager meta={meta} page={list.page} onPageChange={list.setPage} />
             <CrudModal
                 open={!!add}
                 onClose={() => setAdd(false)}

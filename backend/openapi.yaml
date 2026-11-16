@@ -17,6 +17,37 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
+  # Query parameters shared by the list endpoints.
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: The page to answer, counting from 1. A page past the last answers an empty list.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 2147483647
+        default: 1
+
+    Limit:
+      name: limit
+      in: query
+      description: How many rows a page holds.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+
+    Search:
+      name: q
+      in: query
+      description: Free-text search, matched anywhere in the fields the endpoint names, ignoring case.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 100
+
   schemas:
     # Field rules shared by request schemas. The validator enforces them before a route runs.
     Id:
@@ -191,6 +222,21 @@ components:
           type: string
           format: date-time
 
+    PageMeta:
+      description: Where a page sits in the whole list. total counts every row that matches the filters.
+      type: object
+      required: [total, page, limit]
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+
     Error:
       type: object
       required: [error]
@@ -266,23 +312,43 @@ paths:
 
   /users:
     get:
-      summary: Get all users
+      summary: List users, a page at a time
+      description: Ordered by surname, then first name. q matches first name, surname or email.
       security:
         - bearerAuth: [admin]
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Search"
+        - name: role
+          in: query
+          description: Only users with this role.
+          schema:
+            type: string
+            enum: [admin, student, instructor]
       responses:
         "200":
-          description: List of users
+          description: A page of users
           content:
             application/json:
               schema:
                 type: object
-                required: [data]
+                required: [data, meta]
                 properties:
                   data:
                     type: array
                     items:
                       $ref: "#/components/schemas/User"
-        
+                  meta:
+                    $ref: "#/components/schemas/PageMeta"
+
+        "400":
+          description: Invalid query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "401":
           description: Unauthorized
           content:
