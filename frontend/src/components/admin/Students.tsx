@@ -5,7 +5,7 @@ import { useCrud } from "../../hooks/useCrud";
 import { useListQuery } from "../../hooks/useListQuery";
 import type { User, UsersProps, Course, UserEnrollment, CreateUserBody, UpdateUserBody, UserForm, UserListQuery } from "../../types";
 import CrudList from "./CrudList";
-import { Pager, SearchBox } from "./ListControls";
+import { ListHeader, Pager } from "./ListControls";
 import CrudModal from "./CrudModal";
 import bin from "../../../assets/bin.png";
 
@@ -17,13 +17,13 @@ const EMPTY_USER: UserForm = {
     comments: ""
 }
 
-export default function Students({ token, courses, refreshUsers }: UsersProps) {
+export default function Students({ token, courses, refreshUsers, variant = "full" }: UsersProps) {
     const [editForm, setEditForm] = useState<UserForm>({});
     const [selectedCourseId, setSelectedCourseId] = useState("");
     const [addForm, setAddForm] = useState<UserForm>({});
     const [add, setAdd] = useState(false);
 
-    const list = useListQuery<UserListQuery>({ role: "student" });
+    const { listRef, ...list } = useListQuery<UserListQuery>({ role: "student" }, variant);
 
     const {
         items: users,
@@ -131,33 +131,30 @@ export default function Students({ token, courses, refreshUsers }: UsersProps) {
         }
     }
 
+
+    const pager = <Pager meta={meta} page={list.page} onPageChange={list.setPage} variant={variant} />;
+
     return (
         <div className="flex flex-col flex-1 min-h-0">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-xl font-bold">Students</h1>
-
-                <button
-                    onClick={() => {
-                        setAddForm({
-                            firstName: EMPTY_USER.firstName,
-                            secondName: EMPTY_USER.secondName,
-                            email: EMPTY_USER.email,
-                            password: EMPTY_USER.password,
-                            comments: EMPTY_USER.comments ?? ""
-                        });
-                        setAdd(true);
-                    }}
-                    className="bg-indigo-600 text-white px-3 py-1 rounded cursor-pointer hover:bg-indigo-400"
-                >
-                    Add
-                </button>
-            </div>
-            <SearchBox
-                value={list.search}
-                onChange={list.setSearch}
-                placeholder="Search name or email"
+            <ListHeader
+                title="Students"
+                onAdd={() => {
+                    setAddForm({
+                        firstName: EMPTY_USER.firstName,
+                        secondName: EMPTY_USER.secondName,
+                        email: EMPTY_USER.email,
+                        password: EMPTY_USER.password,
+                        comments: EMPTY_USER.comments ?? ""
+                    });
+                    setAdd(true);
+                }}
+                search={list.search}
+                onSearchChange={list.setSearch}
+                searchPlaceholder="Search name or email"
+                variant={variant}
+                pager={variant === "compact" ? pager : undefined}
             />
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto">
                 <CrudList<User>
                     items={users}
                     getKey={(u) => u.id}
@@ -176,9 +173,10 @@ export default function Students({ token, courses, refreshUsers }: UsersProps) {
                         void handleGetEnrollments(user.id);
                     }}
                     onDelete={handleDeleteUser}
+                    dense={variant === "compact"}
                 />
             </div>
-            <Pager meta={meta} page={list.page} onPageChange={list.setPage} />
+            {variant === "full" && pager}
             <CrudModal
                 open={!!add}
                 onClose={() => setAdd(false)}

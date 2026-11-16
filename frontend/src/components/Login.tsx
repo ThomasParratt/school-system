@@ -41,8 +41,10 @@ function Login() {
         }
     };
 
+    // Signed in, the page is exactly one screen tall and the dashboard fills what the
+    // header leaves, so the lists and the calendar scroll inside their own panels.
     return (
-        <div className="p-8 font-sans min-h-screen">
+        <div className={`p-8 font-sans ${user ? "h-screen flex flex-col" : "min-h-screen"}`}>
             {!user ? (
                 <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
                     <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
@@ -88,7 +90,7 @@ function Login() {
                     </form>
                 </div>
             ) : (
-                <div className="text-center">
+                <div className="text-center flex flex-col flex-1 min-h-0">
                     <header className="bg-white rounded-xl">
                         <div className="max-w-8xl mx-auto px-10 py-4 flex items-center justify-between">
                             {/* Left side */}
