@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+/* FullCalendar injects its own CSS at runtime, so these overrides use one more class
+   than the library's rules to win whatever the stylesheet order. */
+
+/* The date range title (default 1.75em). */
+.fc .fc-header-toolbar .fc-toolbar-title {
+  font-size: 1.125rem;
+}
+
+/* The gap below the toolbar (default 1.5em). The library's rule is
+   .fc .fc-toolbar.fc-header-toolbar, so .fc is repeated to outrank it. */
+.fc.fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 0.5rem;
+}

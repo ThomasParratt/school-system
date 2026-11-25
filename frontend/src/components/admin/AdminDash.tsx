@@ -7,20 +7,7 @@ import { getAllUsers } from "../../services/userService";
 import { getAllCourses } from "../../services/courseService";
 import type { User, Course } from "../../types";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
-
-const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "instructors", label: "Instructors" },
-  { id: "students", label: "Students" },
-  { id: "courses", label: "Courses" },
-] as const;
-
-type Tab = (typeof TABS)[number]["id"];
-
-function isTab(value: string | null): value is Tab {
-  return TABS.some(t => t.id === value);
-}
+import { useAdminTab } from "./adminTabs";
 
 export default function AdminDash() {
   const { token } = useAuth();
@@ -31,14 +18,8 @@ export default function AdminDash() {
   // pages its own.
   const [courses, setCourses] = useState<Course[]>([]);
 
-  // The tab lives in the URL (?tab=students), so a refresh or the back button keeps it.
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get("tab");
-  const tab: Tab = isTab(tabParam) ? tabParam : "overview";
-
-  const openTab = (next: Tab) => {
-    setSearchParams(next === "overview" ? {} : { tab: next });
-  };
+  // The tabs themselves are in the page header (AdminTabs).
+  const [tab] = useAdminTab();
 
   const fetchUsers = async () => {
     if (!token) return;
@@ -76,25 +57,6 @@ export default function AdminDash() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 gap-4 pt-4">
-      <nav className="flex gap-1 border-b border-gray-200" role="tablist">
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => openTab(t.id)}
-            className={`px-4 py-2 -mb-px border-b-2 cursor-pointer ${
-              tab === t.id
-                ? "border-indigo-600 text-indigo-600 font-semibold"
-                : "border-transparent text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
-
       {tab === "overview" && (
         <div className="flex flex-1 min-h-0 gap-4">
           {/* Side column */}

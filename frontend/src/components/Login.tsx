@@ -2,6 +2,7 @@ import { useState } from "react";
 import { login } from "../services/loginService.ts";
 import { useAuth } from "../context/useAuth.ts";
 import AdminDash from "./admin/AdminDash.tsx";
+import AdminTabs from "./admin/AdminTabs.tsx";
 import InstructorDash from "./instructor/InstructorDash.tsx";
 import StudentDash from "./student/StudentDash.tsx";
 
@@ -44,7 +45,7 @@ function Login() {
     // Signed in, the page is exactly one screen tall and the dashboard fills what the
     // header leaves, so the lists and the calendar scroll inside their own panels.
     return (
-        <div className={`p-8 font-sans ${user ? "h-screen flex flex-col" : "min-h-screen"}`}>
+        <div className={`font-sans ${user ? "p-4 h-screen flex flex-col" : "p-8 min-h-screen"}`}>
             {!user ? (
                 <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
                     <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
@@ -92,11 +93,13 @@ function Login() {
             ) : (
                 <div className="text-center flex flex-col flex-1 min-h-0">
                     <header className="bg-white rounded-xl">
-                        <div className="max-w-8xl mx-auto px-10 py-4 flex items-center justify-between">
+                        <div className="max-w-8xl mx-auto px-6 py-2 flex items-center justify-between">
                             {/* Left side */}
-                            <h1 className="text-3xl font-bold text-gray-700">
+                            <h1 className="text-2xl font-bold text-gray-700">
                                 School Management System
                             </h1>
+
+                            {user.role === "admin" && <AdminTabs />}
 
                             {/* Right side */}
                             <div className="flex items-center gap-4">
@@ -106,7 +109,7 @@ function Login() {
 
                                 <button
                                     onClick={logout}
-                                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md transition"
+                                    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded-md transition"
                                 >
                                     Logout
                                 </button>
