@@ -103,13 +103,13 @@ function Login() {
 
                             {/* Right side */}
                             <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-700">
+                                <span className="text-gray-700">
                                     Welcome, <span className="font-medium">{user.firstName}</span>
                                 </span>
 
                                 <button
                                     onClick={logout}
-                                    className="bg-gray-600 hover:bg-gray-700 text-white text-sm px-3 py-1 rounded-md transition"
+                                    className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded-md transition"
                                 >
                                     Logout
                                 </button>
