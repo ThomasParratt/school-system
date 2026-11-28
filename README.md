@@ -1,4 +1,4 @@
-# School Management System (MVP)
+# Classdesk (MVP)
 
 This is a full-stack enterprise web application designed to simplify how a school manages its courses, class sessions, and student enrollments. The project was inspired by direct feedback from students and staff at a local language school to fix real administrative headaches. 
 
