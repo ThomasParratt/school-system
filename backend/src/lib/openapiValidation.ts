@@ -4,8 +4,13 @@ import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.j
 import { authenticate, type AuthFailure } from "../middleware/authMiddleware.js";
 import { errorResponse } from "./validation.js";
 
+type SecurityFailure = { message: string; code: AuthFailure["code"] | "PASSWORD_CHANGE_REQUIRED" };
+
 // The validator keeps only a thrown error's message, so the failure's code waits here.
-const authFailures = new WeakMap<Request, AuthFailure>();
+const securityFailures = new WeakMap<Request, SecurityFailure>();
+
+/** Marks the operations a user who must change their password can still call. */
+const ALLOWED_BEFORE_PASSWORD_CHANGE = "x-allowed-before-password-change";
 
 /**
  * Validates every request's path params, query and JSON body against openapi.yaml
@@ -14,6 +19,10 @@ const authFailures = new WeakMap<Request, AuthFailure>();
  * The bearer token and the operation's roles are checked first, on the operations
  * the spec secures, so a request is answered 401 or 403 before its body is looked
  * at. requireAuth and requireRole in the routes stay as a second check.
+ *
+ * A token issued while the user must change their password is answered 403
+ * PASSWORD_CHANGE_REQUIRED everywhere except the operations marked
+ * `x-allowed-before-password-change: true`.
  */
 export function openApiValidator(spec: object) {
   return OpenApiValidator.middleware({
@@ -27,8 +36,14 @@ export function openApiValidator(spec: object) {
         bearerAuth: (req, roles) => {
           const failure = authenticate(req as Request);
           if (failure) {
-            authFailures.set(req as Request, failure);
+            securityFailures.set(req as Request, failure);
             throw { status: 401, error: { message: failure.message } };
+          }
+          const operation = (req as Request & { openapi?: { schema?: Record<string, unknown> } }).openapi?.schema;
+          if ((req as Request).user?.mustChangePassword && operation?.[ALLOWED_BEFORE_PASSWORD_CHANGE] !== true) {
+            const message = "You must change your password before continuing";
+            securityFailures.set(req as Request, { message, code: "PASSWORD_CHANGE_REQUIRED" });
+            throw { status: 403, error: { message } };
           }
           const role = (req as Request).user?.role;
           if (roles.length > 0 && (!role || !roles.includes(role))) {
@@ -66,13 +81,17 @@ export function openApiErrorHandler(error: unknown, req: Request, res: Response,
       if (first?.path.includes("/params/")) return errorResponse(res, 400, "Invalid ID", "INVALID_ID");
       return errorResponse(res, 400, message, "VALIDATION_ERROR");
     case 401: {
-      const failure = authFailures.get(req);
+      const failure = securityFailures.get(req);
       return failure
         ? errorResponse(res, 401, failure.message, failure.code)
         : errorResponse(res, 401, "Missing or invalid authorization token", "MISSING_AUTH_TOKEN");
     }
-    case 403:
-      return errorResponse(res, 403, "Forbidden", "FORBIDDEN");
+    case 403: {
+      const failure = securityFailures.get(req);
+      return failure?.code === "PASSWORD_CHANGE_REQUIRED"
+        ? errorResponse(res, 403, failure.message, failure.code)
+        : errorResponse(res, 403, "Forbidden", "FORBIDDEN");
+    }
     case 404:
       return errorResponse(res, 404, "Route not found", "ROUTE_NOT_FOUND");
     case 405:

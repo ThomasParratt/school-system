@@ -1,9 +1,9 @@
 import { useState } from "react";
-import type { User } from "../types.ts";
+import type { AuthUser } from "../types.ts";
 import { AuthContext } from "./useAuth.ts";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(() => {
+    const [user, setUser] = useState<AuthUser | null>(() => {
         const storedUser = localStorage.getItem("user");
 
         if (!storedUser) {
@@ -11,7 +11,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         try {
-            return JSON.parse(storedUser) as User;
+            return JSON.parse(storedUser) as AuthUser;
         } catch (error) {
             console.error("Failed to restore stored user", error);
             localStorage.removeItem("user");
@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return localStorage.getItem("token");
     });
 
-    const loginUser = (user: User, token: string) => {
+    const loginUser = (user: AuthUser, token: string) => {
         setUser(user);
         setToken(token);
 

@@ -38,6 +38,8 @@ model User {
 	email        String       @unique
 	password     String
 	role         Role         @default(student)
+	// Set when an admin creates the account, so its first login must pick a new password.
+	mustChangePassword Boolean @default(false) @map("must_change_password")
     comments     String?
 	createdAt    DateTime     @default(now()) @map("created_at")
 	updatedAt    DateTime?    @updatedAt @map("updated_at")

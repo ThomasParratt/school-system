@@ -49,7 +49,9 @@ Root: `npm run typecheck` (both apps), `npm test` (backend tests).
 Every list endpoint must use an explicit order from `src/lib/order.ts` (`USER_ORDER`, `COURSE_ORDER`, `SESSION_ORDER`), or `byName`/`byStart` when combining rows in code. `tests/integration/ordering/listOrder.test.ts` covers this.
 
 ### Auth and roles
-Roles are `admin`, `instructor` and `student` (Prisma `Role` enum, `AUTH_ROLES` in `src/lib/auth.ts`). The JWT payload is `{ id, role }` and expires after 1h. `JWT_SECRET` must be set or the backend won't start. The frontend keeps the token in `AuthContext`, and `components/Login.tsx` renders `AdminDash`, `InstructorDash` or `StudentDash` based on the role. Instructor- and student-facing endpoints are scoped to the caller, for example `/users/me/...`.
+Roles are `admin`, `instructor` and `student` (Prisma `Role` enum, `AUTH_ROLES` in `src/lib/auth.ts`). The JWT payload is `{ id, role, mustChangePassword }` and expires after 1h. `JWT_SECRET` must be set or the backend won't start. The frontend keeps the token in `AuthContext`, and `components/Login.tsx` renders `AdminDash`, `InstructorDash` or `StudentDash` based on the role.
+
+Users an admin creates (`POST /users`) get `mustChangePassword = true`. While their token carries it, the validator answers 403 `PASSWORD_CHANGE_REQUIRED` to every operation except those marked `x-allowed-before-password-change: true` in the spec (only `POST /users/me/password`, which returns a fresh token). The frontend shows `ChangePassword` instead of the dashboard until then. Seeded and factory users default to `false`. Instructor- and student-facing endpoints are scoped to the caller, for example `/users/me/...`.
 
 ### Frontend → backend
 Services in `frontend/src/services/` call `/api/...`. The Vite dev server proxies `/api` to `http://backend:3000` and strips the prefix, and `nginx.conf` does the same in production. Admin CRUD screens share `hooks/useCrud.ts` with `CrudList`/`CrudModal`.

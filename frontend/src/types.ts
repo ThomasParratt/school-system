@@ -10,6 +10,8 @@ type Schemas = components["schemas"];
 export type Language = Schemas["Language"];
 export type Level = Schemas["Level"];
 export type User = Schemas["User"];
+/** The signed-in user, as login and a password change answer it. */
+export type AuthUser = Schemas["AuthSession"]["user"];
 export type Role = User["role"];
 export type Course = Schemas["Course"];
 export type CourseWithInstructor = Schemas["CourseWithInstructor"];
@@ -44,6 +46,8 @@ export type CourseListQuery = ApiQuery<"/courses", "get">;
 export type SessionListQuery = ApiQuery<"/sessions", "get">;
 
 export type LoginResponse = ApiResponse<"/auth/login", "post">;
+export type ChangePasswordResponse = ApiResponse<"/users/me/password", "post">;
+export type ChangePasswordBody = ApiRequest<"/users/me/password", "post">;
 
 export type CreateUserBody = ApiRequest<"/users", "post">;
 export type UpdateUserBody = ApiRequest<"/users/{id}", "patch">;

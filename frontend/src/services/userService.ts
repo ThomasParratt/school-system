@@ -1,4 +1,4 @@
-import type { ApiErrorResponse, ApiResponse, CreateUserBody, UpdateUserBody, User, UserListQuery } from "../types";
+import type { ApiErrorResponse, ApiResponse, ChangePasswordBody, ChangePasswordResponse, CreateUserBody, UpdateUserBody, User, UserListQuery } from "../types";
 import { fetchAllPages, toQueryString } from "./query";
 
 /** One page of users. Without a query this is the first 25. */
@@ -153,6 +153,29 @@ export async function getUserStudents(token: string | null): Promise<ApiResponse
     const res = await fetch("/api/users/me/students", {
         headers: { Authorization: `Bearer ${token}` },
     });
+    if (!res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        const errorMessage = contentType.includes("application/json")
+            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
+            : await res.text();
+        throw new Error(errorMessage);
+    }
+    return res.json();
+}
+/** Changes the signed-in user's password. Answers a new token, which no longer needs a change. */
+export async function changePassword(
+    token: string | null,
+    body: ChangePasswordBody
+): Promise<ChangePasswordResponse> {
+    const res = await fetch("/api/users/me/password", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
     if (!res.ok) {
         const contentType = res.headers.get("content-type") ?? "";
         const errorMessage = contentType.includes("application/json")

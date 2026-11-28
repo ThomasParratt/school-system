@@ -131,6 +131,30 @@ components:
           type: string
           format: date-time
 
+    AuthSession:
+      description: >
+        The signed-in user and their bearer token. While user.mustChangePassword is true, the
+        token is answered 403 PASSWORD_CHANGE_REQUIRED everywhere except POST /users/me/password.
+      type: object
+      required: [user, token]
+      properties:
+        user:
+          allOf:
+            - $ref: "#/components/schemas/User"
+            - type: object
+              required: [mustChangePassword]
+              properties:
+                mustChangePassword:
+                  type: boolean
+        token:
+          type: string
+
+    Password:
+      description: A password of at least 8 characters, not all whitespace.
+      type: string
+      minLength: 8
+      pattern: "\\S"
+
     Course:
       type: object
       required: [id, title, language, level, material, instructorId, createdAt]
@@ -281,13 +305,7 @@ paths:
                 required: [data]
                 properties:
                   data:
-                    type: object
-                    required: [user, token]
-                    properties:
-                      user:
-                        $ref: "#/components/schemas/User"
-                      token:
-                        type: string
+                    $ref: "#/components/schemas/AuthSession"
         
         "400":
           description: Invalid body
@@ -389,9 +407,9 @@ paths:
                 email:
                   $ref: "#/components/schemas/Email"
                 password:
-                  type: string
-                  minLength: 8
-                  pattern: "\\S"
+                  description: The user must replace it on first login.
+                  allOf:
+                    - $ref: "#/components/schemas/Password"
                 comments:
                   $ref: "#/components/schemas/NonEmptyString"
                 role:
@@ -470,6 +488,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
+        "403":
+          description: Password change required (PASSWORD_CHANGE_REQUIRED)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
         "500":
           description: Server error
           content:
@@ -477,6 +502,68 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
   
+  /users/me/password:
+    post:
+      summary: Change the logged-in user's password
+      description: >
+        Answers a new token with mustChangePassword false. The only operation a user who must
+        change their password can call.
+      x-allowed-before-password-change: true
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                  minLength: 1
+                newPassword:
+                  $ref: "#/components/schemas/Password"
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/AuthSession"
+
+        "400":
+          description: Invalid body, wrong current password (INVALID_CURRENT_PASSWORD), or the new password is the current one (PASSWORD_UNCHANGED)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /users/me/courses:
     get:
       summary: Get logged-in user courses
@@ -498,6 +585,13 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Password change required (PASSWORD_CHANGE_REQUIRED)
           content:
             application/json:
               schema:
@@ -531,6 +625,13 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Password change required (PASSWORD_CHANGE_REQUIRED)
           content:
             application/json:
               schema:
@@ -1395,6 +1496,13 @@ paths:
         
         "401":
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "403":
+          description: Password change required (PASSWORD_CHANGE_REQUIRED)
           content:
             application/json:
               schema:

@@ -5,6 +5,7 @@ import AdminDash from "./admin/AdminDash.tsx";
 import AdminTabs from "./admin/AdminTabs.tsx";
 import InstructorDash from "./instructor/InstructorDash.tsx";
 import StudentDash from "./student/StudentDash.tsx";
+import ChangePassword from "./ChangePassword.tsx";
 
 function Login() {
     const { user, loginUser, logout } = useAuth();
@@ -99,7 +100,7 @@ function Login() {
                                 School Management System
                             </h1>
 
-                            {user.role === "admin" && <AdminTabs />}
+                            {user.role === "admin" && !user.mustChangePassword && <AdminTabs />}
 
                             {/* Right side */}
                             <div className="flex items-center gap-4">
@@ -116,16 +117,23 @@ function Login() {
                             </div>
                         </div>
                     </header>
-                    {user.role === "admin" && (
-                        <AdminDash />
-                    )}
+                    {/* Until the password is changed the API refuses everything else, so no dashboard. */}
+                    {user.mustChangePassword ? (
+                        <ChangePassword />
+                    ) : (
+                        <>
+                            {user.role === "admin" && (
+                                <AdminDash />
+                            )}
 
-                    {user.role === "instructor" && (
-                        <InstructorDash />
-                    )}
+                            {user.role === "instructor" && (
+                                <InstructorDash />
+                            )}
 
-                    {user.role === "student" && (
-                        <StudentDash />
+                            {user.role === "student" && (
+                                <StudentDash />
+                            )}
+                        </>
                     )}
                 </div>
             )}

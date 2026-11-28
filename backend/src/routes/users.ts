@@ -5,6 +5,7 @@ import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 import { errorResponse, isPrismaError } from "../lib/validation.js";
 import { byName, byStart, COURSE_ORDER, USER_ORDER } from "../lib/order.js";
 import { pageArgs, pageMeta, queryString } from "../lib/pagination.js";
+import { authSession } from "../lib/auth.js";
 import type { Prisma, Role } from "@prisma/client";
 
 const router = Router();
@@ -82,7 +83,9 @@ router.post(
           email,
           password: hashedPassword,
           role: userRole,
-          comments
+          comments,
+          // The admin chose this password, so the user replaces it on first login.
+          mustChangePassword: true,
         },
         select: {
           id: true,
@@ -159,6 +162,38 @@ router.get("/me", requireAuth, async (req, res) => {
         code: "FETCH_USERS_ERROR",
       },
     });
+  }
+});
+
+// POST /users/me/password
+router.post("/me/password", requireAuth, async (req, res) => {
+  try {
+    // Shape and field types are checked against openapi.yaml before this runs.
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { id: Number(req.user?.id) } });
+    if (!user) return errorResponse(res, 404, "User not found", "USER_NOT_FOUND");
+
+    if (!(await bcrypt.compare(currentPassword, user.password))) {
+      return errorResponse(res, 400, "Current password is incorrect", "INVALID_CURRENT_PASSWORD");
+    }
+    if (newPassword === currentPassword) {
+      return errorResponse(res, 400, "New password must differ from the current one", "PASSWORD_UNCHANGED");
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: await bcrypt.hash(newPassword, SALT_ROUNDS),
+        mustChangePassword: false,
+      },
+    });
+
+    // A new token, so the old one's mustChangePassword no longer blocks the user.
+    return res.status(200).json({ data: authSession(updatedUser) });
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, 500, "Failed to change password", "CHANGE_PASSWORD_ERROR");
   }
 });
 
