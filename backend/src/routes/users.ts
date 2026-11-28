@@ -478,7 +478,7 @@ router.patch(
         firstName?: string;
         secondName?: string;
         email?: string;
-        comments?: string;
+        comments?: string | null;
       } = {};
 
       if (firstName !== undefined) updateData.firstName = firstName;
