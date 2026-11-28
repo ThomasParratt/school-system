@@ -6,6 +6,7 @@ import AdminTabs from "./admin/AdminTabs.tsx";
 import InstructorDash from "./instructor/InstructorDash.tsx";
 import StudentDash from "./student/StudentDash.tsx";
 import ChangePassword from "./ChangePassword.tsx";
+import Logo from "./Logo.tsx";
 import { errorMessage } from "../lib/errors.ts";
 import { INVALID_EMAIL_MESSAGE, isValidEmail } from "../lib/validation.ts";
 
@@ -53,8 +54,8 @@ function Login() {
         <div className={`font-sans ${user ? "p-4 h-screen flex flex-col" : "p-8 min-h-screen"}`}>
             {!user ? (
                 <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
-                    <h1 className="text-3xl font-bold mb-8 text-center text-gray-800">
-                        Classdesk
+                    <h1 className="mb-8 text-center">
+                        <Logo size={40} />
                     </h1>
                     <h2 className="text-2xl font-semibold mb-4 text-gray-700">
                         Login
@@ -102,8 +103,8 @@ function Login() {
                     <header className="bg-white rounded-xl">
                         <div className="max-w-8xl mx-auto px-6 py-2 flex items-center justify-between">
                             {/* Left side */}
-                            <h1 className="text-2xl font-bold text-gray-700">
-                                Classdesk
+                            <h1>
+                                <Logo size={32} />
                             </h1>
 
                             {user.role === "admin" && !user.mustChangePassword && <AdminTabs />}
