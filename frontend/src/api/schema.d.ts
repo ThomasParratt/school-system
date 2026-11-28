@@ -37,10 +37,7 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            data: {
-                                user: components["schemas"]["User"];
-                                token: string;
-                            };
+                            data: components["schemas"]["AuthSession"];
                         };
                     };
                 };
@@ -173,7 +170,8 @@ export interface paths {
                         firstName: components["schemas"]["NonEmptyString"];
                         secondName: components["schemas"]["NonEmptyString"];
                         email: components["schemas"]["Email"];
-                        password: string;
+                        /** @description The user must replace it on first login. */
+                        password: components["schemas"]["Password"];
                         comments?: components["schemas"]["NonEmptyString"];
                         /**
                          * @description Defaults to student.
@@ -285,6 +283,15 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
+                /** @description Password change required (PASSWORD_CHANGE_REQUIRED) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
                 /** @description Server error */
                 500: {
                     headers: {
@@ -298,6 +305,90 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/me/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change the logged-in user's password
+         * @description Answers a new token with mustChangePassword false. The only operation a user who must change their password can call.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        currentPassword: string;
+                        newPassword: components["schemas"]["Password"];
+                    };
+                };
+            };
+            responses: {
+                /** @description Password changed */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            data: components["schemas"]["AuthSession"];
+                        };
+                    };
+                };
+                /** @description Invalid body, wrong current password (INVALID_CURRENT_PASSWORD), or the new password is the current one (PASSWORD_UNCHANGED) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description User not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -334,6 +425,15 @@ export interface paths {
                 };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Password change required (PASSWORD_CHANGE_REQUIRED) */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -390,6 +490,15 @@ export interface paths {
                 };
                 /** @description Unauthorized */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Password change required (PASSWORD_CHANGE_REQUIRED) */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1492,6 +1601,15 @@ export interface paths {
                         "application/json": components["schemas"]["Error"];
                     };
                 };
+                /** @description Password change required (PASSWORD_CHANGE_REQUIRED) */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
                 /** @description Course not found */
                 404: {
                     headers: {
@@ -2143,6 +2261,15 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        /** @description The signed-in user and their bearer token. While user.mustChangePassword is true, the token is answered 403 PASSWORD_CHANGE_REQUIRED everywhere except POST /users/me/password. */
+        AuthSession: {
+            user: components["schemas"]["User"] & {
+                mustChangePassword: boolean;
+            };
+            token: string;
+        };
+        /** @description A password of at least 8 characters, not all whitespace. */
+        Password: string;
         Course: {
             id: number;
             title: string;

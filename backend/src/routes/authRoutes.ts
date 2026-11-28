@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../lib/prisma.js";
-import { signAuthToken } from "../lib/auth.js";
+import { authSession } from "../lib/auth.js";
 
 const router = Router();
 
@@ -35,25 +35,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const token = signAuthToken({
-      id: user.id,
-      role: user.role,
-    });
-
-    return res.status(200).json({
-      data: {
-        user: {
-          id: user.id,
-          firstName: user.firstName,
-          secondName: user.secondName,
-          email: user.email,
-          role: user.role,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        },
-        token,
-      },
-    });
+    return res.status(200).json({ data: authSession(user) });
   } catch (err) {
     console.error(err);
     return res.status(500).json({
