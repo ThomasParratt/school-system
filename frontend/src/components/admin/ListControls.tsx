@@ -84,6 +84,8 @@ type ListHeaderProps = {
     variant?: ListVariant;
     /** The compact layout's Pager, shown in the header row to leave the box's height to the rows. */
     pager?: React.ReactNode;
+    /** Controls shown beside the search box, such as filter dropdowns. */
+    filters?: React.ReactNode;
 };
 
 /** Title, Add button and search box above an admin list, sized for its layout. */
@@ -94,7 +96,8 @@ export function ListHeader({
     onSearchChange,
     searchPlaceholder,
     variant = "full",
-    pager
+    pager,
+    filters
 }: ListHeaderProps) {
     const compact = variant === "compact";
 
@@ -114,12 +117,15 @@ export function ListHeader({
                     </button>
                 </div>
             </div>
-            <SearchBox
-                value={search}
-                onChange={onSearchChange}
-                placeholder={searchPlaceholder}
-                variant={variant}
-            />
+            <div className="flex gap-2">
+                <SearchBox
+                    value={search}
+                    onChange={onSearchChange}
+                    placeholder={searchPlaceholder}
+                    variant={variant}
+                />
+                {filters}
+            </div>
         </>
     );
 }

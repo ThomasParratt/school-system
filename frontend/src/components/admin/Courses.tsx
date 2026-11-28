@@ -2,13 +2,18 @@ import { useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
 import { useListQuery } from "../../hooks/useListQuery";
-import type { Course, CourseEnrollment, CourseForm, CourseListQuery, CoursesProps, CreateCourseBody, UpdateCourseBody } from "../../types";
+import type { Course, CourseEnrollment, CourseForm, CourseListQuery, CoursesProps, CreateCourseBody, Language, Level, UpdateCourseBody } from "../../types";
 import { courseFormError, isLanguage, isLevel, LANGUAGES, LEVELS } from "../../lib/validation";
 import { showError } from "../../lib/errors";
 import CrudList from "./CrudList";
 import { ListHeader, Pager } from "./ListControls";
 import CrudModal from "./CrudModal";
 import bin from "../../../assets/bin.png";
+
+/** The list's filter dropdowns. A missing key means "All", so it's left out of the query. */
+type CourseFilters = { language?: Language; level?: Level; instructorId?: number };
+
+const FILTER_SELECT = "border border-gray-300 rounded p-1 mb-3 bg-white";
 
 const EMPTY_COURSE: CourseForm = {
     title: "",
@@ -21,7 +26,9 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
     const [addForm, setAddForm] = useState<CourseForm>({});
     const [add, setAdd] = useState(false);
 
-    const { listRef, ...list } = useListQuery<CourseListQuery>({}, variant);
+    const [filters, setFilters] = useState<CourseFilters>({});
+    const { listRef, ...list } = useListQuery<CourseListQuery>(filters, variant);
+    const instructors = users.filter(user => user.role === "instructor");
 
     const {
         items: courses,
@@ -154,6 +161,51 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                 searchPlaceholder="Search title or instructor"
                 variant={variant}
                 pager={variant === "compact" ? pager : undefined}
+                filters={variant === "full" && (
+                    <>
+                        <select
+                            aria-label="Filter by language"
+                            value={filters.language ?? ""}
+                            onChange={(e) =>
+                                setFilters(prev => ({ ...prev, language: isLanguage(e.target.value) ? e.target.value : undefined }))
+                            }
+                            className={FILTER_SELECT}
+                        >
+                            <option value="">All languages</option>
+                            {LANGUAGES.map(language => (
+                                <option key={language} value={language}>{language}</option>
+                            ))}
+                        </select>
+                        <select
+                            aria-label="Filter by level"
+                            value={filters.level ?? ""}
+                            onChange={(e) =>
+                                setFilters(prev => ({ ...prev, level: isLevel(e.target.value) ? e.target.value : undefined }))
+                            }
+                            className={FILTER_SELECT}
+                        >
+                            <option value="">All levels</option>
+                            {LEVELS.map(level => (
+                                <option key={level} value={level}>{level}</option>
+                            ))}
+                        </select>
+                        <select
+                            aria-label="Filter by instructor"
+                            value={filters.instructorId ?? ""}
+                            onChange={(e) =>
+                                setFilters(prev => ({ ...prev, instructorId: e.target.value ? Number(e.target.value) : undefined }))
+                            }
+                            className={FILTER_SELECT}
+                        >
+                            <option value="">All instructors</option>
+                            {instructors.map(user => (
+                                <option key={user.id} value={user.id}>
+                                    {user.firstName} {user.secondName}
+                                </option>
+                            ))}
+                        </select>
+                    </>
+                )}
             />
             <div ref={listRef} className="flex-1 min-h-0 overflow-y-auto">
                 <CrudList<Course>
