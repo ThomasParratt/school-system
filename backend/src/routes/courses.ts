@@ -148,12 +148,7 @@ router.get("/:id", requireAuth, requireRole("admin"), async (req, res) => {
     return res.status(200).json({ data: course });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({
-      error: {
-        message: "Failed to fetch user",
-        code: "FETCH_USER_ERROR",
-      },
-    });
+    return errorResponse(res, 500, "Failed to fetch course", "FETCH_COURSE_ERROR");
   }
 });
 
