@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { setSessionExpiredHandler } from "../services/http.ts";
 import type { AuthUser } from "../types.ts";
 import { AuthContext } from "./useAuth.ts";
 
@@ -23,7 +24,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return localStorage.getItem("token");
     });
 
+    // Set when the API rejected the token, so the login screen can say why it is showing.
+    const [sessionExpired, setSessionExpired] = useState(false);
+
     const loginUser = (user: AuthUser, token: string) => {
+        setSessionExpired(false);
         setUser(user);
         setToken(token);
 
@@ -39,6 +44,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("token");
     };
 
+    useEffect(() => {
+        setSessionExpiredHandler(() => {
+            setUser(null);
+            setToken(null);
+            setSessionExpired(true);
+            localStorage.removeItem("user");
+            localStorage.removeItem("token");
+        });
+        return () => setSessionExpiredHandler(null);
+    }, []);
+
     return (
         <AuthContext.Provider
             value={{
@@ -47,6 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 loginUser,
                 logout,
                 isAuthenticated: !!user,
+                sessionExpired,
             }}
         >
             {children}

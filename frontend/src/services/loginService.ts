@@ -1,21 +1,6 @@
-import type { LoginResponse, ApiErrorResponse } from "../types.ts";
+import type { LoginResponse } from "../types.ts";
+import { apiFetch } from "./http";
 
-export async function login(email: string, password: string): Promise<LoginResponse> {
-  const res = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  });
-
-  if (!res.ok) {
-    const contentType = res.headers.get("content-type") ?? "";
-    const errorMessage = contentType.includes("application/json")
-        ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-        : await res.text();
-    throw new Error(errorMessage);
-  }
-
-  return res.json();
+export function login(email: string, password: string): Promise<LoginResponse> {
+  return apiFetch("/auth/login", { method: "POST", body: { email, password } });
 }

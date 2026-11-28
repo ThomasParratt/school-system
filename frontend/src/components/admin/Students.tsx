@@ -4,6 +4,8 @@ import { enroll, unenroll } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
 import { useListQuery } from "../../hooks/useListQuery";
 import type { User, UsersProps, Course, UserEnrollment, CreateUserBody, UpdateUserBody, UserForm, UserListQuery } from "../../types";
+import { isBlank, userFormError } from "../../lib/validation";
+import { showError } from "../../lib/errors";
 import CrudList from "./CrudList";
 import { ListHeader, Pager } from "./ListControls";
 import CrudModal from "./CrudModal";
@@ -45,20 +47,27 @@ export default function Students({ token, courses, refreshUsers, variant = "full
     async function handleAddUser() {
         if (!token || !addForm) return;
 
-        const { firstName, secondName, email, password, role, comments } = addForm;
-        if (!firstName || !secondName || !email || !password) {
-            alert("Please fill in all required fields.");
+        const problem = userFormError(addForm, { requirePassword: true });
+        if (problem) {
+            alert(problem);
             return;
         }
+        const { firstName, secondName, email, password, role, comments } = addForm;
 
         try {
-            // An empty comment is left out: the API takes no comment, not an empty one.
-            await addItem({ firstName, secondName, email, password, role, comments: comments || undefined });
+            // A blank comment is left out: the API takes no comment, not an empty one.
+            await addItem({
+                firstName: firstName!.trim(),
+                secondName: secondName!.trim(),
+                email: email!.trim(),
+                password: password!,
+                role,
+                comments: isBlank(comments) ? undefined : comments
+            });
             await refreshUsers();
             setAdd(false);
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -69,8 +78,7 @@ export default function Students({ token, courses, refreshUsers, variant = "full
                 await deleteItem(userId);
                 await refreshUsers();
             } catch (err) {
-                console.error(err);
-                alert(err);
+                showError(err);
             }
         }
         else
@@ -80,15 +88,25 @@ export default function Students({ token, courses, refreshUsers, variant = "full
     async function handleUpdateUser(userId: number) {
         if (!token || !editForm) return;
 
+        const problem = userFormError(editForm, { requirePassword: false });
+        if (problem) {
+            alert(problem);
+            return;
+        }
+        const { firstName, secondName, email, comments } = editForm;
+
         try {
-            // Enrollments are saved through their own endpoints; an empty comment leaves it unchanged.
-            const { firstName, secondName, email, comments } = editForm;
-            await updateItem(userId, { firstName, secondName, email, comments: comments || undefined });
+            // Enrollments are saved through their own endpoints; a blank comment leaves it unchanged.
+            await updateItem(userId, {
+                firstName: firstName!.trim(),
+                secondName: secondName!.trim(),
+                email: email!.trim(),
+                comments: isBlank(comments) ? undefined : comments
+            });
             await refreshUsers();
             setSelectedUser(null);
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -99,8 +117,7 @@ export default function Students({ token, courses, refreshUsers, variant = "full
             await enroll(token, courseId, userId);
 
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -114,8 +131,7 @@ export default function Students({ token, courses, refreshUsers, variant = "full
                 enrollments: result.data.map((e: UserEnrollment) => e.course)
             }));
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -126,8 +142,7 @@ export default function Students({ token, courses, refreshUsers, variant = "full
             await unenroll(token, courseId, studentId);
 
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -218,6 +233,7 @@ export default function Students({ token, courses, refreshUsers, variant = "full
                 <p className="flex justify-between items-center mb-2">
                     <strong>Email</strong>
                     <input
+                        type="email"
                         value={addForm.email || ""}
                         onChange={(e) =>
                             setAddForm(prev => ({
@@ -301,6 +317,7 @@ export default function Students({ token, courses, refreshUsers, variant = "full
                 <p className="flex justify-between items-center mb-2">
                     <strong>Email</strong>
                     <input
+                        type="email"
                         value={editForm.email || ""}
                         onChange={(e) =>
                             setEditForm(prev => ({

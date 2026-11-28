@@ -17,6 +17,8 @@ import { addCourseSession } from "../../services/courseService";
 import { getAllSessions, deleteSession, getSession, adminUpdateSession } from "../../services/sessionService";
 import type { Course, Session } from "../../types";
 import CrudModal from "./CrudModal";
+import { locationError, sessionTimesError, toSessionUpdate } from "../../lib/validation";
+import { errorMessage, showError } from "../../lib/errors";
 
 type CalendarSession = Pick<Session, "id" | "courseId" | "location" | "startsAt" | "endsAt"> & { title?: string };
 
@@ -52,13 +54,17 @@ export default function Calendar({ token, courses }: CalendarProps) {
 
   async function handleUpdateSession(sessionId: number) {
       if (!token || !editForm) return;
+      const problem = locationError(editForm.location);
+      if (problem) {
+          alert(problem);
+          return;
+      }
 
       try {
-          await adminUpdateSession(token, sessionId, editForm);
+          await adminUpdateSession(token, sessionId, toSessionUpdate(editForm));
           setClickedSession(null);
       } catch (err) {
-          console.error(err);
-          alert(err);
+          showError(err);
       }
   }
 
@@ -69,33 +75,24 @@ export default function Calendar({ token, courses }: CalendarProps) {
         return;
       }
 
-      const startsAtValue = addForm.startsAt;
-
-      if (!startsAtValue) {
-        alert("Please choose a valid start time.");
-        return;
-      }
-
-      const startsAt = new Date(startsAtValue);
-
-      if (Number.isNaN(startsAt.getTime())) {
-        alert("Please choose a valid start time.");
-        return;
-      }
-
+      const startsAt = new Date(addForm.startsAt ?? "");
       const endsAt = new Date(startsAt.getTime() + 45 * 60 * 1000);
+      const problem = locationError(addForm.location) ?? sessionTimesError(startsAt, endsAt);
+      if (problem) {
+        alert(problem);
+        return;
+      }
 
       try {
           await addCourseSession(token, Number(selectedCourseId), {
-            location: addForm.location ?? "",
+            location: addForm.location!.trim(),
             startsAt: startsAt.toISOString(),
             endsAt: endsAt.toISOString()
           });
           setAdd(false);
           setEvents(await loadSessions());
       } catch (err) {
-          console.error(err);
-          alert(err);
+          showError(err);
       }
   }
 
@@ -182,7 +179,12 @@ export default function Calendar({ token, courses }: CalendarProps) {
     if (!title) return;
 
     const location = prompt("Please enter session location:");
-    if (!location) return;
+    if (location === null) return; // cancelled
+    const problem = locationError(location);
+    if (problem) {
+      alert(problem);
+      return;
+    }
 
     const end = new Date(info.start.getTime() + 45 * 60 * 1000);
 
@@ -191,7 +193,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
       start: info.start,
       end,
       extendedProps: {
-        location,
+        location: location.trim(),
         courseId,
       },
     });
@@ -218,7 +220,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
       // reconcile backend ID with UI event
       event.setProp("id", String(created.data.id));
     } catch (err) {
-      console.error("Failed to create event:", err);
+      showError(err);
 
       // rollback UI event if backend fails
       info.revert();
@@ -232,7 +234,13 @@ export default function Calendar({ token, courses }: CalendarProps) {
       if (!token) return;
 
       const event = clickInfo.event;
-      const session = await getSession(token, Number(event.id));
+      let session;
+      try {
+          session = await getSession(token, Number(event.id));
+      } catch (err) {
+          showError(err);
+          return;
+      }
 
       setClickedSession(session.data);
       setClickedEventId(Number(event.id));
@@ -259,7 +267,7 @@ export default function Calendar({ token, courses }: CalendarProps) {
       setClickedEventId(null);
     } catch (err) {
       console.error(err);
-      alert("Delete failed, reloading calendar...");
+      alert(`Delete failed: ${errorMessage(err)} Reloading the calendar.`);
       setEvents(await loadSessions());
     }
   }
@@ -268,15 +276,20 @@ export default function Calendar({ token, courses }: CalendarProps) {
     if (!token) return;
 
     const event = info.event;
+    const problem = event.start ? sessionTimesError(event.start, event.end) : "Please choose a valid start time.";
+    if (problem) {
+      alert(problem);
+      info.revert();
+      return;
+    }
 
     try {
       await adminUpdateSession(token, Number(event.id), {
-        startsAt: event.start?.toISOString(),
+        startsAt: event.start!.toISOString(),
         endsAt: event.end?.toISOString(),
       });
     } catch (err) {
-      console.error(err);
-      alert("Failed to move session");
+      showError(err);
       info.revert(); // IMPORTANT: rollback UI change
     }
   }
@@ -285,15 +298,20 @@ export default function Calendar({ token, courses }: CalendarProps) {
     if (!token) return;
 
     const event = info.event;
+    const problem = event.start ? sessionTimesError(event.start, event.end) : "Please choose a valid start time.";
+    if (problem) {
+      alert(problem);
+      info.revert();
+      return;
+    }
 
     try {
       await adminUpdateSession(token, Number(event.id), {
-        startsAt: event.start?.toISOString(),
+        startsAt: event.start!.toISOString(),
         endsAt: event.end?.toISOString(),
       });
     } catch (err) {
-      console.error(err);
-      alert("Failed to resize session");
+      showError(err);
       info.revert();
     }
   }

@@ -1,23 +1,13 @@
-import type { ApiErrorResponse, ApiResponse, ChangePasswordBody, ChangePasswordResponse, CreateUserBody, UpdateUserBody, User, UserListQuery } from "../types";
+import type { ApiResponse, ChangePasswordBody, ChangePasswordResponse, CreateUserBody, UpdateUserBody, User, UserListQuery } from "../types";
+import { apiFetch } from "./http";
 import { fetchAllPages, toQueryString } from "./query";
 
 /** One page of users. Without a query this is the first 25. */
-export async function getUsers(
+export function getUsers(
     token: string | null,
     query: UserListQuery = {}
 ): Promise<ApiResponse<"/users", "get">> {
-    const res = await fetch(`/api/users${toQueryString(query)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+    return apiFetch(`/users${toQueryString(query)}`, { token });
 }
 
 /** Every user that matches, for pickers. Screens that show a list page it with getUsers. */
@@ -28,160 +18,51 @@ export function getAllUsers(
     return fetchAllPages((page, limit) => getUsers(token, { ...query, page, limit }));
 }
 
-export async function addUser(
+export function addUser(
     token: string | null,
     user: CreateUserBody
 ): Promise<ApiResponse<"/users", "post", 201>> {
-    const res = await fetch("/api/users", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-    });
-
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+    return apiFetch("/users", { method: "POST", token, body: user });
 }
 
-export async function deleteUser(
+export function deleteUser(
     token: string | null,
     userId: number
 ): Promise<ApiResponse<"/users/{id}", "delete">> {
-    const res = await fetch(`/api/users/${userId}`, {
-        method: "DELETE",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-    });
-
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+    return apiFetch(`/users/${userId}`, { method: "DELETE", token });
 }
 
-export async function updateUser(
+export function updateUser(
     token: string | null,
     userId: number,
     user: UpdateUserBody
 ): Promise<ApiResponse<"/users/{id}", "patch">> {
-    const res = await fetch(`/api/users/${userId}`, {
-        method: "PATCH",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-    });
-
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+    return apiFetch(`/users/${userId}`, { method: "PATCH", token, body: user });
 }
 
-export async function getUserEnrollments(
+export function getUserEnrollments(
     token: string | null,
     userId: number,
 ): Promise<ApiResponse<"/users/{id}/enrollments", "get">> {
-    const res = await fetch(`/api/users/${userId}/enrollments`, {
-        method: "GET",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-    });
-    
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+    return apiFetch(`/users/${userId}/enrollments`, { token });
 }
 
-export async function getUserCourses(token: string | null): Promise<ApiResponse<"/users/me/courses", "get">> {
-    const res = await fetch("/api/users/me/courses", {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+export function getUserCourses(token: string | null): Promise<ApiResponse<"/users/me/courses", "get">> {
+    return apiFetch("/users/me/courses", { token });
 }
 
-export async function getUserSessions(token: string | null): Promise<ApiResponse<"/users/me/sessions", "get">> {
-    const res = await fetch("/api/users/me/sessions", {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+export function getUserSessions(token: string | null): Promise<ApiResponse<"/users/me/sessions", "get">> {
+    return apiFetch("/users/me/sessions", { token });
 }
 
-export async function getUserStudents(token: string | null): Promise<ApiResponse<"/users/me/students", "get">> {
-    const res = await fetch("/api/users/me/students", {
-        headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+export function getUserStudents(token: string | null): Promise<ApiResponse<"/users/me/students", "get">> {
+    return apiFetch("/users/me/students", { token });
 }
+
 /** Changes the signed-in user's password. Answers a new token, which no longer needs a change. */
-export async function changePassword(
+export function changePassword(
     token: string | null,
     body: ChangePasswordBody
 ): Promise<ChangePasswordResponse> {
-    const res = await fetch("/api/users/me/password", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-        const contentType = res.headers.get("content-type") ?? "";
-        const errorMessage = contentType.includes("application/json")
-            ? ((await res.json()) as ApiErrorResponse).error?.message ?? "Request failed"
-            : await res.text();
-        throw new Error(errorMessage);
-    }
-    return res.json();
+    return apiFetch("/users/me/password", { method: "POST", token, body });
 }

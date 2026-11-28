@@ -7,6 +7,8 @@ export type AuthContextType = {
     loginUser: (user: AuthUser, token: string) => void;
     logout: () => void;
     isAuthenticated: boolean;
+    /** True after the API rejected the token and signed the user out. */
+    sessionExpired: boolean;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
