@@ -1,6 +1,7 @@
 import request from "supertest";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import app from "../../../src/app.js";
+import { prisma } from "../../../src/lib/prisma.js";
 import { createUser } from "../factories/userFactory.js";
 import { createCourse } from "../factories/courseFactory.js";
 import { createSession } from "../factories/sessionFactory.js";
@@ -32,6 +33,7 @@ describe("GET /users/me/sessions/:id", () => {
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     await cleanupTestData();
   });
 
@@ -55,5 +57,20 @@ describe("GET /users/me/sessions/:id", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.error.code).toBe("SESSION_NOT_FOUND");
+  });
+
+  it("does not leak database errors", async () => {
+    const token = await loginAs(student);
+    vi.spyOn(prisma.classSession, "findFirst").mockRejectedValueOnce(new Error("Invalid `prisma` invocation in /srv/app/src/routes/secret.ts"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await request(app)
+      .get(`/users/me/sessions/${enrolledSessionId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(500);
+    expect(response.body.error).toEqual({ message: expect.any(String), code: "FETCH_SESSION_ERROR" });
+    expect(JSON.stringify(response.body)).not.toContain("prisma");
+    expect(response).toSatisfyApiSpec();
   });
 });

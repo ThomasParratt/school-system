@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../../src/app.js";
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { prisma } from '../../../src/lib/prisma.js';
 import { loginAsAdmin, loginAsStudent } from "../helpers/auth.js";
 import { createUser } from "../factories/userFactory.js";
@@ -14,6 +14,7 @@ describe("PATCH /users/:id", () => {
     });
 
     afterEach(async () => {
+    vi.restoreAllMocks();
         // Clean up test data
         await prisma.user.deleteMany();
     });
@@ -73,4 +74,19 @@ describe("PATCH /users/:id", () => {
         expect(response).toSatisfyApiSpec();
     });
 
+  it("should not leak database errors", async () => {
+    const token = await loginAsAdmin();
+    vi.spyOn(prisma.user, "update").mockRejectedValueOnce(new Error("Invalid `prisma` invocation in /srv/app/src/routes/secret.ts"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await request(app)
+      .patch(`/users/${userId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ firstName: "John" });
+
+    expect(response.status).toBe(500);
+    expect(response.body.error).toEqual({ message: expect.any(String), code: "UPDATE_USER_ERROR" });
+    expect(JSON.stringify(response.body)).not.toContain("prisma");
+    expect(response).toSatisfyApiSpec();
+  });
 });
