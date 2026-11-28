@@ -14,7 +14,7 @@ const ROW_PX = 28;
 
 /**
  * Page and search state for a paged list. The search waits until typing pauses, and a
- * new search goes back to page 1. Pass `query` to useCrud and the rest to ListControls.
+ * new search or a change to `filters` goes back to page 1. Pass `query` to useCrud and the rest to ListControls.
  *
  * In the compact layout a page holds as many rows as fit the list's box, so attach
  * `listRef` to the element the rows scroll in. The box's height comes from the
@@ -27,6 +27,15 @@ export function useListQuery<Filters extends object>(filters: Filters, variant: 
     const [fitRows, setFitRows] = useState<number | null>(null);
     // A callback ref kept in state, so the observer below follows the element it's given.
     const [listEl, listRef] = useState<HTMLDivElement | null>(null);
+
+    // Compared by value, since callers build `filters` afresh on every render. Resetting
+    // during render, not in an effect, means the old page is never fetched with new filters.
+    const filtersKey = JSON.stringify(filters);
+    const [prevFiltersKey, setPrevFiltersKey] = useState(filtersKey);
+    if (filtersKey !== prevFiltersKey) {
+        setPrevFiltersKey(filtersKey);
+        setPage(1);
+    }
 
     useEffect(() => {
         // Runs only once the search text has changed, so going back to page 1 is always right.
