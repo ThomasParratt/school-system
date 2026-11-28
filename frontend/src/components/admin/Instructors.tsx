@@ -3,6 +3,7 @@ import { getUsers, addUser, deleteUser, updateUser, getUserEnrollments } from ".
 import { useCrud } from "../../hooks/useCrud";
 import { useListQuery } from "../../hooks/useListQuery";
 import type { UserEnrollment, User, UsersProps, CreateUserBody, UpdateUserBody, UserForm, UserListQuery } from "../../types";
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from "../../lib/email";
 import CrudList from "./CrudList";
 import { ListHeader, Pager } from "./ListControls";
 import CrudModal from "./CrudModal";
@@ -47,6 +48,10 @@ export default function Instructors({ token, refreshUsers, variant = "full" }: U
             alert("Please fill in all required fields.");
             return;
         }
+        if (!isValidEmail(email)) {
+            alert(INVALID_EMAIL_MESSAGE);
+            return;
+        }
 
         try {
             // An empty comment is left out: the API takes no comment, not an empty one.
@@ -77,9 +82,14 @@ export default function Instructors({ token, refreshUsers, variant = "full" }: U
     async function handleUpdateUser(userId: number) {
         if (!token || !editForm) return;
 
+        const { firstName, secondName, email, comments } = editForm;
+        if (!isValidEmail(email ?? "")) {
+            alert(INVALID_EMAIL_MESSAGE);
+            return;
+        }
+
         try {
             // Enrollments are saved through their own endpoints; an empty comment leaves it unchanged.
-            const { firstName, secondName, email, comments } = editForm;
             await updateItem(userId, { firstName, secondName, email, comments: comments || undefined });
             await refreshUsers();
             setSelectedUser(null);
@@ -192,6 +202,7 @@ export default function Instructors({ token, refreshUsers, variant = "full" }: U
                 <p className="flex justify-between items-center mb-2">
                     <strong>Email</strong>
                     <input
+                        type="email"
                         value={addForm.email || ""}
                         onChange={(e) =>
                             setAddForm(prev => ({
@@ -275,6 +286,7 @@ export default function Instructors({ token, refreshUsers, variant = "full" }: U
                 <p className="flex justify-between items-center mb-2">
                     <strong>Email</strong>
                     <input
+                        type="email"
                         value={editForm.email || ""}
                         onChange={(e) =>
                             setEditForm(prev => ({
