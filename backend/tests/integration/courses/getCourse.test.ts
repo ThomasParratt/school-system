@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../../../src/app.js";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { prisma } from "../../../src/lib/prisma.js";
 import { loginAsAdmin, loginAsStudent } from "../helpers/auth.js";
 import { createCourse } from "../factories/courseFactory.js";
 import { cleanupTestData } from "../helpers/cleanup.js";
@@ -14,6 +15,7 @@ describe("GET /courses/:id", () => {
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     await cleanupTestData();
   });
 
@@ -26,6 +28,20 @@ describe("GET /courses/:id", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.data.id).toBe(courseId);
+    expect(response).toSatisfyApiSpec();
+  });
+
+  it("should report a database failure as FETCH_COURSE_ERROR", async () => {
+    const token = await loginAsAdmin();
+    vi.spyOn(prisma.course, "findUnique").mockRejectedValueOnce(new Error("db down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await request(app)
+      .get(`/courses/${courseId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.status).toBe(500);
+    expect(response.body.error.code).toBe("FETCH_COURSE_ERROR");
     expect(response).toSatisfyApiSpec();
   });
 
