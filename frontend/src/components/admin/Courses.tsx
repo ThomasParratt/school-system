@@ -368,7 +368,7 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                                     key={user.id}
                                     value={user.id}
                                 >
-                                    {user.firstName}, {user.secondName}
+                                    {user.secondName}, {user.firstName}
                                 </option>
                             ))}
                         </select>
@@ -388,7 +388,11 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                                     enrollments: [
                                         ...(prev?.enrollments ?? []),
                                         user,
-                                    ],
+                                    ].sort((a, b) =>
+                                        a.secondName.localeCompare(b.secondName) ||
+                                        a.firstName.localeCompare(b.firstName) ||
+                                        a.id - b.id
+                                    ),
                                 }));
 
                                 handleEnroll(
@@ -408,7 +412,7 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                             key={user.id}
                             className="flex justify-between items-center border-gray-200 rounded p-1 mb-1"
                         >
-                            <span>{user.firstName}, {user.secondName}</span>
+                            <span>{user.secondName}, {user.firstName}</span>
 
                             <button
                                 type="button"
