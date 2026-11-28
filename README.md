@@ -1,6 +1,10 @@
-# Classdesk (MVP)
+<p align="center">
+  <img src="frontend/public/favicon.svg" alt="Classdesk logo" width="96">
+</p>
 
-This is a full-stack enterprise web application designed to simplify how a school manages its courses, class sessions, and student enrollments. The project was inspired by direct feedback from students and staff at a local language school to fix real administrative headaches. 
+<h1 align="center">Classdesk (MVP)</h1>
+
+Classdesk is a full-stack enterprise web application designed to simplify how a school manages its courses, class sessions, and student enrollments. The project was inspired by direct feedback from students and staff at a local language school to fix real administrative headaches. 
 
 The platform supports strict role-based access control (RBAC) with completely separate dashboards and permissions for Administrators, Instructors, and Students.
 
