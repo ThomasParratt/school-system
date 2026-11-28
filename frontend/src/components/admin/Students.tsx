@@ -96,12 +96,12 @@ export default function Students({ token, courses, refreshUsers, variant = "full
         const { firstName, secondName, email, comments } = editForm;
 
         try {
-            // Enrollments are saved through their own endpoints; a blank comment leaves it unchanged.
+            // Enrollments are saved through their own endpoints; a blank comment clears it.
             await updateItem(userId, {
                 firstName: firstName!.trim(),
                 secondName: secondName!.trim(),
                 email: email!.trim(),
-                comments: isBlank(comments) ? undefined : comments
+                comments: isBlank(comments) ? null : comments
             });
             await refreshUsers();
             setSelectedUser(null);

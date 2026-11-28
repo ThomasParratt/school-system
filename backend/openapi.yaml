@@ -890,7 +890,10 @@ paths:
                 email:
                   $ref: "#/components/schemas/Email"
                 comments:
-                  $ref: "#/components/schemas/NonEmptyString"
+                  description: null clears the comment.
+                  type: string
+                  nullable: true
+                  pattern: "\\S"
 
       responses:
         "200":

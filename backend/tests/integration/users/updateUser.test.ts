@@ -30,6 +30,30 @@ describe("PATCH /users/:id", () => {
         expect(response).toSatisfyApiSpec();
     });
 
+    it('should clear comments when sent null', async () => {
+        await prisma.user.update({ where: { id: userId }, data: { comments: "Needs extra help" } });
+        const token = await loginAsAdmin();
+        const response = await request(app)
+            .patch(`/users/${userId}`)
+            .set("Authorization", `Bearer ${token}`)
+            .send({ comments: null });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.comments).toBeNull();
+        expect(response).toSatisfyApiSpec();
+    });
+
+    it('should reject empty comments', async () => {
+        const token = await loginAsAdmin();
+        const response = await request(app)
+            .patch(`/users/${userId}`)
+            .set("Authorization", `Bearer ${token}`)
+            .send({ comments: "" });
+
+        expect(response.status).toBe(400);
+        expect(response).toSatisfyApiSpec();
+    });
+
     it('should reject unauthenticated request', async () => {
         const response = await request(app)
             .patch(`/users/${userId}`)

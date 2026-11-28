@@ -920,7 +920,8 @@ export interface paths {
                         firstName?: components["schemas"]["NonEmptyString"];
                         secondName?: components["schemas"]["NonEmptyString"];
                         email?: components["schemas"]["Email"];
-                        comments?: components["schemas"]["NonEmptyString"];
+                        /** @description null clears the comment. */
+                        comments?: string | null;
                     };
                 };
             };
