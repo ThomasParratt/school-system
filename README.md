@@ -20,6 +20,7 @@ The platform supports strict role-based access control (RBAC) with completely se
 
 ### 1. Authentication
 * Users log in with email and password and receive a JWT (valid for 1 hour). The login response includes the user's role, and the frontend shows the matching dashboard (Admin, Instructor, or Student).
+* **First-login password change:** an administrator sets the password when creating an account, so the new user must choose their own the first time they log in. Until they do, the API refuses every request except `POST /users/me/password` (403 `PASSWORD_CHANGE_REQUIRED`), and the frontend shows a change-password screen instead of the dashboard.
 
 ### 2. Administrator Dashboard
 * Full CRUD operations for managing users, creating courses, and scheduling class sessions.
@@ -107,6 +108,9 @@ The development setup seeds an administrator account when the backend starts. Fo
 After logging in, the administrator dashboard provides access to user, course,
 session, and enrollment management.
 
+The seeded accounts are not asked to change their password. Accounts you create from the
+administrator dashboard are: log in as one to see the first-login password change.
+
 ### 4. Simulating Production
 To run the production-optimized build as a background process, run:
 ```bash
@@ -159,7 +163,8 @@ Now that the core MVP architecture is fully operational, I am actively working o
 
 ### 🔒 Security & Authentication Upgrades
 - [ ] **Secure Token Storage:** Migrate JWT storage away from localStorage to HttpOnly, SameSite cookies to mitigate Cross-Site Scripting (XSS) vulnerability vectors.
-- [ ] **Credentials Lifecycle:** Implement a mandatory first-login password change flow and a secure password-reset mechanism.
+- [x] **First-Login Password Change:** Accounts an administrator creates must choose their own password before they can use the app.
+- [ ] **Password Reset:** A secure password-reset mechanism for users who forget their password.
 
 ### 📈 Scalability & Performance
 - [x] **Data Pagination & Search:** Offset pagination (`page`, `limit`) and search on `/users`, `/courses`, and `/sessions`, plus a `from`/`to` date filter on `/sessions`.
