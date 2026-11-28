@@ -94,14 +94,16 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
         }
     }
 
-    async function handleEnroll(courseId: number, userId: number) {
-        if (!token) return;
+    /** Enrolls the student and reports whether it worked, so the caller only shows saved enrollments. */
+    async function handleEnroll(courseId: number, userId: number): Promise<boolean> {
+        if (!token) return false;
 
         try {
             await enroll(token, courseId, userId);
-
+            return true;
         } catch (err) {
             showError(err);
+            return false;
         }
     }
 
@@ -362,7 +364,10 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                             <option value="">Select student</option>
 
                             {users
-                                .filter(u => u.role === "student")
+                                .filter(u =>
+                                    u.role === "student" &&
+                                    !editForm.enrollments?.some(e => e.id === u.id)
+                                )
                                 .map(user => (
                                 <option
                                     key={user.id}
@@ -375,13 +380,17 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
 
                         <button
                             type="button"
-                            onClick={() => {
+                            onClick={async () => {
                                 const user = users.find(
                                     c =>
                                         c.id === Number(selectedUserId)
                                 );
 
                                 if (!user) return;
+                                if (editForm.enrollments?.some(e => e.id === user.id)) return;
+
+                                setSelectedUserId("");
+                                if (!(await handleEnroll(selectedCourse!.id, user.id))) return;
 
                                 setEditForm(prev => ({
                                     ...prev!,
@@ -394,13 +403,6 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                                         a.id - b.id
                                     ),
                                 }));
-
-                                handleEnroll(
-                                    selectedCourse!.id,
-                                    Number(selectedUserId)
-                                );
-
-                                setSelectedUserId("");
                             }}
                         >
                             ➕
