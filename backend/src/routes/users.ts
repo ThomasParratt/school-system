@@ -522,15 +522,7 @@ router.patch(
       if (isPrismaError(err, "P2002")) {
         return errorResponse(res, 409, "Email already exists", "EMAIL_ALREADY_EXISTS");
       }
-      return res.status(500).json({
-        error: {
-          message:
-            err instanceof Error
-              ? err.message
-              : "Unexpected server error",
-          code: "SERVER_ERROR",
-        },
-      });
+      return errorResponse(res, 500, "Failed to update user", "UPDATE_USER_ERROR");
     }
   }
 )
@@ -686,15 +678,7 @@ router.patch(
     } catch (err: unknown) {
       console.error(err);
 
-      return res.status(500).json({
-        error: {
-          message:
-            err instanceof Error
-              ? err.message
-              : "Unexpected server error",
-          code: "SERVER_ERROR",
-        },
-      });
+      return errorResponse(res, 500, "Failed to update session", "UPDATE_SESSION_ERROR");
     }
   }
 );
@@ -743,15 +727,7 @@ router.get(
     } catch (err: unknown) {
       console.error(err);
 
-      return res.status(500).json({
-        error: {
-          message:
-            err instanceof Error
-              ? err.message
-              : "Unexpected server error",
-          code: "SERVER_ERROR",
-        },
-      });
+      return errorResponse(res, 500, "Failed to fetch session", "FETCH_SESSION_ERROR");
     }
   }
 );

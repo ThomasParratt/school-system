@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../../../src/app.js";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { prisma } from "../../../src/lib/prisma.js";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { loginAsAdmin, loginAsStudent } from "../helpers/auth.js";
 import { createCourse } from "../factories/courseFactory.js";
 import { cleanupTestData } from "../helpers/cleanup.js";
@@ -14,6 +15,7 @@ describe("PATCH /courses/:id", () => {
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     await cleanupTestData();
   });
 
@@ -58,6 +60,22 @@ describe("PATCH /courses/:id", () => {
       .send({});
 
     expect(response.status).toBe(400);
+    expect(response).toSatisfyApiSpec();
+  });
+
+  it("should not leak database errors", async () => {
+    const token = await loginAsAdmin();
+    vi.spyOn(prisma.course, "update").mockRejectedValueOnce(new Error("Invalid `prisma` invocation in /srv/app/src/routes/secret.ts"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const response = await request(app)
+      .patch(`/courses/${courseId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "Updated Course Title" });
+
+    expect(response.status).toBe(500);
+    expect(response.body.error).toEqual({ message: expect.any(String), code: "UPDATE_COURSE_ERROR" });
+    expect(JSON.stringify(response.body)).not.toContain("prisma");
     expect(response).toSatisfyApiSpec();
   });
 });

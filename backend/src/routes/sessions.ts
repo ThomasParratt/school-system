@@ -173,15 +173,7 @@ router.patch(
       if (isPrismaError(err, "P2025")) {
         return errorResponse(res, 404, "Session not found", "SESSION_NOT_FOUND");
       }
-      return res.status(500).json({
-        error: {
-          message:
-            err instanceof Error
-              ? err.message
-              : "Unexpected server error",
-          code: "SERVER_ERROR",
-        },
-      });
+      return errorResponse(res, 500, "Failed to update session", "UPDATE_SESSION_ERROR");
     }
   }
 );
