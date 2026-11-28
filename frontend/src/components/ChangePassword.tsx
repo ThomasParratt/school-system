@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "../context/useAuth.ts";
 import { changePassword } from "../services/userService.ts";
-
-const MIN_LENGTH = 8;
+import { errorMessage } from "../lib/errors.ts";
+import { INVALID_PASSWORD_MESSAGE, isValidPassword, PASSWORD_MIN_LENGTH } from "../lib/validation.ts";
 
 /**
  * Shown instead of the dashboard while the signed-in user must change their password
@@ -23,8 +23,8 @@ function ChangePassword() {
             setError("Fill in all three fields!");
             return;
         }
-        if (newPassword.length < MIN_LENGTH || !/\S/.test(newPassword)) {
-            setError(`The new password needs at least ${MIN_LENGTH} characters.`);
+        if (!isValidPassword(newPassword)) {
+            setError(INVALID_PASSWORD_MESSAGE);
             return;
         }
         if (newPassword !== confirmPassword) {
@@ -44,7 +44,7 @@ function ChangePassword() {
             // The new token no longer needs a change, so this swaps the dashboard in.
             loginUser(response.data.user, response.data.token);
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to change password");
+            setError(errorMessage(err));
         } finally {
             setLoading(false);
         }
@@ -76,7 +76,7 @@ function ChangePassword() {
 
                 <input
                     type="password"
-                    placeholder={`New password (at least ${MIN_LENGTH} characters)`}
+                    placeholder={`New password (at least ${PASSWORD_MIN_LENGTH} characters)`}
                     autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}

@@ -7,6 +7,8 @@ import type { EventContentArg, EventInput, EventClickArg } from "@fullcalendar/c
 import type { Course, Session, CalendarProps } from "../../types";
 import { getMySession, updateSession } from "../../services/sessionService";
 import CrudModal from "../admin/CrudModal";
+import { locationError, toSessionUpdate } from "../../lib/validation";
+import { showError } from "../../lib/errors";
 
 type CalendarSession = Pick<Session, "id" | "courseId" | "location" | "startsAt" | "endsAt"> & { title?: string };
 
@@ -32,14 +34,18 @@ export default function MyCalendar({ token, courses, sessions, refreshSessions }
 
   async function handleUpdateSession(sessionId: number) {
       if (!token || !editForm) return;
+      const problem = locationError(editForm.location);
+      if (problem) {
+          alert(problem);
+          return;
+      }
 
       try {
-          await updateSession(token, sessionId, editForm);
+          await updateSession(token, sessionId, toSessionUpdate(editForm));
           await refreshSessions();
           setClickedSession(null);
       } catch (err) {
-          console.error(err);
-          alert(err);
+          showError(err);
       }
   }
 
@@ -64,7 +70,13 @@ export default function MyCalendar({ token, courses, sessions, refreshSessions }
       if (!token) return;
 
       const event = clickInfo.event;
-      const session = await getMySession(token, Number(event.id));
+      let session;
+      try {
+          session = await getMySession(token, Number(event.id));
+      } catch (err) {
+          showError(err);
+          return;
+      }
 
       setClickedSession(session.data);
       setEditForm({

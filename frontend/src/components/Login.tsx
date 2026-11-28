@@ -6,9 +6,11 @@ import AdminTabs from "./admin/AdminTabs.tsx";
 import InstructorDash from "./instructor/InstructorDash.tsx";
 import StudentDash from "./student/StudentDash.tsx";
 import ChangePassword from "./ChangePassword.tsx";
+import { errorMessage } from "../lib/errors.ts";
+import { INVALID_EMAIL_MESSAGE, isValidEmail } from "../lib/validation.ts";
 
 function Login() {
-    const { user, loginUser, logout } = useAuth();
+    const { user, loginUser, logout, sessionExpired } = useAuth();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,12 +22,16 @@ function Login() {
             setError("Fill email and password!");
             return;
         }
+        if (!isValidEmail(email.trim())) {
+            setError(INVALID_EMAIL_MESSAGE);
+            return;
+        }
 
         setLoading(true);
         setError(null);
 
         try {
-            const response = await login(email, password);
+            const response = await login(email.trim(), password);
 
             const loggedInUser = response.data.user;
             const token = response.data.token;
@@ -35,9 +41,7 @@ function Login() {
             setEmail("");
             setPassword("");
         } catch (err) {
-            setError(
-                err instanceof Error ? err.message : "Login failed"
-            );
+            setError(errorMessage(err));
         } finally {
             setLoading(false);
         }
@@ -78,8 +82,10 @@ function Login() {
                             className="w-full mb-4 px-4 py-2 border border-gray-300 rounded"
                         />
 
-                        {error && (
+                        {error ? (
                             <p className="text-red-500 mb-2">{error}</p>
+                        ) : sessionExpired && (
+                            <p className="text-gray-600 mb-2">Your session has expired. Please log in again.</p>
                         )}
 
                         <button

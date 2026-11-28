@@ -2,7 +2,9 @@ import { useState } from "react";
 import { getCourses, addCourse, deleteCourse, updateCourse, enroll, unenroll, getCourseEnrollments } from "../../services/courseService";
 import { useCrud } from "../../hooks/useCrud";
 import { useListQuery } from "../../hooks/useListQuery";
-import type { Course, CourseEnrollment, CourseForm, CourseListQuery, CoursesProps, CreateCourseBody, Language, Level, UpdateCourseBody } from "../../types";
+import type { Course, CourseEnrollment, CourseForm, CourseListQuery, CoursesProps, CreateCourseBody, UpdateCourseBody } from "../../types";
+import { courseFormError, isLanguage, isLevel, LANGUAGES, LEVELS } from "../../lib/validation";
+import { showError } from "../../lib/errors";
 import CrudList from "./CrudList";
 import { ListHeader, Pager } from "./ListControls";
 import CrudModal from "./CrudModal";
@@ -41,19 +43,19 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
     async function handleAddCourse() {
         if (!token || !addForm) return;
 
-        const { title, language, level, material, instructorId } = addForm;
-        if (!title || !language || !level || !material || !instructorId) {
-            alert("Please fill in all required fields.");
+        const problem = courseFormError(addForm);
+        if (problem) {
+            alert(problem);
             return;
         }
+        const { title, language, level, material, instructorId } = addForm;
 
         try {
-            await addItem({ title, language, level, material, instructorId });
+            await addItem({ title: title!.trim(), language: language!, level: level!, material: material!, instructorId: instructorId! });
             await refreshCourses();
             setAdd(false);
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -65,8 +67,7 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                 //console.log(data);
                 await refreshCourses();
             } catch (err) {
-                console.error(err);
-                alert(err);
+                showError(err);
             }
         }
         else
@@ -76,15 +77,20 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
     async function handleUpdateCourse(courseId: number) {
         if (!token || !editForm) return;
 
+        const problem = courseFormError(editForm);
+        if (problem) {
+            alert(problem);
+            return;
+        }
+        const { title, language, level, material, instructorId } = editForm;
+
         try {
             // Enrollments are saved through their own endpoints, not with the course.
-            const { title, language, level, material, instructorId } = editForm;
-            await updateItem(courseId, { title, language, level, material, instructorId });
+            await updateItem(courseId, { title: title!.trim(), language, level, material, instructorId });
             await refreshCourses();
             setSelectedCourse(null);
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -95,8 +101,7 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
             await enroll(token, courseId, userId);
 
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -110,8 +115,7 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                 enrollments: result.data.map((e: CourseEnrollment) => e.user)
             }));
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -122,8 +126,7 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
             await unenroll(token, courseId, studentId);
 
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
@@ -199,19 +202,16 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                     <select
                         value={addForm.language || ""}
                         onChange={(e) =>
-                            setAddForm(prev => ({ ...prev, language: e.target.value as Language }))
+                            setAddForm(prev => ({ ...prev, language: isLanguage(e.target.value) ? e.target.value : undefined }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
                         <option value="" disabled>
                             Select language
                         </option>
-                        <option value="English">English</option>
-                        <option value="Finnish">Finnish</option>
-                        <option value="Swedish">Swedish</option>
-                        <option value="Russian">Russian</option>
-                        <option value="German">German</option>
-                        <option value="French">French</option>
+                        {LANGUAGES.map(language => (
+                            <option key={language} value={language}>{language}</option>
+                        ))}
                     </select>
                 </p>
                 <p className="flex justify-between items-center mb-2">
@@ -219,19 +219,16 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                     <select
                         value={addForm.level || ""}
                         onChange={(e) =>
-                            setAddForm(prev => ({ ...prev, level: e.target.value as Level }))
+                            setAddForm(prev => ({ ...prev, level: isLevel(e.target.value) ? e.target.value : undefined }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
                         <option value="" disabled>
                             Select level
                         </option>
-                        <option value="A1">A1</option>
-                        <option value="A2">A2</option>
-                        <option value="B1">B1</option>
-                        <option value="B2">B2</option>
-                        <option value="C1">C1</option>
-                        <option value="C2">C2</option>
+                        {LEVELS.map(level => (
+                            <option key={level} value={level}>{level}</option>
+                        ))}
                     </select>
                 </p>
                 <p className="flex justify-between items-center mb-3">
@@ -251,7 +248,7 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                         onChange={(e) =>
                             setAddForm(prev => ({
                                 ...prev,
-                                instructorId: Number(e.target.value),
+                                instructorId: e.target.value ? Number(e.target.value) : undefined,
                             }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
@@ -293,16 +290,13 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                     <select
                         value={editForm.language || ""}
                         onChange={(e) =>
-                            setEditForm(prev => ({ ...prev, language: e.target.value as Language }))
+                            setEditForm(prev => ({ ...prev, language: isLanguage(e.target.value) ? e.target.value : undefined }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
-                        <option value="English">English</option>
-                        <option value="Finnish">Finnish</option>
-                        <option value="Swedish">Swedish</option>
-                        <option value="Russian">Russian</option>
-                        <option value="German">German</option>
-                        <option value="French">French</option>
+                        {LANGUAGES.map(language => (
+                            <option key={language} value={language}>{language}</option>
+                        ))}
                     </select>
                 </p>
                 <p className="flex justify-between items-center mb-2">
@@ -310,16 +304,13 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                     <select
                         value={editForm.level || ""}
                         onChange={(e) =>
-                            setEditForm(prev => ({ ...prev, level: e.target.value as Level }))
+                            setEditForm(prev => ({ ...prev, level: isLevel(e.target.value) ? e.target.value : undefined }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"
                     >
-                        <option value="A1">A1</option>
-                        <option value="A2">A2</option>
-                        <option value="B1">B1</option>
-                        <option value="B2">B2</option>
-                        <option value="C1">C1</option>
-                        <option value="C2">C2</option>
+                        {LEVELS.map(level => (
+                            <option key={level} value={level}>{level}</option>
+                        ))}
                     </select>
                 </p>
                 <p className="flex justify-between items-center mb-3">
@@ -339,7 +330,7 @@ export default function Courses({ token, users, refreshCourses, variant = "full"
                         onChange={(e) =>
                             setEditForm(prev => ({
                                 ...prev,
-                                instructorId: Number(e.target.value),
+                                instructorId: e.target.value ? Number(e.target.value) : undefined,
                             }))
                         }
                         className="border border-gray-200 rounded p-1 w-64"

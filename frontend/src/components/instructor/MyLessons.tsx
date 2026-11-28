@@ -2,6 +2,8 @@ import { useState } from "react";
 import edit from "../../../assets/edit.png";
 import type { CalendarProps, Course, Session } from "../../types";
 import CrudModal from "../admin/CrudModal";
+import { locationError, toSessionUpdate } from "../../lib/validation";
+import { showError } from "../../lib/errors";
 import { updateSession } from "../../services/sessionService";
 
 export default function MyLessons({ token, courses, sessions, refreshSessions }: CalendarProps) {
@@ -15,14 +17,18 @@ export default function MyLessons({ token, courses, sessions, refreshSessions }:
 
     async function handleUpdateSession(sessionId: number) {
         if (!token || !editForm) return;
+        const problem = locationError(editForm.location);
+        if (problem) {
+            alert(problem);
+            return;
+        }
 
         try {
-            await updateSession(token, sessionId, editForm);
+            await updateSession(token, sessionId, toSessionUpdate(editForm));
             await refreshSessions();
             setSelectedSession(null);
         } catch (err) {
-            console.error(err);
-            alert(err);
+            showError(err);
         }
     }
 
