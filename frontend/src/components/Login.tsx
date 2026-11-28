@@ -104,7 +104,7 @@ function Login() {
                         <div className="max-w-8xl mx-auto px-6 py-2 flex items-center justify-between">
                             {/* Left side */}
                             <h1>
-                                <Logo size={32} />
+                                <Logo size={40} />
                             </h1>
 
                             {user.role === "admin" && !user.mustChangePassword && <AdminTabs />}
