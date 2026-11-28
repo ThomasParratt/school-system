@@ -51,7 +51,7 @@ function ChangePassword() {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-8 bg-white p-6 rounded-lg border border-gray-300 text-left">
+        <div className="w-full max-w-md bg-white p-6 rounded-lg border border-gray-300 text-left">
             <h2 className="text-2xl font-semibold mb-2 text-gray-700">
                 Choose a new password
             </h2>
@@ -68,6 +68,7 @@ function ChangePassword() {
                 <input
                     type="password"
                     placeholder="Current password"
+                    aria-label="Current password"
                     autoComplete="current-password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
@@ -77,6 +78,7 @@ function ChangePassword() {
                 <input
                     type="password"
                     placeholder={`New password (at least ${PASSWORD_MIN_LENGTH} characters)`}
+                    aria-label="New password"
                     autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -86,6 +88,7 @@ function ChangePassword() {
                 <input
                     type="password"
                     placeholder="Confirm new password"
+                    aria-label="Confirm new password"
                     autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}

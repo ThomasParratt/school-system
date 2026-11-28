@@ -51,15 +51,12 @@ function Login() {
     // Signed in, the page is exactly one screen tall and the dashboard fills what the
     // header leaves, so the lists and the calendar scroll inside their own panels.
     return (
-        <div className={`font-sans ${user ? "p-4 h-screen flex flex-col" : "p-8 min-h-screen"}`}>
+        <div className={`font-sans ${user ? "p-4 h-screen flex flex-col" : "p-8 min-h-screen flex items-center justify-center"}`}>
             {!user ? (
-                <div className="max-w-md mx-auto bg-white p-6 rounded-lg border border-gray-300">
-                    <h1 className="mb-8 text-center">
+                <div className="w-full max-w-md bg-white p-6 rounded-lg border border-gray-300">
+                    <h1 className="mb-6 text-center">
                         <Logo size={40} />
                     </h1>
-                    <h2 className="text-2xl font-semibold mb-4 text-gray-700">
-                        Login
-                    </h2>
 
                     <form
                         onSubmit={(e) => {
@@ -70,6 +67,8 @@ function Login() {
                         <input
                             type="email"
                             placeholder="Email"
+                            aria-label="Email"
+                            autoComplete="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full mb-4 px-4 py-2 border border-gray-300 rounded"
@@ -78,6 +77,8 @@ function Login() {
                         <input
                             type="password"
                             placeholder="Password"
+                            aria-label="Password"
+                            autoComplete="current-password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full mb-4 px-4 py-2 border border-gray-300 rounded"
@@ -126,7 +127,9 @@ function Login() {
                     </header>
                     {/* Until the password is changed the API refuses everything else, so no dashboard. */}
                     {user.mustChangePassword ? (
-                        <ChangePassword />
+                        <div className="flex-1 flex items-center justify-center">
+                            <ChangePassword />
+                        </div>
                     ) : (
                         <>
                             {user.role === "admin" && (
